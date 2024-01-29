@@ -22,7 +22,7 @@ pub struct CreateEvent<'info> {
 #[account]
 #[derive(Default)]
 pub struct EventData {
-    pub id: u64,
+    pub fight_card_id_counter: u8,
     pub start_date: i64,
     pub end_date: i64,
 }

@@ -28,7 +28,7 @@ pub mod battleboosters {
         require!(ctx.accounts.creator.key() == global_state.admin_pubkey, ErrorCode::Unauthorized);
 
         let create_event = &mut ctx.accounts.event_account;
-        create_event.id = global_state.event_counter.clone();
+        create_event.fight_card_id_counter += 1_u8;
         create_event.start_date = start_date;
         create_event.end_date = end_date;
 
