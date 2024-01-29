@@ -17,6 +17,8 @@ pub mod battleboosters {
     use super::*;
 
     pub fn initialize(ctx: Context<GlobalState>, admin_pubkey: Pubkey) -> Result<()> {
+
+        // Create global state
         let global_state = &mut ctx.accounts.new_account;
         global_state.event_counter = 0_u64;
         global_state.admin_pubkey = admin_pubkey;
@@ -28,6 +30,12 @@ pub mod battleboosters {
         let global_state = &mut ctx.accounts.global_state;
 
         require!(ctx.accounts.creator.key() == global_state.admin_pubkey, ErrorCode::Unauthorized);
+        /*
+
+            TODO: (Optional Checks)
+                 - Check start_date >= now
+                 - Check end_date > start_date
+         */
 
         // Increment event counter
         global_state.event_counter += 1_u64;

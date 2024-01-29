@@ -85,6 +85,14 @@ describe("Create event", () => {
         // Fetch the account details of the payment sender
         senderAccount = await program.account.globalData.fetch(state_account.publicKey);
 
+        /*
+            TODO:
+                - Fetch event account
+                - Assert fight_card_id == 0
+                - Assert start_date == 1713045216
+                - Assert end_date == 1713045216
+         */
+
         assert.equal(senderAccount.eventCounter.eq(new BN(1)),  true);
         console.log("Your transaction signature", tx);
     });
@@ -114,5 +122,13 @@ describe("Create event", () => {
         }
 
     });
+
+    /*
+        TODO:
+            - It should fail in case the end_date <= to start_date
+            - It should fail in case the start_date <= now
+
+     */
+
 
 });

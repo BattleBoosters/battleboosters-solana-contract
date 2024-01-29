@@ -13,7 +13,7 @@ pub struct CreateEvent<'info> {
     payer = creator,
     seeds = [MY_APP_PREFIX, EVENT, global_state.event_counter.to_le_bytes().as_ref()],
     bump,
-    space = 8 + 8 + 8 + 8
+    space = 8 + 1 + 8 + 8
     )]
     pub event_account: Account<'info, EventData>,
     pub system_program: Program<'info, System>,
