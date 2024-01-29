@@ -23,13 +23,13 @@ pub struct FightCard<'info> {
 #[account]
 pub struct FightCardData {
     pub id: u64,
-    pub tournament: TournamentType,
+    pub tournament: Option<TournamentType>,
     pub title_fight: bool,
-    pub fighter_1: SharedStrength,
-    pub fighter_2: SharedStrength,
-    pub fight_duration: i64,
-    pub result: FightCardResult,
-    pub winner: Fighter
+    pub fighter_1: Option<SharedStrength>,
+    pub fighter_2: Option<SharedStrength>,
+    pub fight_duration: Option<i64>,
+    pub result: Option<FightCardResult>,
+    pub winner: Option<Fighter>
 }
 
 #[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
@@ -41,18 +41,17 @@ pub struct SharedStrength {
 }
 #[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
 pub struct StrikingStrength {
-
+    example: u8
 }
 #[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
 pub struct GrapplingStrength {
-
+    example: u8
 }
 
 #[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
 pub enum Fighter {
     Fighter1,
-    Fighter2,
-    Unknown
+    Fighter2
 }
 
 #[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
@@ -62,8 +61,7 @@ pub enum FightCardResult {
     Submission,
     Disqualification,
     NoContest,
-    Draw,
-    Pending
+    Draw
 }
 
 #[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]

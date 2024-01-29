@@ -40,9 +40,10 @@ describe("Create event", () => {
     const admin_account = anchor.web3.Keypair.generate();
     const state_account =  anchor.web3.Keypair.generate();
     const event_account_one = anchor.web3.Keypair.generate();
+    const random_account = anchor.web3.Keypair.generate();
 
-    it("Should Initialize", async () => {
-        const tx = await program.methods.initialize(provider.wallet.publicKey)
+    before("Initialize", async () => {
+        await program.methods.initialize(provider.wallet.publicKey)
             .accounts({
                 signer: provider.wallet.publicKey,
                 newAccount: state_account.publicKey,
@@ -50,16 +51,25 @@ describe("Create event", () => {
             })
             .signers([state_account])
             .rpc();
-    });
+
+        // Airdrop random_account
+        const airdrop_random_account = await provider.connection.requestAirdrop(
+            random_account.publicKey, 2 * anchor.web3.LAMPORTS_PER_SOL);
+        // await provider.connection.confirmTransaction(airdrop_random_account);
+
+    })
 
     it("Should add a new event", async () => {
-        let senderAccount = await program.account.globalData.fetch(state_account.publicKey);
 
+        let senderAccount = await program.account.globalData.fetch(state_account.publicKey);
         assert.equal(senderAccount.eventCounter.eq(new BN(0)),  true);
 
-        const [event_account_one, event_account_one_bump] = await anchor.web3.PublicKey.findProgramAddressSync(
-            [Buffer.from("BattleBoosters"), Buffer.from("event"), new BN(senderAccount.eventCounter).toBuffer("le", 8)]
-            , program.programId)
+        const [event_account_one, event_account_one_bump] = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("BattleBoosters"),
+                Buffer.from("event"),
+                new BN(senderAccount.eventCounter).toBuffer("le", 8)
+            ], program.programId);
 
         const tx = await program.methods.createNewEvent(new BN(1713045216), new BN(1713045216))
             .accounts({
@@ -78,4 +88,31 @@ describe("Create event", () => {
         assert.equal(senderAccount.eventCounter.eq(new BN(1)),  true);
         console.log("Your transaction signature", tx);
     });
+
+    it("Should fail adding a new event, unauthorized signer", async () => {
+
+        let senderAccount = await program.account.globalData.fetch(state_account.publicKey);
+        const [event_account_one, event_account_one_bump] = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("BattleBoosters"),
+                Buffer.from("event"),
+                new BN(senderAccount.eventCounter).toBuffer("le", 8)
+            ], program.programId);
+
+        try {
+            await program.methods.createNewEvent(new BN(1713045216), new BN(1713045216))
+                .accounts({
+                    creator: random_account.publicKey,
+                    globalState: state_account.publicKey,
+                    eventAccount: event_account_one,
+                    systemProgram: anchor.web3.SystemProgram.programId,
+                })
+                .signers([random_account])
+                .rpc();
+        }catch (err) {
+            assert.include(err.message, 'Unauthorized access attempt')
+        }
+
+    });
+
 });
