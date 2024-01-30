@@ -50,8 +50,6 @@ pub mod battleboosters {
         // Increment event counter
         global_state.event_counter += 1_u64;
 
-
-
         // Create event account and set data
         let create_event = &mut ctx.accounts.event_account;
         create_event.fight_card_id_counter = 0_u8;
@@ -59,6 +57,24 @@ pub mod battleboosters {
         create_event.end_date = end_date;
 
         emit!(EventCreated {
+            event_id: global_state.event_counter
+        });
+
+        Ok(())
+    }
+
+    pub fn update_event(ctx: Context<UpdateEvent>, start_date: i64, end_date: i64) -> Result<()> {
+        let global_state = &ctx.accounts.global_state;
+        only_admin(
+            &ctx.accounts.update_authority.key(),
+            &global_state.admin_pubkey,
+        )?;
+
+        let update_event = &mut ctx.accounts.event_account;
+        update_event.start_date = start_date;
+        update_event.end_date = end_date;
+
+        emit!(EventUpdated {
             event_id: global_state.event_counter
         });
 
