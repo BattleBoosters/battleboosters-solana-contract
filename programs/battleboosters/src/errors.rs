@@ -6,6 +6,5 @@ pub enum ErrorCode {
     #[msg("Custom error message for an invalid operation.")]
     InvalidOperation,
     #[msg("Unauthorized access attempt")]
-    Unauthorized
-    // ... other errors ...
+    Unauthorized, // ... other errors ...
 }

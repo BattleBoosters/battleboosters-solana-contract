@@ -13,7 +13,26 @@ describe("battleboosters", () => {
     it("Is initialized!", async () => {
         const new_account = anchor.web3.Keypair.generate();
 
-        const tx = await program.methods.initialize(provider.wallet.publicKey)
+        let rarity = {
+            "common": {
+                "powerMin": 10,
+                "powerMax": 100,
+                "lifespanMin": 10,
+                "lifespanMax": 100,
+                "energyMin": 10,
+                "energyMax": 100,
+            }
+        }
+
+
+
+        const tx = await program.methods.initialize(
+            provider.wallet.publicKey,
+            rarity,
+            Buffer.from([1, 2, 3, 4 ,5]),
+            new BN((100 * anchor.web3.LAMPORTS_PER_SOL)),
+            new BN((1 * anchor.web3.LAMPORTS_PER_SOL))
+        )
             .accounts({
                 signer: provider.wallet.publicKey,
                 newAccount: new_account.publicKey,
@@ -22,11 +41,15 @@ describe("battleboosters", () => {
             .signers([new_account]) // Include new_account as a signer
             .rpc();
 
-
         //Fetch the account details of the payment sender
         const senderAccount = await program.account.globalData.fetch(new_account.publicKey);
 
         assert.equal(senderAccount.eventCounter.eq(new BN(0)),  true);
+        assert.deepEqual(senderAccount.rarity.common, rarity.common);
+        assert.deepEqual(senderAccount.adminPubkey, provider.wallet.publicKey);
+        assert.deepEqual(Buffer.from(senderAccount.rarityProbabilities), Buffer.from([1, 2, 3, 4 , 5]))
+        assert.equal(senderAccount.nftFighterPackPrice.eq(new BN((100 * anchor.web3.LAMPORTS_PER_SOL))), true)
+        assert.equal(senderAccount.nftBoosterPackPrice.eq(new BN((1 * anchor.web3.LAMPORTS_PER_SOL))), true)
         console.log("Your transaction signature", tx);
     });
 });
@@ -43,7 +66,24 @@ describe("Create event", () => {
     const random_account = anchor.web3.Keypair.generate();
 
     before("Initialize", async () => {
-        await program.methods.initialize(provider.wallet.publicKey)
+        let rarity = {
+            "common": {
+                "powerMin": 10,
+                "powerMax": 100,
+                "lifespanMin": 10,
+                "lifespanMax": 100,
+                "energyMin": 10,
+                "energyMax": 100,
+            }
+        }
+
+        await program.methods.initialize(
+            provider.wallet.publicKey,
+            rarity,
+            Buffer.from([1, 2, 3, 4 ,5]),
+            new BN((100 * anchor.web3.LAMPORTS_PER_SOL)),
+            new BN((1 * anchor.web3.LAMPORTS_PER_SOL))
+        )
             .accounts({
                 signer: provider.wallet.publicKey,
                 newAccount: state_account.publicKey,
@@ -89,8 +129,6 @@ describe("Create event", () => {
             TODO:
                 - Fetch event account
                 - Assert fight_card_id == 0
-                - Assert start_date == 1713045216
-                - Assert end_date == 1713045216
          */
 
         assert.equal(senderAccount.eventCounter.eq(new BN(1)),  true);

@@ -1,13 +1,13 @@
-use anchor_lang::prelude::*;
-use crate::constants::*;
 use super::global::GlobalData;
+use crate::constants::*;
+use anchor_lang::prelude::*;
 
 #[derive(Accounts)]
 pub struct CreateEvent<'info> {
     #[account(mut)]
     pub creator: Signer<'info>,
     #[account(mut)]
-    pub global_state : Account<'info, GlobalData>,
+    pub global_state: Account<'info, GlobalData>,
     #[account(
     init,
     payer = creator,
@@ -26,3 +26,11 @@ pub struct EventData {
     pub start_date: i64,
     pub end_date: i64,
 }
+
+/*
+   TODO: Update Event
+*/
+
+/*
+   TODO: Delete Event
+*/

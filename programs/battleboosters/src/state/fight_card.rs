@@ -1,7 +1,7 @@
-use anchor_lang::prelude::*;
-use crate::constants::*;
 use super::event::EventData;
-use borsh::{BorshSerialize, BorshDeserialize};
+use crate::constants::*;
+use anchor_lang::prelude::*;
+use borsh::{BorshDeserialize, BorshSerialize};
 
 #[derive(Accounts)]
 pub struct FightCard<'info> {
@@ -16,20 +16,21 @@ pub struct FightCard<'info> {
     bump,
     space = 8 + 8 + 8 + 8
     )]
-    pub fight_card_account: Account<'info, EventData>,
+    pub fight_card_account: Account<'info, FightCardData>,
     pub system_program: Program<'info, System>,
 }
 
 #[account]
 pub struct FightCardData {
     pub id: u64,
+    pub event_pubkey: Pubkey,
     pub tournament: Option<TournamentType>,
     pub title_fight: bool,
     pub fighter_1: Option<SharedStrength>,
     pub fighter_2: Option<SharedStrength>,
     pub fight_duration: Option<i64>,
     pub result: Option<FightCardResult>,
-    pub winner: Option<Fighter>
+    pub winner: Option<Fighter>,
 }
 
 #[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
@@ -41,17 +42,17 @@ pub struct SharedStrength {
 }
 #[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
 pub struct StrikingStrength {
-    example: u8
+    example: u8,
 }
 #[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
 pub struct GrapplingStrength {
-    example: u8
+    example: u8,
 }
 
 #[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
 pub enum Fighter {
     Fighter1,
-    Fighter2
+    Fighter2,
 }
 
 #[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
@@ -61,12 +62,17 @@ pub enum FightCardResult {
     Submission,
     Disqualification,
     NoContest,
-    Draw
+    Draw,
+    InternalCancellation,
 }
 
 #[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
 pub enum TournamentType {
     MainCard,
     Prelims,
-    EarlyPrelims
+    EarlyPrelims,
 }
+
+/*
+   TODO: Update fight card
+*/
