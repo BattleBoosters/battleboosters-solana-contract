@@ -3,7 +3,7 @@ use anchor_lang::prelude::*;
 use borsh::{BorshDeserialize, BorshSerialize};
 
 #[derive(Accounts)]
-pub struct GlobalState<'info> {
+pub struct InitializeGlobalState<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
     #[account(
@@ -11,12 +11,12 @@ pub struct GlobalState<'info> {
     payer = signer,
     space = 8 + 8 + 32 + 5 + 13 + 8 + 8,
     )]
-    pub new_account: Account<'info, GlobalData>,
+    pub new_account: Account<'info, GlobalStateData>,
     pub system_program: Program<'info, System>,
 }
 
 #[account]
-pub struct GlobalData {
+pub struct GlobalStateData {
     pub event_counter: u64,
     pub admin_pubkey: Pubkey,
     pub rarity_probabilities: Vec<u8>,

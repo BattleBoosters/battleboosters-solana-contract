@@ -1,12 +1,15 @@
 use super::event::EventData;
+use super::global_state::GlobalStateData;
 use crate::constants::*;
 use anchor_lang::prelude::*;
 use borsh::{BorshDeserialize, BorshSerialize};
 
 #[derive(Accounts)]
-pub struct FightCard<'info> {
+pub struct CreateFightCard<'info> {
     #[account(mut)]
     pub creator: Signer<'info>,
+    #[account(mut)]
+    pub global_state: Account<'info, GlobalStateData>,
     #[account(mut)]
     pub event: Account<'info, EventData>,
     #[account(
@@ -26,8 +29,8 @@ pub struct FightCardData {
     pub event_pubkey: Pubkey,
     pub tournament: Option<TournamentType>,
     pub title_fight: bool,
-    pub fighter_1: Option<SharedStrength>,
-    pub fighter_2: Option<SharedStrength>,
+    pub fight_stats_fighter_1: Option<SharedStrength>,
+    pub fight_stats_fighter_2: Option<SharedStrength>,
     pub fight_duration: Option<i64>,
     pub result: Option<FightCardResult>,
     pub winner: Option<Fighter>,

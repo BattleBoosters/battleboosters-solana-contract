@@ -24,8 +24,6 @@ describe("battleboosters", () => {
             }
         }
 
-
-
         const tx = await program.methods.initialize(
             provider.wallet.publicKey,
             rarity,
@@ -42,7 +40,7 @@ describe("battleboosters", () => {
             .rpc();
 
         //Fetch the account details of the payment sender
-        const senderAccount = await program.account.globalData.fetch(new_account.publicKey);
+        const senderAccount = await program.account.globalStateData.fetch(new_account.publicKey);
 
         assert.equal(senderAccount.eventCounter.eq(new BN(0)),  true);
         assert.deepEqual(senderAccount.rarity.common, rarity.common);
@@ -101,7 +99,7 @@ describe("Create event", () => {
 
     it("Should add a new event", async () => {
 
-        let senderAccount = await program.account.globalData.fetch(state_account.publicKey);
+        let senderAccount = await program.account.globalStateData.fetch(state_account.publicKey);
         assert.equal(senderAccount.eventCounter.eq(new BN(0)),  true);
 
         const [event_account_one, event_account_one_bump] = anchor.web3.PublicKey.findProgramAddressSync(
@@ -111,7 +109,7 @@ describe("Create event", () => {
                 new BN(senderAccount.eventCounter).toBuffer("le", 8)
             ], program.programId);
 
-        const tx = await program.methods.createNewEvent(new BN(1713045216), new BN(1713045216))
+        const tx = await program.methods.createNewEvent(new BN(1713045216), new BN(1711045216))
             .accounts({
                 creator: provider.wallet.publicKey,
                 globalState: state_account.publicKey,
@@ -123,21 +121,20 @@ describe("Create event", () => {
 
 
         // Fetch the account details of the payment sender
-        senderAccount = await program.account.globalData.fetch(state_account.publicKey);
+        senderAccount = await program.account.globalStateData.fetch(state_account.publicKey);
 
-        /*
-            TODO:
-                - Fetch event account
-                - Assert fight_card_id == 0
-         */
+        const eventAccount = await program.account.eventData.fetch(event_account_one);
 
+        assert.equal(eventAccount.fightCardIdCounter, 0);
+        assert.equal(eventAccount.startDate.eq(new BN(1713045216)), true);
+        assert.equal(eventAccount.endDate.eq(new BN(1711045216)), true);
         assert.equal(senderAccount.eventCounter.eq(new BN(1)),  true);
         console.log("Your transaction signature", tx);
     });
 
     it("Should fail adding a new event, unauthorized signer", async () => {
 
-        let senderAccount = await program.account.globalData.fetch(state_account.publicKey);
+        let senderAccount = await program.account.globalStateData.fetch(state_account.publicKey);
         const [event_account_one, event_account_one_bump] = anchor.web3.PublicKey.findProgramAddressSync(
             [
                 Buffer.from("BattleBoosters"),
@@ -146,7 +143,7 @@ describe("Create event", () => {
             ], program.programId);
 
         try {
-            await program.methods.createNewEvent(new BN(1713045216), new BN(1713045216))
+            await program.methods.createNewEvent(new BN(1713045216), new BN(1711045216))
                 .accounts({
                     creator: random_account.publicKey,
                     globalState: state_account.publicKey,
@@ -160,13 +157,6 @@ describe("Create event", () => {
         }
 
     });
-
-    /*
-        TODO:
-            - It should fail in case the end_date <= to start_date
-            - It should fail in case the start_date <= now
-
-     */
 
 
 });
