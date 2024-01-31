@@ -20,6 +20,7 @@ pub struct CreateEvent<'info> {
 }
 
 #[derive(Accounts)]
+#[instruction(event_id: u64)]
 pub struct UpdateEvent<'info> {
     #[account(mut)]
     pub update_authority: Signer<'info>,
@@ -27,7 +28,7 @@ pub struct UpdateEvent<'info> {
     pub global_state: Account<'info, GlobalStateData>,
     #[account(
     mut,
-    seeds = [MY_APP_PREFIX, EVENT, global_state.event_counter.to_le_bytes().as_ref()],
+    seeds = [MY_APP_PREFIX, EVENT, event_id.to_le_bytes().as_ref()],
     bump
     )]
     pub event_account: Account<'info, EventData>,

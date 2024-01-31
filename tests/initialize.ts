@@ -48,7 +48,7 @@ describe("battleboosters", () => {
         assert.deepEqual(Buffer.from(senderAccount.rarityProbabilities), Buffer.from([1, 2, 3, 4 , 5]))
         assert.equal(senderAccount.nftFighterPackPrice.eq(new BN((100 * anchor.web3.LAMPORTS_PER_SOL))), true)
         assert.equal(senderAccount.nftBoosterPackPrice.eq(new BN((1 * anchor.web3.LAMPORTS_PER_SOL))), true)
-        console.log("Your transaction signature", tx);
+        console.log("Transaction signature", tx);
     });
 });
 
