@@ -11,7 +11,7 @@ describe("battleboosters", () => {
     const program = anchor.workspace.Battleboosters as Program<Battleboosters>;
 
     it("Is initialized!", async () => {
-        const new_account = anchor.web3.Keypair.generate();
+        const program_account = anchor.web3.Keypair.generate();
 
         let rarity = {
             "common": {
@@ -33,14 +33,14 @@ describe("battleboosters", () => {
         )
             .accounts({
                 signer: provider.wallet.publicKey,
-                newAccount: new_account.publicKey,
+                program: program_account.publicKey,
                 systemProgram: anchor.web3.SystemProgram.programId,
             })
-            .signers([new_account]) // Include new_account as a signer
+            .signers([program_account]) // Include new_account as a signer
             .rpc();
 
         //Fetch the account details of the payment sender
-        const senderAccount = await program.account.globalStateData.fetch(new_account.publicKey);
+        const senderAccount = await program.account.programData.fetch(program_account.publicKey);
 
         assert.equal(senderAccount.eventCounter.eq(new BN(0)),  true);
         assert.deepEqual(senderAccount.rarity.common, rarity.common);

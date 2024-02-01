@@ -1,9 +1,8 @@
 use crate::constants::*;
 use anchor_lang::prelude::*;
-use borsh::{BorshDeserialize, BorshSerialize};
 
 #[derive(Accounts)]
-pub struct InitializeGlobalState<'info> {
+pub struct InitializeProgram<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
     #[account(
@@ -11,12 +10,12 @@ pub struct InitializeGlobalState<'info> {
     payer = signer,
     space = 8 + 8 + 32 + 5 + 13 + 8 + 8,
     )]
-    pub new_account: Account<'info, GlobalStateData>,
+    pub program: Account<'info, ProgramData>,
     pub system_program: Program<'info, System>,
 }
 
 #[account]
-pub struct GlobalStateData {
+pub struct ProgramData {
     pub event_counter: u64,
     pub admin_pubkey: Pubkey,
     pub rarity_probabilities: Vec<u8>,
@@ -25,7 +24,7 @@ pub struct GlobalStateData {
     pub nft_booster_pack_price: u64,
 }
 
-#[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
+#[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]
 pub enum Rarity {
     Common {
         power_min: u16,

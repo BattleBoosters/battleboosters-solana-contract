@@ -8,7 +8,7 @@ describe("Create event", () => {
 
     const program = anchor.workspace.Battleboosters as Program<Battleboosters>;
     const admin_account = anchor.web3.Keypair.generate();
-    const state_account =  anchor.web3.Keypair.generate();
+    const program_account =  anchor.web3.Keypair.generate();
     const random_account = anchor.web3.Keypair.generate();
 
 
@@ -33,10 +33,10 @@ describe("Create event", () => {
         )
             .accounts({
                 signer: provider.wallet.publicKey,
-                newAccount: state_account.publicKey,
+                program: program_account.publicKey,
                 systemProgram: anchor.web3.SystemProgram.programId,
             })
-            .signers([state_account])
+            .signers([program_account])
             .rpc();
 
         // Airdrop random_account
@@ -61,7 +61,7 @@ describe("Create event", () => {
 
     it("Should add a new event", async () => {
 
-        let senderAccount = await program.account.globalStateData.fetch(state_account.publicKey);
+        let senderAccount = await program.account.programData.fetch(program_account.publicKey);
         assert.equal(senderAccount.eventCounter.eq(new BN(0)),  true);
 
         const [event_account_one, event_account_one_bump] = anchor.web3.PublicKey.findProgramAddressSync(
@@ -75,7 +75,7 @@ describe("Create event", () => {
         const tx = await program.methods.createNewEvent(new BN(1713045216), new BN(1711045216))
             .accounts({
                 creator: admin_account.publicKey,
-                globalState: state_account.publicKey,
+                program: program_account.publicKey,
                 eventAccount: event_account_one,
                 systemProgram: anchor.web3.SystemProgram.programId,
             })
@@ -84,7 +84,7 @@ describe("Create event", () => {
 
 
         // Fetch the account details of the payment sender
-        senderAccount = await program.account.globalStateData.fetch(state_account.publicKey);
+        senderAccount = await program.account.programData.fetch(program_account.publicKey);
 
         const eventAccount = await program.account.eventData.fetch(event_account_one);
 
@@ -97,7 +97,7 @@ describe("Create event", () => {
 
     it("Should add a second new event", async () => {
 
-        let senderAccount = await program.account.globalStateData.fetch(state_account.publicKey);
+        let senderAccount = await program.account.programData.fetch(program_account.publicKey);
         assert.equal(senderAccount.eventCounter.eq(new BN(1)),  true);
 
         const [event_account_one, event_account_one_bump] = anchor.web3.PublicKey.findProgramAddressSync(
@@ -111,7 +111,7 @@ describe("Create event", () => {
         const tx = await program.methods.createNewEvent(new BN(1713045216), new BN(1711045216))
             .accounts({
                 creator: admin_account.publicKey,
-                globalState: state_account.publicKey,
+                program: program_account.publicKey,
                 eventAccount: event_account_one,
                 systemProgram: anchor.web3.SystemProgram.programId,
             })
@@ -120,7 +120,7 @@ describe("Create event", () => {
 
 
         // Fetch the account details of the payment sender
-        senderAccount = await program.account.globalStateData.fetch(state_account.publicKey);
+        senderAccount = await program.account.programData.fetch(program_account.publicKey);
 
         const eventAccount = await program.account.eventData.fetch(event_account_one);
 
@@ -134,7 +134,7 @@ describe("Create event", () => {
 
     it("Should fail adding a new event, unauthorized signer", async () => {
 
-        let senderAccount = await program.account.globalStateData.fetch(state_account.publicKey);
+        let senderAccount = await program.account.programData.fetch(program_account.publicKey);
         const [event_account_one, event_account_one_bump] = anchor.web3.PublicKey.findProgramAddressSync(
             [
                 Buffer.from("BattleBoosters"),
@@ -146,7 +146,7 @@ describe("Create event", () => {
             await program.methods.createNewEvent(new BN(1713045216), new BN(1711045216))
                 .accounts({
                     creator: random_account.publicKey,
-                    globalState: state_account.publicKey,
+                    program: program_account.publicKey,
                     eventAccount: event_account_one,
                     systemProgram: anchor.web3.SystemProgram.programId,
                 })
@@ -171,7 +171,7 @@ describe("Create event", () => {
         const tx = await program.methods.updateEvent(new BN(0), new BN(1713045316), new BN(1711045516))
             .accounts({
                 updateAuthority: admin_account.publicKey,
-                globalState: state_account.publicKey,
+                program: program_account.publicKey,
                 eventAccount: event_account_one,
                 systemProgram: anchor.web3.SystemProgram.programId,
             })
@@ -200,7 +200,7 @@ describe("Create event", () => {
             await program.methods.updateEvent(new BN(0), new BN(1713045316), new BN(1711045516))
                 .accounts({
                     updateAuthority: random_account.publicKey,
-                    globalState: state_account.publicKey,
+                    program: program_account.publicKey,
                     eventAccount: event_account_one,
                     systemProgram: anchor.web3.SystemProgram.programId,
                 })

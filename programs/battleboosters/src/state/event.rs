@@ -1,4 +1,4 @@
-use super::global_state::GlobalStateData;
+use super::program::ProgramData;
 use crate::constants::*;
 use anchor_lang::prelude::*;
 
@@ -7,11 +7,11 @@ pub struct CreateEvent<'info> {
     #[account(mut)]
     pub creator: Signer<'info>,
     #[account(mut)]
-    pub global_state: Account<'info, GlobalStateData>,
+    pub program: Account<'info, ProgramData>,
     #[account(
     init,
     payer = creator,
-    seeds = [MY_APP_PREFIX, EVENT, global_state.event_counter.to_le_bytes().as_ref()],
+    seeds = [MY_APP_PREFIX, EVENT, program.event_counter.to_le_bytes().as_ref()],
     bump,
     space = 8 + 1 + 8 + 8
     )]
@@ -25,7 +25,7 @@ pub struct UpdateEvent<'info> {
     #[account(mut)]
     pub update_authority: Signer<'info>,
     #[account(mut)]
-    pub global_state: Account<'info, GlobalStateData>,
+    pub program: Account<'info, ProgramData>,
     #[account(
     mut,
     seeds = [MY_APP_PREFIX, EVENT, event_id.to_le_bytes().as_ref()],
@@ -42,10 +42,6 @@ pub struct EventData {
     pub start_date: i64,
     pub end_date: i64,
 }
-
-/*
-   TODO: Update Event
-*/
 
 /*
    TODO: Delete Event

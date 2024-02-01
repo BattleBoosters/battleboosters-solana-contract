@@ -1,15 +1,14 @@
 use super::event::EventData;
-use super::global_state::GlobalStateData;
+use super::program::ProgramData;
 use crate::constants::*;
 use anchor_lang::prelude::*;
-use borsh::{BorshDeserialize, BorshSerialize};
 
 #[derive(Accounts)]
 pub struct CreateFightCard<'info> {
     #[account(mut)]
     pub creator: Signer<'info>,
     #[account(mut)]
-    pub global_state: Account<'info, GlobalStateData>,
+    pub program: Account<'info, ProgramData>,
     #[account(mut)]
     pub event: Account<'info, EventData>,
     #[account(
@@ -17,7 +16,25 @@ pub struct CreateFightCard<'info> {
     payer = creator,
     seeds = [MY_APP_PREFIX, FIGHT_CARD, event.fight_card_id_counter.to_le_bytes().as_ref()],
     bump,
-    space = 8 + 8 + 8 + 8
+    space = 8 + 8 + 32 + 1 + 1 + 4 + 4 + 8 + 1 + 1
+    )]
+    pub fight_card_account: Account<'info, FightCardData>,
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+#[instruction(fight_card_id: u8)]
+pub struct UpdateFightCard<'info> {
+    #[account(mut)]
+    pub creator: Signer<'info>,
+    #[account(mut)]
+    pub program: Account<'info, ProgramData>,
+    #[account(mut)]
+    pub event: Account<'info, EventData>,
+    #[account(
+    mut,
+    seeds = [MY_APP_PREFIX, FIGHT_CARD, fight_card_id.to_le_bytes().as_ref()],
+    bump
     )]
     pub fight_card_account: Account<'info, FightCardData>,
     pub system_program: Program<'info, System>,
@@ -27,7 +44,7 @@ pub struct CreateFightCard<'info> {
 pub struct FightCardData {
     pub id: u64,
     pub event_pubkey: Pubkey,
-    pub tournament: Option<TournamentType>,
+    pub tournament: TournamentType,
     pub title_fight: bool,
     pub fight_stats_fighter_1: Option<SharedStrength>,
     pub fight_stats_fighter_2: Option<SharedStrength>,
@@ -36,29 +53,29 @@ pub struct FightCardData {
     pub winner: Option<Fighter>,
 }
 
-#[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
+#[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]
 pub struct SharedStrength {
     pub takedowns_attempted: u8,
     pub takedowns_landed: u8,
     pub striking_strength: StrikingStrength,
     pub grappling_strength: GrapplingStrength,
 }
-#[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
+#[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]
 pub struct StrikingStrength {
     example: u8,
 }
-#[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
+#[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]
 pub struct GrapplingStrength {
     example: u8,
 }
 
-#[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
+#[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]
 pub enum Fighter {
     Fighter1,
     Fighter2,
 }
 
-#[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
+#[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]
 pub enum FightCardResult {
     KoTko,
     Decision,
@@ -69,7 +86,7 @@ pub enum FightCardResult {
     InternalCancellation,
 }
 
-#[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
+#[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]
 pub enum TournamentType {
     MainCard,
     Prelims,
