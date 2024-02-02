@@ -32,7 +32,7 @@ describe("Create event", () => {
             new BN((1 * anchor.web3.LAMPORTS_PER_SOL))
         )
             .accounts({
-                signer: provider.wallet.publicKey,
+                creator: provider.wallet.publicKey,
                 program: program_account.publicKey,
                 systemProgram: anchor.web3.SystemProgram.programId,
             })
@@ -76,7 +76,7 @@ describe("Create event", () => {
             .accounts({
                 creator: admin_account.publicKey,
                 program: program_account.publicKey,
-                eventAccount: event_account_one,
+                event: event_account_one,
                 systemProgram: anchor.web3.SystemProgram.programId,
             })
             .signers([admin_account])
@@ -112,7 +112,7 @@ describe("Create event", () => {
             .accounts({
                 creator: admin_account.publicKey,
                 program: program_account.publicKey,
-                eventAccount: event_account_one,
+                event: event_account_one,
                 systemProgram: anchor.web3.SystemProgram.programId,
             })
             .signers([admin_account])
@@ -147,7 +147,7 @@ describe("Create event", () => {
                 .accounts({
                     creator: random_account.publicKey,
                     program: program_account.publicKey,
-                    eventAccount: event_account_one,
+                    event: event_account_one,
                     systemProgram: anchor.web3.SystemProgram.programId,
                 })
                 .signers([random_account])
@@ -170,9 +170,9 @@ describe("Create event", () => {
 
         const tx = await program.methods.updateEvent(new BN(0), new BN(1713045316), new BN(1711045516))
             .accounts({
-                updateAuthority: admin_account.publicKey,
+                creator: admin_account.publicKey,
                 program: program_account.publicKey,
-                eventAccount: event_account_one,
+                event: event_account_one,
                 systemProgram: anchor.web3.SystemProgram.programId,
             })
             .signers([admin_account])
@@ -199,9 +199,9 @@ describe("Create event", () => {
         try {
             await program.methods.updateEvent(new BN(0), new BN(1713045316), new BN(1711045516))
                 .accounts({
-                    updateAuthority: random_account.publicKey,
+                    creator: random_account.publicKey,
                     program: program_account.publicKey,
-                    eventAccount: event_account_one,
+                    event: event_account_one,
                     systemProgram: anchor.web3.SystemProgram.programId,
                 })
                 .signers([random_account])

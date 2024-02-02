@@ -33,7 +33,7 @@ describe.only("Create fight card", () => {
             new BN((1 * anchor.web3.LAMPORTS_PER_SOL))
         )
             .accounts({
-                signer: provider.wallet.publicKey,
+                creator: provider.wallet.publicKey,
                 program: program_account.publicKey,
                 systemProgram: anchor.web3.SystemProgram.programId,
             })
@@ -73,7 +73,7 @@ describe.only("Create fight card", () => {
             .accounts({
                 creator: admin_account.publicKey,
                 program: program_account.publicKey,
-                eventAccount: event_account_one,
+                event: event_account_one,
                 systemProgram: anchor.web3.SystemProgram.programId,
             })
             .signers([admin_account])
@@ -110,7 +110,7 @@ describe.only("Create fight card", () => {
             creator: admin_account.publicKey,
             program: program_account.publicKey,
             event: event_account,
-            fightCardAccount: fight_card_account_one,
+            fightCard: fight_card_account_one,
             systemProgram: anchor.web3.SystemProgram.programId,
         })
             .signers([admin_account])
@@ -134,6 +134,9 @@ describe.only("Create fight card", () => {
     });
 
     it("Should update fight card", async () => {
+        /* TODO:
+                Test all the Fight Card data
+         */
 
         const fightCardData = {
             "id": new BN(112),
@@ -152,7 +155,7 @@ describe.only("Create fight card", () => {
             creator: admin_account.publicKey,
             program: program_account.publicKey,
             event: event_account,
-            fightCardAccount: fight_card_account,
+            fightCard: fight_card_account,
             systemProgram: anchor.web3.SystemProgram.programId,
         })
             .signers([admin_account])

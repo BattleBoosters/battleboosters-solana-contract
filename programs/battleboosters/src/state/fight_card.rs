@@ -18,7 +18,7 @@ pub struct CreateFightCard<'info> {
     bump,
     space = 8 + 8 + 32 + 1 + 1 + 4 + 4 + 8 + 1 + 1
     )]
-    pub fight_card_account: Account<'info, FightCardData>,
+    pub fight_card: Account<'info, FightCardData>,
     pub system_program: Program<'info, System>,
 }
 
@@ -36,7 +36,7 @@ pub struct UpdateFightCard<'info> {
     seeds = [MY_APP_PREFIX, FIGHT_CARD, fight_card_id.to_le_bytes().as_ref()],
     bump
     )]
-    pub fight_card_account: Account<'info, FightCardData>,
+    pub fight_card: Account<'info, FightCardData>,
     pub system_program: Program<'info, System>,
 }
 
@@ -62,10 +62,20 @@ pub struct SharedStrength {
 }
 #[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]
 pub struct StrikingStrength {
+    /*
+        TODO:
+            Finish Striking Strength implementation
+            Do not forget to update the space in account
+    */
     example: u8,
 }
 #[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]
 pub struct GrapplingStrength {
+    /*
+        TODO:
+            Finish Grappling Strength implementation
+            Do not forget to update the space in account
+    */
     example: u8,
 }
 
@@ -94,5 +104,5 @@ pub enum TournamentType {
 }
 
 /*
-   TODO: Update fight card
+   TODO: Delete fight card
 */

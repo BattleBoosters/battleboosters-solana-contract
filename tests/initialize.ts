@@ -32,7 +32,7 @@ describe("battleboosters", () => {
             new BN((1 * anchor.web3.LAMPORTS_PER_SOL))
         )
             .accounts({
-                signer: provider.wallet.publicKey,
+                creator: provider.wallet.publicKey,
                 program: program_account.publicKey,
                 systemProgram: anchor.web3.SystemProgram.programId,
             })

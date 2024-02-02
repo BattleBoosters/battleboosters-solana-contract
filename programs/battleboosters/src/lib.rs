@@ -48,7 +48,7 @@ pub mod battleboosters {
         only_admin(&ctx.accounts.creator.key(), &program.admin_pubkey)?;
 
         // Create event account and set data
-        let create_event = &mut ctx.accounts.event_account;
+        let create_event = &mut ctx.accounts.event;
         create_event.fight_card_id_counter = 0_u8;
         create_event.start_date = start_date;
         create_event.end_date = end_date;
@@ -70,9 +70,9 @@ pub mod battleboosters {
         end_date: i64,
     ) -> Result<()> {
         let program = &ctx.accounts.program;
-        only_admin(&ctx.accounts.update_authority.key(), &program.admin_pubkey)?;
+        only_admin(&ctx.accounts.creator.key(), &program.admin_pubkey)?;
 
-        let update_event = &mut ctx.accounts.event_account;
+        let update_event = &mut ctx.accounts.event;
         update_event.start_date = start_date;
         update_event.end_date = end_date;
 
@@ -90,7 +90,7 @@ pub mod battleboosters {
         let program = &ctx.accounts.program;
         only_admin(&ctx.accounts.creator.key(), &program.admin_pubkey)?;
 
-        let fight_card = &mut ctx.accounts.fight_card_account;
+        let fight_card = &mut ctx.accounts.fight_card;
         set_fight_card_properties(fight_card, &params);
 
         let event = &mut ctx.accounts.event;
@@ -111,7 +111,7 @@ pub mod battleboosters {
         let program = &ctx.accounts.program;
         only_admin(&ctx.accounts.creator.key(), &program.admin_pubkey)?;
 
-        let fight_card = &mut ctx.accounts.fight_card_account;
+        let fight_card = &mut ctx.accounts.fight_card;
         set_fight_card_properties(fight_card, &params);
 
         emit!(FightCardUpdated {

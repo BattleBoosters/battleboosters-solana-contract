@@ -15,7 +15,7 @@ pub struct CreateEvent<'info> {
     bump,
     space = 8 + 1 + 8 + 8
     )]
-    pub event_account: Account<'info, EventData>,
+    pub event: Account<'info, EventData>,
     pub system_program: Program<'info, System>,
 }
 
@@ -23,7 +23,7 @@ pub struct CreateEvent<'info> {
 #[instruction(event_id: u64)]
 pub struct UpdateEvent<'info> {
     #[account(mut)]
-    pub update_authority: Signer<'info>,
+    pub creator: Signer<'info>,
     #[account(mut)]
     pub program: Account<'info, ProgramData>,
     #[account(
@@ -31,7 +31,7 @@ pub struct UpdateEvent<'info> {
     seeds = [MY_APP_PREFIX, EVENT, event_id.to_le_bytes().as_ref()],
     bump
     )]
-    pub event_account: Account<'info, EventData>,
+    pub event: Account<'info, EventData>,
     pub system_program: Program<'info, System>,
 }
 

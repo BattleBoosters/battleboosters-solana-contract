@@ -4,10 +4,10 @@ use anchor_lang::prelude::*;
 #[derive(Accounts)]
 pub struct InitializeProgram<'info> {
     #[account(mut)]
-    pub signer: Signer<'info>,
+    pub creator: Signer<'info>,
     #[account(
     init,
-    payer = signer,
+    payer = creator,
     space = 8 + 8 + 32 + 5 + 13 + 8 + 8,
     )]
     pub program: Account<'info, ProgramData>,
