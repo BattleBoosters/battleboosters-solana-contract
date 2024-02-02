@@ -33,8 +33,8 @@ pub mod battleboosters {
         program.admin_pubkey = admin_pubkey;
         program.rarity = rarity;
         program.rarity_probabilities = rarity_probabilities;
-        program.nft_fighter_pack_price = nft_fighter_pack_price;
-        program.nft_booster_pack_price = nft_booster_pack_price;
+        program.fighter_pack_price = nft_fighter_pack_price;
+        program.booster_pack_price = nft_booster_pack_price;
 
         Ok(())
     }

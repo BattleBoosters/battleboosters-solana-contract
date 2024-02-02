@@ -1,4 +1,3 @@
-use crate::constants::*;
 use anchor_lang::prelude::*;
 
 #[derive(Accounts)]
@@ -8,7 +7,7 @@ pub struct InitializeProgram<'info> {
     #[account(
     init,
     payer = creator,
-    space = 8 + 8 + 32 + 5 + 13 + 8 + 8,
+    space = 8 + 8 + 32 + 8 + 8 + 1 + 1,
     )]
     pub program: Account<'info, ProgramData>,
     pub system_program: Program<'info, System>,
@@ -16,26 +15,16 @@ pub struct InitializeProgram<'info> {
 
 #[account]
 pub struct ProgramData {
+    /// Represent the current amount of created event
     pub event_counter: u64,
+    /// The authority which are allowed to administrate the contract
     pub admin_pubkey: Pubkey,
-    pub rarity_probabilities: Vec<u8>,
-    pub rarity: Rarity,
-    pub nft_fighter_pack_price: u64,
-    pub nft_booster_pack_price: u64,
-}
-
-#[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]
-pub enum Rarity {
-    Common {
-        power_min: u16,
-        power_max: u16,
-        lifespan_min: u8,
-        lifespan_max: u8,
-        energy_min: u8,
-        energy_max: u8,
-    },
-    Uncommon {
-        power_min: u16,
-        power_max: u16,
-    },
+    /// The price in USD of each NFT fighter pack
+    pub fighter_pack_price: u64,
+    /// The price in USD of each NFT booster pack
+    pub booster_pack_price: u64,
+    /// The amount of fighters contained on each NFT fighter pack
+    pub fighter_pack_amount: u8,
+    /// The amount of boosters contained on each NFT booster pack
+    pub booster_pack_amount: u8,
 }
