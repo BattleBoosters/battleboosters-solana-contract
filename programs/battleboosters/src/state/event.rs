@@ -38,8 +38,11 @@ pub struct UpdateEvent<'info> {
 #[account]
 #[derive(Default)]
 pub struct EventData {
+    /// Represent the current amount of created fight card
     pub fight_card_id_counter: u8,
+    /// Start date in seconds
     pub start_date: i64,
+    /// End date in seconds
     pub end_date: i64,
 }
 
