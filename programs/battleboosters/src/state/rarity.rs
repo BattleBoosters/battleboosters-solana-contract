@@ -36,8 +36,8 @@ pub struct RarityData {
 
 #[derive(Clone, Debug, AnchorSerialize, AnchorDeserialize)]
 pub struct Stats {
-    pub max: u16,
-    pub min: u16,
+    pub max: i16,
+    pub min: i16,
 }
 
 #[derive(Clone, Debug, AnchorSerialize, AnchorDeserialize)]

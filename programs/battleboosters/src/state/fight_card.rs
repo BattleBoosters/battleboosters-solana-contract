@@ -42,14 +42,26 @@ pub struct UpdateFightCard<'info> {
 
 #[account]
 pub struct FightCardData {
+    /// Unique identifier for the fight card entry
     pub id: u64,
+    /// Public key of the event account this fight card is part of
     pub event_pubkey: Pubkey,
+    /// The type of tournament MainCard, Prelims or Early Prelims
     pub tournament: TournamentType,
+    /// Indicates whether this fight is a title fight
     pub title_fight: bool,
-    pub fight_stats_fighter_1: Option<SharedStrength>,
-    pub fight_stats_fighter_2: Option<SharedStrength>,
+    /// Final fight data about the fighter left position
+    /// This is None if the fight have not yet finished
+    pub fighter_left: Option<SharedStrength>,
+    /// Final fight data about the fighter right position
+    /// This is None if the fight have not yet finished
+    pub fighter_right: Option<SharedStrength>,
+    /// Fight duration in seconds
     pub fight_duration: Option<i64>,
+    /// Result of the fight
     pub result: Option<FightCardResult>,
+    /// Winner of the fight
+    /// this is None in case of a draw when fight is finished
     pub winner: Option<Fighter>,
 }
 
@@ -81,8 +93,8 @@ pub struct GrapplingStrength {
 
 #[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]
 pub enum Fighter {
-    Fighter1,
-    Fighter2,
+    FighterLeft,
+    FighterRight,
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]

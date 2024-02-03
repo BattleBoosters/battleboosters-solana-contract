@@ -7,7 +7,7 @@ pub struct InitializeProgram<'info> {
     #[account(
     init,
     payer = creator,
-    space = 8 + 8 + 32 + 8 + 8 + 1 + 1,
+    space = 8 + 8 + 32 + 8 + 8 + 8 + 8 + 1,
     )]
     pub program: Account<'info, ProgramData>,
     pub system_program: Program<'info, System>,
@@ -21,10 +21,12 @@ pub struct ProgramData {
     pub admin_pubkey: Pubkey,
     /// The price in USD of each NFT fighter pack
     pub fighter_pack_price: u64,
-    /// The price in USD of each NFT booster pack
-    pub booster_pack_price: u64,
+    /// The price in USD of each NFT points booster
+    pub booster_points: u64,
+    /// The price in USD of each NFT energy booster
+    pub booster_energy: u64,
+    /// The price in USD of each NFT shield booster
+    pub booster_shield: u64,
     /// The amount of fighters contained on each NFT fighter pack
     pub fighter_pack_amount: u8,
-    /// The amount of boosters contained on each NFT booster pack
-    pub booster_pack_amount: u8,
 }

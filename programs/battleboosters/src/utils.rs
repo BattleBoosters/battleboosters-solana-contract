@@ -20,15 +20,15 @@ pub fn set_fight_card_properties(fight_card: &mut FightCardData, params: &FightC
         fight_card.fight_duration = None
     }
 
-    if let Some(fight_stats_fighter_1) = params.fight_stats_fighter_1.clone() {
-        fight_card.fight_stats_fighter_1 = Some(fight_stats_fighter_1);
+    if let Some(fight_stats_fighter_1) = params.fighter_left.clone() {
+        fight_card.fighter_left = Some(fight_stats_fighter_1);
     } else {
-        fight_card.fight_stats_fighter_1 = None
+        fight_card.fighter_left = None
     }
 
-    if let Some(fight_stats_fighter_2) = params.fight_stats_fighter_2.clone() {
-        fight_card.fight_stats_fighter_2 = Some(fight_stats_fighter_2);
+    if let Some(fight_stats_fighter_2) = params.fighter_right.clone() {
+        fight_card.fighter_right = Some(fight_stats_fighter_2);
     } else {
-        fight_card.fight_stats_fighter_2 = None
+        fight_card.fighter_right = None
     }
 }
