@@ -4,9 +4,7 @@ use anchor_spl::{
     associated_token::AssociatedToken,
     token::{Mint, MintTo, Token, TokenAccount, Transfer},
 };
-use mpl_token_metadata::{
-    accounts::Metadata
-};
+use mpl_token_metadata::accounts::Metadata;
 
 #[derive(Accounts)]
 pub struct InitializeProgram<'info> {
@@ -19,7 +17,7 @@ pub struct InitializeProgram<'info> {
     pub program: Account<'info, ProgramData>,
     /// CHECK: This is a PDA used as the mint authority
     #[account(seeds = [MY_APP_PREFIX, MINT_AUTHORITY], bump)]
-    pub mint_authority:  AccountInfo<'info>,
+    pub mint_authority: AccountInfo<'info>,
     #[account(
         init,
         payer = creator,
@@ -96,11 +94,9 @@ pub struct InitializeProgram<'info> {
     // seeds::program = metadata_program.key()
     // )]
     // pub master_edition_account_energy_booster: UncheckedAccount<'info>,
-
     pub system_program: Program<'info, System>,
     pub rent: Sysvar<'info, Rent>,
     pub token_program: Program<'info, Token>,
-
     // /// CHECK: This is the metadata
     // #[account(address = mpl_token_metadata::ID)]
     // pub metadata_program: AccountInfo<'info>,
@@ -243,8 +239,6 @@ pub struct InitializeProgram<'info> {
 //
 //
 // }
-
-
 
 #[account]
 pub struct ProgramData {

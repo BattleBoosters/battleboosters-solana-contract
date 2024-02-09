@@ -20,8 +20,8 @@ declare_id!("AYsivJpxmwVfeUaBWg7FZt4MDatg2myKCSS52UTCDXeS");
 
 #[program]
 pub mod battleboosters {
-    use mpl_token_metadata::types::DataV2;
     use super::*;
+    use mpl_token_metadata::types::DataV2;
 
     pub fn initialize(
         ctx: Context<InitializeProgram>,
