@@ -21,3 +21,6 @@ pub struct CreateEvent<'info> {
     pub registration: Account<'info, EventData>,
     pub system_program: Program<'info, System>,
 }
+
+
+

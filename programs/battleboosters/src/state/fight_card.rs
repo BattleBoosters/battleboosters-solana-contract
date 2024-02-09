@@ -61,7 +61,7 @@ pub struct FightCardData {
     /// Result of the fight
     pub result: Option<FightCardResult>,
     /// Winner of the fight
-    /// this is None in case of a draw when fight is finished
+    /// This is None in case of a draw when fight is finished
     pub winner: Option<Fighter>,
 }
 

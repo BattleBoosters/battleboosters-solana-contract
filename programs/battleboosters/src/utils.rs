@@ -1,6 +1,7 @@
 use crate::errors::ErrorCode;
 use crate::state::fight_card::*;
 use anchor_lang::prelude::*;
+use anchor_spl::token::{initialize_mint, InitializeMint};
 
 pub fn only_admin(creator: &Pubkey, admin: &Pubkey) -> Result<()> {
     require!(creator == admin, ErrorCode::Unauthorized);
@@ -32,3 +33,22 @@ pub fn set_fight_card_properties(fight_card: &mut FightCardData, params: &FightC
         fight_card.fighter_right = None
     }
 }
+
+// pub fn create_game_token_mint(
+//     mint: AccountInfo,
+//     rent: AccountInfo,
+//     token_program: AccountInfo,
+//     mint_authority: &Pubkey,
+//     freeze_authority: Option<&Pubkey>,
+// ) -> Result<()> {
+//     let cpi_accounts = InitializeMint { mint, rent };
+//     let cpi_program = token_program;
+//     let cpi_context = CpiContext::new(cpi_program, cpi_accounts);
+//     initialize_mint(
+//         cpi_context,
+//         0,                // Decimals
+//         mint_authority,   // Mint Authority
+//         freeze_authority, // Optional Freeze Authority
+//     )?;
+//     Ok(())
+// }

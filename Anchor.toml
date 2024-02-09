@@ -4,14 +4,17 @@
 seeds = false
 skip-lint = false
 
-[programs.localnet]
-battleboosters = "9DZTGocMWp5n7nH9dfN4VMxhDoZuN82AAsne4qcaWygJ"
+#[programs.localnet]
+#battleboosters = "9DZTGocMWp5n7nH9dfN4VMxhDoZuN82AAsne4qcaWygJ"
+
+[programs.devnet]
+battleboosters = "AYsivJpxmwVfeUaBWg7FZt4MDatg2myKCSS52UTCDXeS"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "Localnet"
+cluster = "devnet"
 wallet = "/Users/0xantman/.config/solana/id.json"
 
 [scripts]

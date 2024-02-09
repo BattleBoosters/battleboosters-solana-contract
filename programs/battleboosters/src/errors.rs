@@ -7,4 +7,6 @@ pub enum ErrorCode {
     InvalidOperation,
     #[msg("Unauthorized access attempt")]
     Unauthorized, // ... other errors ...
+    #[msg("Already initialized")]
+    AlreadyInitialized,
 }

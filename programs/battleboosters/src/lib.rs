@@ -1,7 +1,10 @@
 use anchor_lang::prelude::*;
+use anchor_spl::token::{initialize_mint, InitializeMint, MintTo};
+use mpl_token_metadata::*;
 mod constants;
 mod errors;
 mod events;
+mod processor;
 mod state;
 mod utils;
 
@@ -13,28 +16,33 @@ use crate::state::fight_card::*;
 use crate::state::program::*;
 use crate::utils::*;
 
-declare_id!("9DZTGocMWp5n7nH9dfN4VMxhDoZuN82AAsne4qcaWygJ");
+declare_id!("AYsivJpxmwVfeUaBWg7FZt4MDatg2myKCSS52UTCDXeS");
 
 #[program]
 pub mod battleboosters {
+    use mpl_token_metadata::types::DataV2;
     use super::*;
 
     pub fn initialize(
         ctx: Context<InitializeProgram>,
         admin_pubkey: Pubkey,
-        rarity: Rarity,
-        rarity_probabilities: Vec<u8>,
         nft_fighter_pack_price: u64,
-        nft_booster_pack_price: u64,
+        booster_energy_price: u64,
+        booster_shield_price: u64,
+        booster_points_price: u64,
+        fighter_pack_amount: u8,
     ) -> Result<()> {
-        // Create program account
         let program = &mut ctx.accounts.program;
+        require!(!program.is_initialized, ErrorCode::AlreadyInitialized);
+
         program.event_counter = 0_u64;
         program.admin_pubkey = admin_pubkey;
-        program.rarity = rarity;
-        program.rarity_probabilities = rarity_probabilities;
         program.fighter_pack_price = nft_fighter_pack_price;
-        program.booster_pack_price = nft_booster_pack_price;
+        program.booster_energy_price = booster_energy_price;
+        program.booster_shield_price = booster_shield_price;
+        program.booster_points_price = booster_points_price;
+        program.fighter_pack_amount = fighter_pack_amount;
+        program.is_initialized = true;
 
         Ok(())
     }
