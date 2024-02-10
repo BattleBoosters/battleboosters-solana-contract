@@ -7,12 +7,23 @@ import { TOKEN_PROGRAM_ID, AccountLayout, MintLayout } from '@solana/spl-token';
 const { SystemProgram, SYSVAR_RENT_PUBKEY } = anchor.web3;
 import {mplTokenMetadata, getMplTokenMetadataProgramId} from "@metaplex-foundation/mpl-token-metadata";
 import {MPL_TOKEN_METADATA_PROGRAM_ID} from "@metaplex-foundation/mpl-token-metadata";
+import {PublicKey} from "@solana/web3.js";
 describe.only("battleboosters", () => {
     const provider = anchor.AnchorProvider.env();
     anchor.setProvider(provider);
     const program = anchor.workspace.Battleboosters as Program<Battleboosters>;
 
     it("Is initialized!", async () => {
+
+        const programInfo = await provider.connection.getAccountInfo(new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"))
+        if (programInfo === null) {
+            throw new Error('Program has not been deployed');
+        }
+        if (!programInfo.executable) {
+            throw new Error('Program is not executable');
+        }
+
+
         const admin_account = anchor.web3.Keypair.fromSecretKey( new Uint8Array([
             223,  59, 101, 153, 143,  21,  27,  11, 169, 175,  70,
                 197,  18, 124,  44,  79, 218,  51, 196, 199, 144, 211,
@@ -26,12 +37,12 @@ describe.only("battleboosters", () => {
         // const admin_account = anchor.web3.Keypair.generate();
         const program_account = anchor.web3.Keypair.generate();
 
-        const metadataEnergyBooster = anchor.web3.Keypair.generate();
+
         const metadataShieldBooster = anchor.web3.Keypair.generate();
         const metadataPointsBooster = anchor.web3.Keypair.generate();
         const metadataFighter = anchor.web3.Keypair.generate();
         const metadataChampionsPass = anchor.web3.Keypair.generate();
-        const masterEditionEnergyBooster = anchor.web3.Keypair.generate();
+
         const masterEditionShieldBooster = anchor.web3.Keypair.generate();
         const masterEditionPointsBooster = anchor.web3.Keypair.generate();
         const masterEditionFighter = anchor.web3.Keypair.generate();
@@ -41,12 +52,12 @@ describe.only("battleboosters", () => {
         console.log(admin_account.secretKey)
         console.log(program_account.publicKey)
 
-        console.log(metadataEnergyBooster.publicKey)
+
         console.log(metadataShieldBooster.publicKey)
         console.log(metadataPointsBooster.publicKey)
         console.log(metadataFighter.publicKey)
         console.log(metadataChampionsPass.publicKey)
-        console.log(masterEditionEnergyBooster.publicKey)
+
         console.log(masterEditionShieldBooster.publicKey)
         console.log(masterEditionPointsBooster.publicKey)
         console.log(masterEditionFighter.publicKey)
@@ -58,51 +69,67 @@ describe.only("battleboosters", () => {
         const [mint_authority_account]  = anchor.web3.PublicKey.findProgramAddressSync(
             [
                 Buffer.from("BattleBoosters"),
-                Buffer.from("mintAuthority1"),
+                Buffer.from("mintAuthority2"),
             ], program.programId);
 
         const [program_pda]  = anchor.web3.PublicKey.findProgramAddressSync(
             [
                 Buffer.from("BattleBoosters"),
-                Buffer.from("program3"),
+                Buffer.from("program4"),
             ], program.programId);
 
         const [mintEnergyBooster]  = anchor.web3.PublicKey.findProgramAddressSync(
             [
                 Buffer.from("BattleBoosters"),
-                Buffer.from("mint"),
-
-
+                Buffer.from("mint1"),
+                new BN(1).toBuffer()
             ], program.programId);
 
         const [mintShieldBooster]  = anchor.web3.PublicKey.findProgramAddressSync(
             [
                 Buffer.from("BattleBoosters"),
-                Buffer.from("mint"),
-                new BN(2).toBuffer("le", 8)
+                Buffer.from("mint1"),
+                new BN(2).toBuffer()
             ], program.programId);
         const [mintPointsBooster]  = anchor.web3.PublicKey.findProgramAddressSync(
             [
                 Buffer.from("BattleBoosters"),
-                Buffer.from("mint"),
-                new BN(3).toBuffer("le", 8)
+                Buffer.from("mint1"),
+                new BN(3).toBuffer()
             ], program.programId);
         const [mintFighter]  = anchor.web3.PublicKey.findProgramAddressSync(
             [
                 Buffer.from("BattleBoosters"),
-                Buffer.from("mint"),
-                new BN(4).toBuffer("le", 8)
+                Buffer.from("mint1"),
+                new BN(4).toBuffer()
             ], program.programId);
         const [mintChampionsPass]  = anchor.web3.PublicKey.findProgramAddressSync(
             [
                 Buffer.from("BattleBoosters"),
-                Buffer.from("mint"),
-                new BN(5).toBuffer("le", 8)
+                Buffer.from("mint1"),
+                new BN(5).toBuffer()
+            ], program.programId);
+
+
+        const metadata_pubkey = new anchor.web3.PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");
+        const [metadataEnergyBooster]  = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("metadata"),
+                metadata_pubkey.toBuffer(),
+                mintEnergyBooster.toBuffer()
+            ], program.programId);
+
+        const [masterEditionEnergyBooster]  = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("metadata"),
+                metadata_pubkey.toBuffer(),
+                mintEnergyBooster.toBuffer(),
+                Buffer.from("edition"),
             ], program.programId);
 
 
         // Airdrop admin_account
-        // await airdropSol(provider, admin_account.publicKey, 1);
+        await airdropSol(provider, admin_account.publicKey, 1);
         // // Airdrop program_account
         // await airdropSol(provider, program_account.publicKey, 1);
         // // Airdrop mintEnergyBooster
@@ -150,14 +177,14 @@ describe.only("battleboosters", () => {
                         // mintFighter: mintFighter,
                         // mintChampionsPass: mintChampionsPass,
 
-                        // metadataEnergyBooster: metadataEnergyBooster.publicKey,
+                        metadataEnergyBooster: metadataEnergyBooster,
 
                         // metadataShieldBooster: metadataShieldBooster.publicKey,
                         // metadataPointsBooster: metadataPointsBooster.publicKey,
                         // metadataFighter: metadataFighter.publicKey,
                         // metadataChampionsPass: metadataChampionsPass.publicKey,
 
-                        // masterEditionAccountEnergyBooster: masterEditionEnergyBooster.publicKey,
+                        masterEditionAccountEnergyBooster: masterEditionEnergyBooster,
                         // masterEditionAccountShieldBooster: masterEditionShieldBooster.publicKey,
                         // masterEditionAccountPointsBooster: masterEditionPointsBooster.publicKey,
                         // masterEditionAccountFighter: masterEditionFighter.publicKey,
@@ -166,10 +193,45 @@ describe.only("battleboosters", () => {
                         rent: anchor.web3.SYSVAR_RENT_PUBKEY,
                         systemProgram: anchor.web3.SystemProgram.programId,
                         tokenProgram: TOKEN_PROGRAM_ID,
-                        // metadataProgram: MPL_TOKEN_METADATA_PROGRAM_ID
+                        metadataProgram: MPL_TOKEN_METADATA_PROGRAM_ID
                     })
                     .signers([admin_account]) // Include new_account as a signer
                     .rpc();
+
+
+                // const tx2 = await program.methods.initializeEnergyBooster(
+                //
+                // )
+                //     .accounts({
+                //         creator: admin_account.publicKey,
+                //
+                //         mintAuthority: mint_authority_account,
+                //         mintEnergyBooster: mintEnergyBooster,
+                //         // mintShieldBooster: mintShieldBooster,
+                //         // mintPointsBooster: mintPointsBooster,
+                //         // mintFighter: mintFighter,
+                //         // mintChampionsPass: mintChampionsPass,
+                //
+                //         // metadataEnergyBooster: metadataEnergyBooster.publicKey,
+                //
+                //         // metadataShieldBooster: metadataShieldBooster.publicKey,
+                //         // metadataPointsBooster: metadataPointsBooster.publicKey,
+                //         // metadataFighter: metadataFighter.publicKey,
+                //         // metadataChampionsPass: metadataChampionsPass.publicKey,
+                //
+                //         // masterEditionAccountEnergyBooster: masterEditionEnergyBooster.publicKey,
+                //         // masterEditionAccountShieldBooster: masterEditionShieldBooster.publicKey,
+                //         // masterEditionAccountPointsBooster: masterEditionPointsBooster.publicKey,
+                //         // masterEditionAccountFighter: masterEditionFighter.publicKey,
+                //         // masterEditionAccountChampionsPass: masterEditionChampionsPass.publicKey,
+                //
+                //         rent: anchor.web3.SYSVAR_RENT_PUBKEY,
+                //         systemProgram: anchor.web3.SystemProgram.programId,
+                //         tokenProgram: TOKEN_PROGRAM_ID,
+                //         // metadataProgram: MPL_TOKEN_METADATA_PROGRAM_ID
+                //     })
+                //     .signers([admin_account]) // Include new_account as a signer
+                //     .rpc();
 
 
                 //Fetch the account details of the payment sender

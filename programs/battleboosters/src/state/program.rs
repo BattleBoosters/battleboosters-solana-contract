@@ -24,10 +24,10 @@ pub struct InitializeProgram<'info> {
         mint::decimals = 0,
         mint::authority = mint_authority,
         mint::freeze_authority = mint_authority,
-        seeds = [MY_APP_PREFIX, MINT],
+        seeds = [MY_APP_PREFIX, MINT, 1_u8.to_le_bytes().as_ref()],
         bump,
     )]
-    pub mint_energy_booster: Account<'info, Mint>,
+    pub mint_energy_booster: Box<Account<'info, Mint>>,
     // #[account(
     // init,
     // payer = creator,
@@ -37,7 +37,7 @@ pub struct InitializeProgram<'info> {
     // seeds = [MY_APP_PREFIX, MINT, 2_u8.to_le_bytes().as_ref()],
     // bump,
     // )]
-    // pub mint_shield_booster: Account<'info, Mint>,
+    // pub mint_shield_booster: Box<Account<'info, Mint>>,
     // #[account(
     // init,
     // payer = creator,
@@ -47,7 +47,7 @@ pub struct InitializeProgram<'info> {
     // seeds = [MY_APP_PREFIX, MINT, 3_u8.to_le_bytes().as_ref()],
     // bump,
     // )]
-    // pub mint_points_booster: Account<'info, Mint>,
+    // pub mint_points_booster: Box<Account<'info, Mint>>,
     // #[account(
     // init,
     // payer = creator,
@@ -57,7 +57,7 @@ pub struct InitializeProgram<'info> {
     // seeds = [MY_APP_PREFIX, MINT, 4_u8.to_le_bytes().as_ref()],
     // bump,
     // )]
-    // pub mint_fighter: Account<'info, Mint>,
+    // pub mint_fighter: Box<Account<'info, Mint>>,
     // #[account(
     // init,
     // payer = creator,
@@ -67,39 +67,36 @@ pub struct InitializeProgram<'info> {
     // seeds = [MY_APP_PREFIX, MINT, 5_u8.to_le_bytes().as_ref()],
     // bump,
     // )]
-    // pub mint_champions_pass: Account<'info, Mint>,
-
-    // /// CHECK: This is a metadata account
-    // #[account(
-    // mut,
-    // seeds = [
-    // b"metadata".as_ref(),
-    // metadata_program.key().as_ref(),
-    // mint_energy_booster.key().as_ref(),
-    // ],
-    // bump,
-    // seeds::program = metadata_program.key()
-    // )]
-    // pub metadata_energy_booster: UncheckedAccount<'info>,
-    // /// CHECK: This is a master edition account
-    // #[account(
-    // mut,
-    // seeds = [
-    // b"metadata".as_ref(),
-    // metadata_program.key().as_ref(),
-    // mint_energy_booster.key().as_ref(),
-    // b"edition".as_ref(),
-    // ],
-    // bump,
-    // seeds::program = metadata_program.key()
-    // )]
-    // pub master_edition_account_energy_booster: UncheckedAccount<'info>,
+    // pub mint_champions_pass: Box<Account<'info, Mint>>,
+    /// CHECK: This is a metadata account
+    #[account(
+    mut,
+    seeds = [
+    b"metadata".as_ref(),
+    metadata_program.key().as_ref(),
+    mint_energy_booster.key().as_ref(),
+    ],
+    bump
+    )]
+    pub metadata_energy_booster: UncheckedAccount<'info>,
+    /// CHECK: This is a master edition account
+    #[account(
+    mut,
+    seeds = [
+    b"metadata".as_ref(),
+    metadata_program.key().as_ref(),
+    mint_energy_booster.key().as_ref(),
+    b"edition".as_ref(),
+    ],
+    bump
+    )]
+    pub master_edition_account_energy_booster: UncheckedAccount<'info>,
     pub system_program: Program<'info, System>,
     pub rent: Sysvar<'info, Rent>,
     pub token_program: Program<'info, Token>,
-    // /// CHECK: This is the metadata
-    // #[account(address = mpl_token_metadata::ID)]
-    // pub metadata_program: AccountInfo<'info>,
+    /// CHECK: This is the metadata
+    #[account(address = mpl_token_metadata::ID)]
+    pub metadata_program: AccountInfo<'info>,
 }
 
 // #[derive(Accounts)]

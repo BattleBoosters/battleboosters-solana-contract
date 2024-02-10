@@ -1,6 +1,5 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token::{initialize_mint, InitializeMint, MintTo};
-use mpl_token_metadata::*;
+use anchor_spl::token::{InitializeMint, MintTo};
 mod constants;
 mod errors;
 mod events;
@@ -14,14 +13,18 @@ use crate::events::*;
 use crate::state::event::*;
 use crate::state::fight_card::*;
 use crate::state::program::*;
+// use crate::state::spl::*;
 use crate::utils::*;
 
-declare_id!("AYsivJpxmwVfeUaBWg7FZt4MDatg2myKCSS52UTCDXeS");
+declare_id!("H85sU4mupXtsMZmtHM4y1Cucjfb7SVh7Q3eFrbZPX6a1");
 
 #[program]
 pub mod battleboosters {
     use super::*;
-    use mpl_token_metadata::types::DataV2;
+    use crate::constants;
+    use mpl_token_metadata::instructions::{CreateV1Builder, CreateV1CpiBuilder};
+    use mpl_token_metadata::types::{DataV2, PrintSupply, TokenStandard};
+    // use crate::state::spl::InitializeEnergyBooster;
 
     pub fn initialize(
         ctx: Context<InitializeProgram>,
@@ -46,6 +49,10 @@ pub mod battleboosters {
 
         Ok(())
     }
+
+    // pub fn initialize_energy_booster(_ctx: Context<InitializeEnergyBooster>) -> Result<()>{
+    //     Ok(())
+    // }
 
     pub fn create_new_event(
         ctx: Context<CreateEvent>,
