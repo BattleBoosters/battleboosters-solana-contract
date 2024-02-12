@@ -35,42 +35,24 @@ describe.only("battleboosters", () => {
         )
 
         // const admin_account = anchor.web3.Keypair.generate();
-        const program_account = anchor.web3.Keypair.generate();
-
-
-        const metadataShieldBooster = anchor.web3.Keypair.generate();
-        const metadataPointsBooster = anchor.web3.Keypair.generate();
-        const metadataFighter = anchor.web3.Keypair.generate();
-        const metadataChampionsPass = anchor.web3.Keypair.generate();
-
-        const masterEditionShieldBooster = anchor.web3.Keypair.generate();
-        const masterEditionPointsBooster = anchor.web3.Keypair.generate();
-        const masterEditionFighter = anchor.web3.Keypair.generate();
-        const masterEditionChampionsPass = anchor.web3.Keypair.generate();
-
-        console.log(admin_account.publicKey)
-        console.log(admin_account.secretKey)
-        console.log(program_account.publicKey)
-
-
-        console.log(metadataShieldBooster.publicKey)
-        console.log(metadataPointsBooster.publicKey)
-        console.log(metadataFighter.publicKey)
-        console.log(metadataChampionsPass.publicKey)
-
-        console.log(masterEditionShieldBooster.publicKey)
-        console.log(masterEditionPointsBooster.publicKey)
-        console.log(masterEditionFighter.publicKey)
-        console.log(masterEditionChampionsPass.publicKey)
+        // const program_account = anchor.web3.Keypair.generate();
 
 
 
+        const energyMinter = anchor.web3.Keypair.generate();
+        const shieldMinter = anchor.web3.Keypair.generate();
+        const pointsMinter = anchor.web3.Keypair.generate();
+        const fighterMinter = anchor.web3.Keypair.generate();
+        const championsPassMinter = anchor.web3.Keypair.generate();
 
-        const [mint_authority_account]  = anchor.web3.PublicKey.findProgramAddressSync(
+
+        const [mint_authority_account, nonce]  = anchor.web3.PublicKey.findProgramAddressSync(
             [
                 Buffer.from("BattleBoosters"),
                 Buffer.from("mintAuthority2"),
             ], program.programId);
+        console.log("nonce")
+        console.log(nonce)
 
         const [program_pda]  = anchor.web3.PublicKey.findProgramAddressSync(
             [
@@ -111,21 +93,93 @@ describe.only("battleboosters", () => {
             ], program.programId);
 
 
-        const metadata_pubkey = new anchor.web3.PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");
+
+        const [mintEnergyBooster2]  = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("BattleBoosters"),
+                Buffer.from("mint1")
+            ], program.programId);
+
+        const metadata_pubkey = new anchor.web3.PublicKey(MPL_TOKEN_METADATA_PROGRAM_ID);
+
         const [metadataEnergyBooster]  = anchor.web3.PublicKey.findProgramAddressSync(
             [
                 Buffer.from("metadata"),
                 metadata_pubkey.toBuffer(),
-                mintEnergyBooster.toBuffer()
-            ], program.programId);
+                // mintEnergyBooster.toBuffer()
+                mintEnergyBooster2.toBuffer()
+            ], metadata_pubkey);
 
-        const [masterEditionEnergyBooster]  = anchor.web3.PublicKey.findProgramAddressSync(
+
+        const [metadataShieldBooster]  = anchor.web3.PublicKey.findProgramAddressSync(
             [
                 Buffer.from("metadata"),
                 metadata_pubkey.toBuffer(),
-                mintEnergyBooster.toBuffer(),
+                // mintEnergyBooster.toBuffer()
+                shieldMinter.publicKey.toBuffer()
+            ], metadata_pubkey);
+        const [metadataPointsBooster]  = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("metadata"),
+                metadata_pubkey.toBuffer(),
+                // mintEnergyBooster.toBuffer()
+                pointsMinter.publicKey.toBuffer()
+            ], metadata_pubkey);
+        const [metadataFighter]  = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("metadata"),
+                metadata_pubkey.toBuffer(),
+                // mintEnergyBooster.toBuffer()
+                fighterMinter.publicKey.toBuffer()
+            ], metadata_pubkey);
+        const [metadataChampionsPass]  = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("metadata"),
+                metadata_pubkey.toBuffer(),
+                // mintEnergyBooster.toBuffer()
+                championsPassMinter.publicKey.toBuffer()
+            ], metadata_pubkey);
+
+
+
+
+        const [masterEditionAccountEnergyBooster]  = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("metadata"),
+                metadata_pubkey.toBuffer(),
+                mintEnergyBooster2.toBuffer(),
                 Buffer.from("edition"),
-            ], program.programId);
+            ], metadata_pubkey);
+        const [masterEditionAccountShieldBooster]  = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("metadata"),
+                metadata_pubkey.toBuffer(),
+                shieldMinter.publicKey.toBuffer(),
+                Buffer.from("edition"),
+            ], metadata_pubkey);
+        const [masterEditionAccountPointsBooster]  = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("metadata"),
+                metadata_pubkey.toBuffer(),
+                pointsMinter.publicKey.toBuffer(),
+                Buffer.from("edition"),
+            ], metadata_pubkey);
+        const [masterEditionAccountFighter]  = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("metadata"),
+                metadata_pubkey.toBuffer(),
+                fighterMinter.publicKey.toBuffer(),
+                Buffer.from("edition"),
+            ], metadata_pubkey);
+        const [masterEditionAccountChampionsPass]  = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("metadata"),
+                metadata_pubkey.toBuffer(),
+                championsPassMinter.publicKey.toBuffer(),
+                Buffer.from("edition"),
+            ], metadata_pubkey);
+
+
 
 
         // Airdrop admin_account
@@ -160,36 +214,44 @@ describe.only("battleboosters", () => {
         } catch (e) {
             try{
                 const tx = await program.methods.initialize(
-                    admin_account.publicKey,
-                    new BN((100 * anchor.web3.LAMPORTS_PER_SOL)),
-                    new BN((1 * anchor.web3.LAMPORTS_PER_SOL)),
-                    new BN((1 * anchor.web3.LAMPORTS_PER_SOL)),
-                    new BN((1 * anchor.web3.LAMPORTS_PER_SOL)),
-                    5
+
+                    // admin_account.publicKey,
+                    // new BN((100 * anchor.web3.LAMPORTS_PER_SOL)),
+                    // new BN((1 * anchor.web3.LAMPORTS_PER_SOL)),
+                    // new BN((1 * anchor.web3.LAMPORTS_PER_SOL)),
+                    // new BN((1 * anchor.web3.LAMPORTS_PER_SOL)),
+                    // 5
                 )
                     .accounts({
                         creator: admin_account.publicKey,
-                        program: program_pda,
+                        //program: program_pda,
+
                         mintAuthority: mint_authority_account,
-                        mintEnergyBooster: mintEnergyBooster,
+                        energyMinter: mintEnergyBooster2,
+                        // shieldMinter: shieldMinter.publicKey,
+                        // pointsMinter: pointsMinter.publicKey,
+                        // fighterMinter: fighterMinter.publicKey,
+                        // championsPassMinter: championsPassMinter.publicKey,
+
+                        //mintEnergyBooster: mintEnergyBooster,
                         // mintShieldBooster: mintShieldBooster,
                         // mintPointsBooster: mintPointsBooster,
                         // mintFighter: mintFighter,
                         // mintChampionsPass: mintChampionsPass,
 
                         metadataEnergyBooster: metadataEnergyBooster,
+                        // metadataShieldBooster: metadataShieldBooster,
+                        // metadataPointsBooster: metadataPointsBooster,
+                        // metadataChampionsPass: metadataChampionsPass,
+                        // metadataFighter: metadataFighter,
 
-                        // metadataShieldBooster: metadataShieldBooster.publicKey,
-                        // metadataPointsBooster: metadataPointsBooster.publicKey,
-                        // metadataFighter: metadataFighter.publicKey,
-                        // metadataChampionsPass: metadataChampionsPass.publicKey,
+                        masterEditionAccountEnergyBooster: masterEditionAccountEnergyBooster,
+                        // masterEditionAccountShieldBooster: masterEditionAccountShieldBooster,
+                        // masterEditionAccountPointsBooster: masterEditionAccountPointsBooster,
+                        // masterEditionAccountFighter: masterEditionAccountFighter,
+                        // masterEditionAccountChampionsPass: masterEditionAccountChampionsPass,
 
-                        masterEditionAccountEnergyBooster: masterEditionEnergyBooster,
-                        // masterEditionAccountShieldBooster: masterEditionShieldBooster.publicKey,
-                        // masterEditionAccountPointsBooster: masterEditionPointsBooster.publicKey,
-                        // masterEditionAccountFighter: masterEditionFighter.publicKey,
-                        // masterEditionAccountChampionsPass: masterEditionChampionsPass.publicKey,
-
+                        sysvarInstructions: anchor.web3.SYSVAR_INSTRUCTIONS_PUBKEY,
                         rent: anchor.web3.SYSVAR_RENT_PUBKEY,
                         systemProgram: anchor.web3.SystemProgram.programId,
                         tokenProgram: TOKEN_PROGRAM_ID,

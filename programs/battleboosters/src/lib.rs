@@ -22,12 +22,21 @@ declare_id!("H85sU4mupXtsMZmtHM4y1Cucjfb7SVh7Q3eFrbZPX6a1");
 pub mod battleboosters {
     use super::*;
     use crate::constants;
-    use mpl_token_metadata::instructions::{CreateV1Builder, CreateV1CpiBuilder};
+    use crate::constants::{MINT_AUTHORITY, MY_APP_PREFIX};
+    use anchor_lang::solana_program::program::invoke;
+    use mpl_token_metadata::accounts::Metadata;
+    use mpl_token_metadata::instructions::{
+        BurnCpiBuilder, CreateMetadataAccountV3, CreateV1, CreateV1Builder, CreateV1CpiBuilder,
+        MintV1CpiBuilder, TransferV1Cpi, TransferV1CpiAccounts, TransferV1InstructionArgs,
+    };
+    use mpl_token_metadata::programs::MPL_TOKEN_METADATA_ID;
+    use mpl_token_metadata::types::MetadataDelegateRole::Collection;
     use mpl_token_metadata::types::{DataV2, PrintSupply, TokenStandard};
     // use crate::state::spl::InitializeEnergyBooster;
 
     pub fn initialize(
         ctx: Context<InitializeProgram>,
+        authority_bump: u8,
         admin_pubkey: Pubkey,
         nft_fighter_pack_price: u64,
         booster_energy_price: u64,
@@ -38,6 +47,7 @@ pub mod battleboosters {
         let program = &mut ctx.accounts.program;
         require!(!program.is_initialized, ErrorCode::AlreadyInitialized);
 
+        program.authority_bump = authority_bump;
         program.event_counter = 0_u64;
         program.admin_pubkey = admin_pubkey;
         program.fighter_pack_price = nft_fighter_pack_price;
@@ -46,6 +56,43 @@ pub mod battleboosters {
         program.booster_points_price = booster_points_price;
         program.fighter_pack_amount = fighter_pack_amount;
         program.is_initialized = true;
+
+        // let seeds = &[&[MY_APP_PREFIX, MINT_AUTHORITY, &[1_u8]]];
+        // let signer = &[&seeds[..]];
+        //
+        // let candy_machine_key = candy_machine.key();
+
+        let metadata_program = ctx.accounts.metadata_program.to_account_info();
+        //let mint = ctx.accounts.mint_energy_booster.to_account_info();
+        let authority = ctx.accounts.mint_authority.to_account_info();
+        let payer = ctx.accounts.creator.to_account_info();
+        let sysvar = ctx.accounts.sysvar_instructions.to_account_info();
+        let spl_token_program = ctx.accounts.token_program.to_account_info();
+        let metadata = ctx.accounts.metadata_energy_booster.to_account_info();
+        let energy_minter = ctx.accounts.energy_minter.to_account_info();
+        msg!("This is a log message");
+
+        let mut binding = CreateV1CpiBuilder::new(&metadata_program);
+        // let pda = mpl_token_metadata::accounts::Metadata::create_pda(mint.key(), 1).unwrap();
+        let create_cpi = binding
+            .metadata(&metadata)
+            .mint(&energy_minter, false)
+            .authority(&authority)
+            .payer(&payer)
+            .update_authority(&authority, true)
+            .master_edition(Some(&ctx.accounts.master_edition_account_energy_booster))
+            .system_program(&ctx.accounts.system_program)
+            .sysvar_instructions(&sysvar)
+            .spl_token_program(Some(&spl_token_program))
+            .token_standard(TokenStandard::ProgrammableNonFungible)
+            .name(String::from("My NFT X"))
+            .uri("https://test.com".to_string())
+            .seller_fee_basis_points(550)
+            .print_supply(PrintSupply::Zero);
+
+        let bump: u8 = 252;
+        let authority_seeds = [MY_APP_PREFIX, MINT_AUTHORITY, &[bump]];
+        create_cpi.invoke_signed(&[&authority_seeds])?;
 
         Ok(())
     }

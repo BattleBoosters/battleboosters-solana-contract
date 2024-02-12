@@ -8,17 +8,20 @@ skip-lint = false
 battleboosters = "H85sU4mupXtsMZmtHM4y1Cucjfb7SVh7Q3eFrbZPX6a1"
 
 [programs.devnet]
-battleboosters = "3Hwjee2TATrdZiXAEkbvCHU66AsMzLUTXBUmmfYmzyVo"
+battleboosters = "H85sU4mupXtsMZmtHM4y1Cucjfb7SVh7Q3eFrbZPX6a1"
 
 [programs.testnet]
 battleboosters = "3Hwjee2TATrdZiXAEkbvCHU66AsMzLUTXBUmmfYmzyVo"
 
+[[test.genesis]]
+address = "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
+program = "tests/programs/metadata.so"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "http://127.0.0.1:8899"
+cluster = "localnet"
 wallet = "/Users/0xantman/.config/solana/id.json"
 
 
