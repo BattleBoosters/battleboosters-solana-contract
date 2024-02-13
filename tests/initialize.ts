@@ -46,13 +46,12 @@ describe.only("battleboosters", () => {
         const championsPassMinter = anchor.web3.Keypair.generate();
 
 
-        const [mint_authority_account, nonce]  = anchor.web3.PublicKey.findProgramAddressSync(
+        const [mint_authority_account, authority_bump]  = anchor.web3.PublicKey.findProgramAddressSync(
             [
                 Buffer.from("BattleBoosters"),
                 Buffer.from("mintAuthority2"),
             ], program.programId);
-        console.log("nonce")
-        console.log(nonce)
+
 
         const [program_pda]  = anchor.web3.PublicKey.findProgramAddressSync(
             [
@@ -214,18 +213,17 @@ describe.only("battleboosters", () => {
         } catch (e) {
             try{
                 const tx = await program.methods.initialize(
-
-                    // admin_account.publicKey,
-                    // new BN((100 * anchor.web3.LAMPORTS_PER_SOL)),
-                    // new BN((1 * anchor.web3.LAMPORTS_PER_SOL)),
-                    // new BN((1 * anchor.web3.LAMPORTS_PER_SOL)),
-                    // new BN((1 * anchor.web3.LAMPORTS_PER_SOL)),
-                    // 5
+                    authority_bump,
+                    admin_account.publicKey,
+                    new BN((100 * anchor.web3.LAMPORTS_PER_SOL)),
+                    new BN((1 * anchor.web3.LAMPORTS_PER_SOL)),
+                    new BN((1 * anchor.web3.LAMPORTS_PER_SOL)),
+                    new BN((1 * anchor.web3.LAMPORTS_PER_SOL)),
+                    5
                 )
                     .accounts({
                         creator: admin_account.publicKey,
-                        //program: program_pda,
-
+                        program: program_pda,
                         mintAuthority: mint_authority_account,
                         energyMinter: mintEnergyBooster2,
                         // shieldMinter: shieldMinter.publicKey,

@@ -57,20 +57,13 @@ pub mod battleboosters {
         program.fighter_pack_amount = fighter_pack_amount;
         program.is_initialized = true;
 
-        // let seeds = &[&[MY_APP_PREFIX, MINT_AUTHORITY, &[1_u8]]];
-        // let signer = &[&seeds[..]];
-        //
-        // let candy_machine_key = candy_machine.key();
-
         let metadata_program = ctx.accounts.metadata_program.to_account_info();
-        //let mint = ctx.accounts.mint_energy_booster.to_account_info();
         let authority = ctx.accounts.mint_authority.to_account_info();
         let payer = ctx.accounts.creator.to_account_info();
         let sysvar = ctx.accounts.sysvar_instructions.to_account_info();
         let spl_token_program = ctx.accounts.token_program.to_account_info();
         let metadata = ctx.accounts.metadata_energy_booster.to_account_info();
         let energy_minter = ctx.accounts.energy_minter.to_account_info();
-        msg!("This is a log message");
 
         let mut binding = CreateV1CpiBuilder::new(&metadata_program);
         // let pda = mpl_token_metadata::accounts::Metadata::create_pda(mint.key(), 1).unwrap();
@@ -87,8 +80,9 @@ pub mod battleboosters {
             .token_standard(TokenStandard::ProgrammableNonFungible)
             .name(String::from("My NFT X"))
             .uri("https://test.com".to_string())
-            .seller_fee_basis_points(550)
-            .print_supply(PrintSupply::Zero);
+            .seller_fee_basis_points(500)
+            .is_mutable(true)
+            .print_supply(PrintSupply::Unlimited);
 
         let bump: u8 = 252;
         let authority_seeds = [MY_APP_PREFIX, MINT_AUTHORITY, &[bump]];
