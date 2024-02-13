@@ -84,8 +84,11 @@ pub mod battleboosters {
             .is_mutable(true)
             .print_supply(PrintSupply::Unlimited);
 
-        let bump: u8 = 252;
-        let authority_seeds = [MY_APP_PREFIX, MINT_AUTHORITY, &[bump]];
+        let authority_seeds = [
+            MY_APP_PREFIX,
+            MINT_AUTHORITY,
+            &[program.authority_bump.clone()],
+        ];
         create_cpi.invoke_signed(&[&authority_seeds])?;
 
         Ok(())
