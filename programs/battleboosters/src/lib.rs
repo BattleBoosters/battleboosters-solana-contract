@@ -5,11 +5,13 @@ mod errors;
 mod events;
 mod processor;
 mod state;
+mod types;
 mod utils;
 
 use errors::ErrorCode;
 
 use crate::events::*;
+use crate::state::create_spl_nft::*;
 use crate::state::event::*;
 use crate::state::fight_card::*;
 use crate::state::program::*;
@@ -23,6 +25,7 @@ pub mod battleboosters {
     use super::*;
     use crate::constants;
     use crate::constants::{MINT_AUTHORITY, MY_APP_PREFIX};
+    use crate::state::create_spl_nft::CreateSplNft;
     use anchor_lang::solana_program::program::invoke;
     use mpl_token_metadata::accounts::Metadata;
     use mpl_token_metadata::instructions::{
@@ -57,30 +60,42 @@ pub mod battleboosters {
         program.fighter_pack_amount = fighter_pack_amount;
         program.is_initialized = true;
 
+        Ok(())
+    }
+
+    pub fn create_nft_collection(
+        ctx: Context<CreateSplNft>,
+        collection_name: String,
+        uri: String,
+        fees: u16,
+    ) -> Result<()> {
+        let program = &ctx.accounts.program;
+        only_admin(&ctx.accounts.creator.key(), &program.admin_pubkey)?;
+
         let metadata_program = ctx.accounts.metadata_program.to_account_info();
         let authority = ctx.accounts.mint_authority.to_account_info();
         let payer = ctx.accounts.creator.to_account_info();
         let sysvar = ctx.accounts.sysvar_instructions.to_account_info();
         let spl_token_program = ctx.accounts.token_program.to_account_info();
-        let metadata = ctx.accounts.metadata_energy_booster.to_account_info();
-        let energy_minter = ctx.accounts.energy_minter.to_account_info();
+        let metadata = ctx.accounts.metadata.to_account_info();
+        let minter = ctx.accounts.minter.to_account_info();
 
         let mut binding = CreateV1CpiBuilder::new(&metadata_program);
-        // let pda = mpl_token_metadata::accounts::Metadata::create_pda(mint.key(), 1).unwrap();
+
         let create_cpi = binding
             .metadata(&metadata)
-            .mint(&energy_minter, false)
+            .mint(&minter, false)
             .authority(&authority)
             .payer(&payer)
             .update_authority(&authority, true)
-            .master_edition(Some(&ctx.accounts.master_edition_account_energy_booster))
+            .master_edition(Some(&ctx.accounts.master_edition))
             .system_program(&ctx.accounts.system_program)
             .sysvar_instructions(&sysvar)
             .spl_token_program(Some(&spl_token_program))
             .token_standard(TokenStandard::ProgrammableNonFungible)
-            .name(String::from("My NFT X"))
-            .uri("https://test.com".to_string())
-            .seller_fee_basis_points(500)
+            .name(collection_name)
+            .uri(uri)
+            .seller_fee_basis_points(fees)
             .is_mutable(true)
             .print_supply(PrintSupply::Unlimited);
 
@@ -94,9 +109,6 @@ pub mod battleboosters {
         Ok(())
     }
 
-    // pub fn initialize_energy_booster(_ctx: Context<InitializeEnergyBooster>) -> Result<()>{
-    //     Ok(())
-    // }
 
     pub fn create_new_event(
         ctx: Context<CreateEvent>,
