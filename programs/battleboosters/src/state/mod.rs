@@ -3,6 +3,6 @@ pub mod fight_card;
 pub mod program;
 // pub mod player;
 pub mod create_spl_nft;
-pub mod minter;
+//pub mod minter;
 pub mod rarity;
 // pub mod spl;

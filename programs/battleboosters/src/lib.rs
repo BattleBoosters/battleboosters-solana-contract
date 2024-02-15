@@ -16,6 +16,7 @@ use crate::state::event::*;
 use crate::state::fight_card::*;
 use crate::state::program::*;
 // use crate::state::spl::*;
+use crate::types::CollectionType;
 use crate::utils::*;
 
 declare_id!("H85sU4mupXtsMZmtHM4y1Cucjfb7SVh7Q3eFrbZPX6a1");
@@ -35,7 +36,6 @@ pub mod battleboosters {
     use mpl_token_metadata::programs::MPL_TOKEN_METADATA_ID;
     use mpl_token_metadata::types::MetadataDelegateRole::Collection;
     use mpl_token_metadata::types::{DataV2, PrintSupply, TokenStandard};
-    // use crate::state::spl::InitializeEnergyBooster;
 
     pub fn initialize(
         ctx: Context<InitializeProgram>,
@@ -65,6 +65,7 @@ pub mod battleboosters {
 
     pub fn create_nft_collection(
         ctx: Context<CreateSplNft>,
+        collection_id: CollectionType,
         collection_name: String,
         uri: String,
         fees: u16,
@@ -108,7 +109,6 @@ pub mod battleboosters {
 
         Ok(())
     }
-
 
     pub fn create_new_event(
         ctx: Context<CreateEvent>,
