@@ -14,8 +14,8 @@ use crate::events::*;
 use crate::state::create_spl_nft::*;
 use crate::state::event::*;
 use crate::state::fight_card::*;
-use crate::state::price_feed::*;
 use crate::state::program::*;
+use crate::state::transaction_escrow::*;
 use crate::types::*;
 use crate::utils::*;
 
@@ -113,7 +113,8 @@ pub mod battleboosters {
     }
 
     pub fn purchase_nfts(
-        ctx: Context<FetchSolUsdPrice>,
+        ctx: Context<TransactionEscrow>,
+        bank_bump: u8,
         requests: Vec<PurchaseRequest>,
     ) -> Result<()> {
         let feed = &ctx.accounts.price_feed.load()?;
