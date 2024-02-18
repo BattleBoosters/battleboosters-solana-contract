@@ -9,4 +9,10 @@ pub enum ErrorCode {
     Unauthorized, // ... other errors ...
     #[msg("Already initialized")]
     AlreadyInitialized,
+    #[msg("Duplicate NFT type in purchase request")]
+    InvalidArgumentInPurchaseRequest,
+    #[msg("Invalid Price Feed")]
+    InvalidPriceFeed,
+    #[msg("Switchboard feed has not been updated in 5 minutes")]
+    StaleFeed,
 }

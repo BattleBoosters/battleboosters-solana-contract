@@ -7,12 +7,15 @@ import { TOKEN_PROGRAM_ID, AccountLayout, MintLayout } from '@solana/spl-token';
 const { SystemProgram, SYSVAR_RENT_PUBKEY } = anchor.web3;
 import {mplTokenMetadata, getMplTokenMetadataProgramId} from "@metaplex-foundation/mpl-token-metadata";
 import {MPL_TOKEN_METADATA_PROGRAM_ID} from "@metaplex-foundation/mpl-token-metadata";
-import {PublicKey} from "@solana/web3.js";
+import {PublicKey, Transaction} from "@solana/web3.js";
 import {before} from "mocha";
 import airdrop_sol from "./utils/airdrop_sol";
+import { sleep } from "@switchboard-xyz/common";
+
 describe.only("battleboosters", () => {
     const provider = anchor.AnchorProvider.env();
     anchor.setProvider(provider);
+
     const program = anchor.workspace.Battleboosters as Program<Battleboosters>;
 
     const metadata_pubkey = new anchor.web3.PublicKey(MPL_TOKEN_METADATA_PROGRAM_ID);
@@ -40,7 +43,9 @@ describe.only("battleboosters", () => {
 
 
 
+
     before("Initialize", async () => {
+
         const programInfo = await provider.connection.getAccountInfo(new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"))
         if (programInfo === null) {
             throw new Error('Program has not been deployed');
@@ -78,6 +83,35 @@ describe.only("battleboosters", () => {
         assert.equal(programAccount.boosterPointsPrice.eq(new BN((1 * anchor.web3.LAMPORTS_PER_SOL))), true)
         assert.equal(programAccount.fighterPackAmount, 5)
     })
+
+    it.only("Interacts with the mocked oracle", async () => {
+
+        const priceFeedAccount = new anchor.web3.PublicKey("GvDMxPzN1sCj7L26YDK2HnMRXEQmQ2aemov8YBtPS7vR");
+
+        try {
+            const tx = await program.methods.purchaseNfts()
+                .accounts({
+                    signer: provider.wallet.publicKey,
+                    priceFeed: priceFeedAccount
+                })
+                .signers([]) // Include new_account as a signer
+                .rpc();
+            // wait for RPC
+            await sleep(2000);
+            const logs = await provider.connection.getParsedTransaction(
+                tx,
+                "confirmed"
+            );
+
+            console.log(JSON.stringify(logs?.meta?.logMessages, undefined, 2));
+
+        }catch (e) {
+            console.log(e)
+        }
+
+
+
+    });
 
     it("Create NFT collection" ,async () => {
 
@@ -128,6 +162,26 @@ describe.only("battleboosters", () => {
             .signers([admin_account]) // Include new_account as a signer
             .rpc();
     })
+    //
+    // it ("test", async () => {
+    //
+    //
+    //     const solUsdId = new anchor.web3.PublicKey('J83w4HKfqxwcq3BEMMkPFSppX3gqekLyLJBexebFVkix');
+    //
+    //     const tx = await program.methods.purchaseNfts(
+    //
+    //     )
+    //         .accounts({
+    //             signer: admin_account.publicKey,
+    //             priceFeed:solUsdId
+    //
+    //         })
+    //         .signers([admin_account]) // Include new_account as a signer
+    //         .rpc();
+    //
+    // })
+
+
 });
 
 

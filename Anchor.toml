@@ -11,11 +11,26 @@ battleboosters = "H85sU4mupXtsMZmtHM4y1Cucjfb7SVh7Q3eFrbZPX6a1"
 battleboosters = "H85sU4mupXtsMZmtHM4y1Cucjfb7SVh7Q3eFrbZPX6a1"
 
 [programs.testnet]
-battleboosters = "3Hwjee2TATrdZiXAEkbvCHU66AsMzLUTXBUmmfYmzyVo"
+battleboosters = "H85sU4mupXtsMZmtHM4y1Cucjfb7SVh7Q3eFrbZPX6a1"
 
 [[test.genesis]]
 address = "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
 program = "tests/programs/metadata.so"
+
+
+[test.validator]
+url = "https://api.mainnet-beta.solana.com"
+
+## SOL/USD mainnet pyth
+#[[test.validator.clone]]
+#address = "H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712K4AQJEG"
+# Mainnet pyth program
+[[test.validator.clone]]
+address = "GvDMxPzN1sCj7L26YDK2HnMRXEQmQ2aemov8YBtPS7vR"
+
+#[[test.validator.account]]
+#address = "H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712K4AQJEG"
+#filename = "tests/accounts/pythSolUsdAccount.json"
 
 [registry]
 url = "https://api.apr.dev"

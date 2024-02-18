@@ -8,3 +8,15 @@ pub enum CollectionType {
     Fighter = 3,
     ChampionsPass = 4,
 }
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Debug)]
+pub struct PurchaseRequest {
+    pub nft_type: NftType,
+    pub quantity: u64,
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, PartialEq, Debug)]
+pub enum NftType {
+    Booster,
+    FighterPack,
+}

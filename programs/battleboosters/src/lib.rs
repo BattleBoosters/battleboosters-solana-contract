@@ -1,4 +1,5 @@
 use anchor_lang::prelude::*;
+
 use anchor_spl::token::{InitializeMint, MintTo};
 mod constants;
 mod errors;
@@ -8,34 +9,33 @@ mod state;
 mod types;
 mod utils;
 
-use errors::ErrorCode;
-
 use crate::events::*;
 use crate::state::create_spl_nft::*;
 use crate::state::event::*;
 use crate::state::fight_card::*;
 use crate::state::program::*;
-// use crate::state::spl::*;
-use crate::types::CollectionType;
+use crate::state::price_feed::*;
+use crate::types::*;
+use crate::constants::*;
 use crate::utils::*;
+
+use errors::ErrorCode;
+use std::collections::HashSet;
+
+use mpl_token_metadata::instructions::{
+    BurnCpiBuilder, CreateMetadataAccountV3, CreateV1, CreateV1Builder, CreateV1CpiBuilder,
+    MintV1CpiBuilder, TransferV1Cpi, TransferV1CpiAccounts, TransferV1InstructionArgs,
+};
+
+use mpl_token_metadata::types::{DataV2, PrintSupply, TokenStandard};
+// use pyth_sdk_solana::{load_price_feed_from_account_info, PriceFeed, Price};
 
 declare_id!("H85sU4mupXtsMZmtHM4y1Cucjfb7SVh7Q3eFrbZPX6a1");
 
 #[program]
 pub mod battleboosters {
+
     use super::*;
-    use crate::constants;
-    use crate::constants::{MINT_AUTHORITY, MY_APP_PREFIX};
-    use crate::state::create_spl_nft::CreateSplNft;
-    use anchor_lang::solana_program::program::invoke;
-    use mpl_token_metadata::accounts::Metadata;
-    use mpl_token_metadata::instructions::{
-        BurnCpiBuilder, CreateMetadataAccountV3, CreateV1, CreateV1Builder, CreateV1CpiBuilder,
-        MintV1CpiBuilder, TransferV1Cpi, TransferV1CpiAccounts, TransferV1InstructionArgs,
-    };
-    use mpl_token_metadata::programs::MPL_TOKEN_METADATA_ID;
-    use mpl_token_metadata::types::MetadataDelegateRole::Collection;
-    use mpl_token_metadata::types::{DataV2, PrintSupply, TokenStandard};
 
     pub fn initialize(
         ctx: Context<InitializeProgram>,
@@ -109,6 +109,36 @@ pub mod battleboosters {
 
         Ok(())
     }
+
+    pub fn purchase_nfts(ctx: Context<FetchSolUsdPrice>, requests: Vec<PurchaseRequest>) -> Result<()> {
+
+        let feed = &ctx.accounts.price_feed.load()?;
+        // get result
+        let val: f64 = feed.get_result()?.try_into()?;
+        // check whether the feed has been updated in the last 300 seconds
+        feed.check_staleness(Clock::get()?.unix_timestamp, STALENESS_THRESHOLD)
+            .map_err(|_| error!(ErrorCode::StaleFeed))?;
+
+
+        msg!("Current feed result is {}!", val);
+
+
+        let mut ntf_type_seen = HashSet::new();
+
+        for request in &requests {
+            require!(!ntf_type_seen.insert(request.nft_type), ErrorCode::InvalidArgumentInPurchaseRequest);
+
+            match request.nft_type {
+                NftType::Booster => {}
+                NftType::FighterPack => {}
+            }
+
+        }
+
+
+        Ok(())
+    }
+
 
     pub fn create_new_event(
         ctx: Context<CreateEvent>,
