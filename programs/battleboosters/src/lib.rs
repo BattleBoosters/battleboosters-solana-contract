@@ -9,14 +9,14 @@ mod state;
 mod types;
 mod utils;
 
+use crate::constants::*;
 use crate::events::*;
 use crate::state::create_spl_nft::*;
 use crate::state::event::*;
 use crate::state::fight_card::*;
-use crate::state::program::*;
 use crate::state::price_feed::*;
+use crate::state::program::*;
 use crate::types::*;
-use crate::constants::*;
 use crate::utils::*;
 
 use errors::ErrorCode;
@@ -40,6 +40,7 @@ pub mod battleboosters {
     pub fn initialize(
         ctx: Context<InitializeProgram>,
         authority_bump: u8,
+        bank_bump: u8,
         admin_pubkey: Pubkey,
         nft_fighter_pack_price: u64,
         booster_energy_price: u64,
@@ -51,6 +52,7 @@ pub mod battleboosters {
         require!(!program.is_initialized, ErrorCode::AlreadyInitialized);
 
         program.authority_bump = authority_bump;
+        program.bank_bump = bank_bump;
         program.event_counter = 0_u64;
         program.admin_pubkey = admin_pubkey;
         program.fighter_pack_price = nft_fighter_pack_price;
@@ -110,8 +112,10 @@ pub mod battleboosters {
         Ok(())
     }
 
-    pub fn purchase_nfts(ctx: Context<FetchSolUsdPrice>, requests: Vec<PurchaseRequest>) -> Result<()> {
-
+    pub fn purchase_nfts(
+        ctx: Context<FetchSolUsdPrice>,
+        requests: Vec<PurchaseRequest>,
+    ) -> Result<()> {
         let feed = &ctx.accounts.price_feed.load()?;
         // get result
         let val: f64 = feed.get_result()?.try_into()?;
@@ -119,26 +123,24 @@ pub mod battleboosters {
         feed.check_staleness(Clock::get()?.unix_timestamp, STALENESS_THRESHOLD)
             .map_err(|_| error!(ErrorCode::StaleFeed))?;
 
-
         msg!("Current feed result is {}!", val);
-
 
         let mut ntf_type_seen = HashSet::new();
 
         for request in &requests {
-            require!(!ntf_type_seen.insert(request.nft_type), ErrorCode::InvalidArgumentInPurchaseRequest);
+            require!(
+                !ntf_type_seen.insert(request.nft_type),
+                ErrorCode::InvalidArgumentInPurchaseRequest
+            );
 
             match request.nft_type {
                 NftType::Booster => {}
                 NftType::FighterPack => {}
             }
-
         }
-
 
         Ok(())
     }
-
 
     pub fn create_new_event(
         ctx: Context<CreateEvent>,

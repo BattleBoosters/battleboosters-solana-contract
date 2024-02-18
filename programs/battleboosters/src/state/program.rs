@@ -1,16 +1,19 @@
-use anchor_lang::prelude::*;
 use crate::constants::*;
+use anchor_lang::prelude::*;
 
 #[derive(Accounts)]
-#[instruction(authority_bump: u8)]
+#[instruction(authority_bump: u8, bank_bump: u8)]
 pub struct InitializeProgram<'info> {
     #[account(mut)]
     pub creator: Signer<'info>,
     #[account(init, payer = creator,
     seeds = [MY_APP_PREFIX, PROGRAM_STATE],
     bump,
-    space = 8 + 8 + 32 + 8 + 8 + 8 + 8 + 1 + 1 + 1)]
+    space = 8 + 8 + 32 + 8 + 8 + 8 + 8 + 1 + 1 + 1 + 1)]
     pub program: Account<'info, ProgramData>,
+    /// CHECK: This is a PDA used as the bank
+    #[account(mut, seeds = [MY_APP_PREFIX, BANK], bump = bank_bump)]
+    pub bank: AccountInfo<'info>,
     /// CHECK: This is a PDA used as the mint authority
     #[account(mut, seeds = [MY_APP_PREFIX, MINT_AUTHORITY], bump = authority_bump)]
     pub mint_authority: AccountInfo<'info>,
@@ -37,4 +40,6 @@ pub struct ProgramData {
     pub is_initialized: bool,
     /// Authority bump
     pub authority_bump: u8,
+    /// Bank bump
+    pub bank_bump: u8,
 }
