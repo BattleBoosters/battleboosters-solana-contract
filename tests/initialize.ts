@@ -65,8 +65,8 @@ describe.only("battleboosters", () => {
             authority_bump,
             bank_bump,
             admin_account.publicKey,
-            new BN((100 * anchor.web3.LAMPORTS_PER_SOL)),
-            new BN((1 * anchor.web3.LAMPORTS_PER_SOL)),
+            new BN(100),
+            new BN(1),
             5
         )
             .accounts({
@@ -82,12 +82,17 @@ describe.only("battleboosters", () => {
         const programAccount = await program.account.programData.fetch(program_pda);
         assert.equal(programAccount.eventCounter.eq(new BN(0)),  true);
         assert.deepEqual(programAccount.adminPubkey, admin_account.publicKey);
-        assert.equal(programAccount.fighterPackPrice.eq(new BN((100 * anchor.web3.LAMPORTS_PER_SOL))), true)
-        assert.equal(programAccount.boosterPrice.eq(new BN((1 * anchor.web3.LAMPORTS_PER_SOL))), true)
+        assert.equal(programAccount.fighterPackPrice.eq(new BN(100)), true)
+        assert.equal(programAccount.boosterPrice.eq(new BN(1)), true)
         assert.equal(programAccount.fighterPackAmount, 5)
     })
 
     it.only("Interacts with the mocked oracle", async () => {
+        const [bank_pda, bank_bump]  = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("BattleBoosters"),
+                Buffer.from("bank")
+            ], program.programId);
 
         const [user_bank_pda, user_bank_bump]  = anchor.web3.PublicKey.findProgramAddressSync(
             [
@@ -99,6 +104,21 @@ describe.only("battleboosters", () => {
         const priceFeedAccount = new anchor.web3.PublicKey("GvDMxPzN1sCj7L26YDK2HnMRXEQmQ2aemov8YBtPS7vR");
 
         try {
+
+            const amountToSend = new anchor.BN(anchor.web3.LAMPORTS_PER_SOL * 2); // For example, 1 SOL
+
+            // Create a transaction to transfer SOL from the signer to the bank_escrow PDA
+            const transferTx = new anchor.web3.Transaction().add(
+                anchor.web3.SystemProgram.transfer({
+                    fromPubkey: provider.wallet.publicKey,
+                    toPubkey: user_bank_pda,
+                    lamports: amountToSend.toNumber(),
+                })
+            );
+
+            // Sign and send the transaction
+            await provider.sendAndConfirm(transferTx, []);
+
             const tx = await program.methods.purchaseNfts(
                 user_bank_bump,
                 [
@@ -115,7 +135,8 @@ describe.only("battleboosters", () => {
                 .accounts({
                     signer: provider.wallet.publicKey,
                     program: program_pda,
-                    bank: user_bank_pda,
+                    bankEscrow: user_bank_pda,
+                    bank: bank_pda,
                     priceFeed: priceFeedAccount
                 })
                 .signers([]) // Include new_account as a signer
@@ -132,9 +153,6 @@ describe.only("battleboosters", () => {
         }catch (e) {
             console.log(e)
         }
-
-
-
     });
 
     it("Create NFT collection" ,async () => {

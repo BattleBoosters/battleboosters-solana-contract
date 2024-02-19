@@ -34,8 +34,9 @@ declare_id!("H85sU4mupXtsMZmtHM4y1Cucjfb7SVh7Q3eFrbZPX6a1");
 
 #[program]
 pub mod battleboosters {
-
     use super::*;
+    use anchor_lang::solana_program::program::invoke_signed;
+    use anchor_lang::solana_program::system_instruction;
 
     pub fn initialize(
         ctx: Context<InitializeProgram>,
@@ -110,7 +111,7 @@ pub mod battleboosters {
 
     pub fn purchase_nfts(
         ctx: Context<TransactionEscrow>,
-        bank_bump: u8,
+        bank_escrow_bump: u8,
         requests: Vec<PurchaseRequest>,
     ) -> Result<()> {
         let program = &ctx.accounts.program;
@@ -120,8 +121,6 @@ pub mod battleboosters {
         // check whether the feed has been updated in the last 300 seconds
         feed.check_staleness(Clock::get()?.unix_timestamp, STALENESS_THRESHOLD)
             .map_err(|_| error!(ErrorCode::StaleFeed))?;
-
-        msg!("Current feed result is {}!", val);
 
         let sol_per_usd = 1.0 / val;
         let mut total_usd = 0;
@@ -142,25 +141,46 @@ pub mod battleboosters {
             }
         }
 
+        let bank = &ctx.accounts.bank;
+        let bank_escrow = &ctx.accounts.bank_escrow;
         let total_sol = total_usd as f64 * sol_per_usd;
         let total_lamports = (total_sol * 1_000_000_000.0).round() as u64;
-        let bank_escrow = &ctx.accounts.bank.lamports();
+        let bank_escrow_balance = bank_escrow.lamports();
 
-        if bank_escrow < &total_lamports {
+        if bank_escrow_balance < total_lamports {
             msg!(
                 "Insufficient funds: required {}, available {}.",
                 total_lamports,
-                bank_escrow
+                bank_escrow_balance
             );
             return Err(ErrorCode::InsufficientFunds.into());
         }
 
-        msg!(
-            "Total cost {}, total balance {}, total in sol {}!",
-            total_lamports,
-            total_sol,
-            bank_escrow
+        // Calculate the minimum balance required to remain rent-exempt
+        let rent_exempt_balance = Rent::get()?.minimum_balance(bank_escrow.data_len());
+        // Calculate the maximum amount that can be safely withdrawn while keeping the account rent-exempt
+        let withdrawable_balance = bank_escrow_balance.saturating_sub(rent_exempt_balance);
+
+        // Construct the transfer instruction
+        let transfer_instruction = system_instruction::transfer(
+            &bank_escrow.key(),
+            &bank.key(),
+            withdrawable_balance, // Amount in lamports to transfer
         );
+
+        let signer = &ctx.accounts.signer.key();
+        let bank_escrow_seeds = [MY_APP_PREFIX, BANK, signer.as_ref(), &[bank_escrow_bump]];
+
+        // Perform the transfer
+        invoke_signed(
+            &transfer_instruction,
+            &[
+                bank_escrow.to_account_info(),
+                bank.to_account_info(),
+                ctx.accounts.system_program.to_account_info(),
+            ],
+            &[&bank_escrow_seeds],
+        )?;
 
         Ok(())
     }
