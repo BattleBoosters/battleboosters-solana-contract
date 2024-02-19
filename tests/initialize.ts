@@ -28,6 +28,11 @@ describe.only("battleboosters", () => {
             175, 101, 113,  85, 206, 140,   5, 206, 107
         ]),
     )
+    const [bank_pda, bank_bump]  = anchor.web3.PublicKey.findProgramAddressSync(
+        [
+            Buffer.from("BattleBoosters"),
+            Buffer.from("bank"),
+        ], program.programId);
 
     const [program_pda, program_bump]  = anchor.web3.PublicKey.findProgramAddressSync(
         [
@@ -58,16 +63,16 @@ describe.only("battleboosters", () => {
 
         const tx = await program.methods.initialize(
             authority_bump,
+            bank_bump,
             admin_account.publicKey,
             new BN((100 * anchor.web3.LAMPORTS_PER_SOL)),
-            new BN((1 * anchor.web3.LAMPORTS_PER_SOL)),
-            new BN((1 * anchor.web3.LAMPORTS_PER_SOL)),
             new BN((1 * anchor.web3.LAMPORTS_PER_SOL)),
             5
         )
             .accounts({
                 creator: admin_account.publicKey,
                 program: program_pda,
+                bank: bank_pda,
                 mintAuthority: mint_authority_account,
                 systemProgram: anchor.web3.SystemProgram.programId,
             })
@@ -78,20 +83,39 @@ describe.only("battleboosters", () => {
         assert.equal(programAccount.eventCounter.eq(new BN(0)),  true);
         assert.deepEqual(programAccount.adminPubkey, admin_account.publicKey);
         assert.equal(programAccount.fighterPackPrice.eq(new BN((100 * anchor.web3.LAMPORTS_PER_SOL))), true)
-        assert.equal(programAccount.boosterEnergyPrice.eq(new BN((1 * anchor.web3.LAMPORTS_PER_SOL))), true)
-        assert.equal(programAccount.boosterShieldPrice.eq(new BN((1 * anchor.web3.LAMPORTS_PER_SOL))), true)
-        assert.equal(programAccount.boosterPointsPrice.eq(new BN((1 * anchor.web3.LAMPORTS_PER_SOL))), true)
+        assert.equal(programAccount.boosterPrice.eq(new BN((1 * anchor.web3.LAMPORTS_PER_SOL))), true)
         assert.equal(programAccount.fighterPackAmount, 5)
     })
 
     it.only("Interacts with the mocked oracle", async () => {
 
+        const [user_bank_pda, user_bank_bump]  = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("BattleBoosters"),
+                Buffer.from("bank"),
+                provider.wallet.publicKey.toBuffer()
+            ], program.programId);
+
         const priceFeedAccount = new anchor.web3.PublicKey("GvDMxPzN1sCj7L26YDK2HnMRXEQmQ2aemov8YBtPS7vR");
 
         try {
-            const tx = await program.methods.purchaseNfts()
+            const tx = await program.methods.purchaseNfts(
+                user_bank_bump,
+                [
+                    {
+                        nftType: { booster: {} }, // Use the variant name as key for enum
+                        quantity: new anchor.BN(1),
+                    },
+                    {
+                        nftType: { fighterPack: {} }, // Use the variant name as key for enum
+                        quantity: new anchor.BN(2),
+                    }
+                ]
+            )
                 .accounts({
                     signer: provider.wallet.publicKey,
+                    program: program_pda,
+                    bank: user_bank_pda,
                     priceFeed: priceFeedAccount
                 })
                 .signers([]) // Include new_account as a signer

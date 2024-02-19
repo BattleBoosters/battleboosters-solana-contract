@@ -15,4 +15,6 @@ pub enum ErrorCode {
     InvalidPriceFeed,
     #[msg("Switchboard feed has not been updated in 5 minutes")]
     StaleFeed,
+    #[msg("Insufficient funds")]
+    InsufficientFunds,
 }

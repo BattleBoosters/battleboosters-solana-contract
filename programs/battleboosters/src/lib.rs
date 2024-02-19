@@ -43,9 +43,7 @@ pub mod battleboosters {
         bank_bump: u8,
         admin_pubkey: Pubkey,
         nft_fighter_pack_price: u64,
-        booster_energy_price: u64,
-        booster_shield_price: u64,
-        booster_points_price: u64,
+        booster_price: u64,
         fighter_pack_amount: u8,
     ) -> Result<()> {
         let program = &mut ctx.accounts.program;
@@ -56,9 +54,7 @@ pub mod battleboosters {
         program.event_counter = 0_u64;
         program.admin_pubkey = admin_pubkey;
         program.fighter_pack_price = nft_fighter_pack_price;
-        program.booster_energy_price = booster_energy_price;
-        program.booster_shield_price = booster_shield_price;
-        program.booster_points_price = booster_points_price;
+        program.booster_price = booster_price;
         program.fighter_pack_amount = fighter_pack_amount;
         program.is_initialized = true;
 
@@ -117,6 +113,7 @@ pub mod battleboosters {
         bank_bump: u8,
         requests: Vec<PurchaseRequest>,
     ) -> Result<()> {
+        let program = &ctx.accounts.program;
         let feed = &ctx.accounts.price_feed.load()?;
         // get result
         let val: f64 = feed.get_result()?.try_into()?;
@@ -126,19 +123,44 @@ pub mod battleboosters {
 
         msg!("Current feed result is {}!", val);
 
-        let mut ntf_type_seen = HashSet::new();
-
+        let sol_per_usd = 1.0 / val;
+        let mut total_usd = 0;
         for request in &requests {
-            require!(
-                !ntf_type_seen.insert(request.nft_type),
-                ErrorCode::InvalidArgumentInPurchaseRequest
-            );
-
             match request.nft_type {
-                NftType::Booster => {}
-                NftType::FighterPack => {}
+                NftType::Booster => {
+                    total_usd += request
+                        .quantity
+                        .checked_mul(program.booster_price.clone())
+                        .unwrap();
+                }
+                NftType::FighterPack => {
+                    total_usd += request
+                        .quantity
+                        .checked_mul(program.fighter_pack_price.clone())
+                        .unwrap();
+                }
             }
         }
+
+        let total_sol = total_usd as f64 * sol_per_usd;
+        let total_lamports = (total_sol * 1_000_000_000.0).round() as u64;
+        let bank_escrow = &ctx.accounts.bank.lamports();
+
+        if bank_escrow < &total_lamports {
+            msg!(
+                "Insufficient funds: required {}, available {}.",
+                total_lamports,
+                bank_escrow
+            );
+            return Err(ErrorCode::InsufficientFunds.into());
+        }
+
+        msg!(
+            "Total cost {}, total balance {}, total in sol {}!",
+            total_lamports,
+            total_sol,
+            bank_escrow
+        );
 
         Ok(())
     }

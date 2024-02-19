@@ -15,7 +15,7 @@ pub struct PurchaseRequest {
     pub quantity: u64,
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, PartialEq, Debug)]
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, PartialEq, Debug, Eq, Hash)]
 pub enum NftType {
     Booster,
     FighterPack,

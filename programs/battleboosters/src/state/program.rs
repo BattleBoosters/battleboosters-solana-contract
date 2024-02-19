@@ -9,7 +9,7 @@ pub struct InitializeProgram<'info> {
     #[account(init, payer = creator,
     seeds = [MY_APP_PREFIX, PROGRAM_STATE],
     bump,
-    space = 8 + 8 + 32 + 8 + 8 + 8 + 8 + 1 + 1 + 1 + 1)]
+    space = 8 + 8 + 32 + 8 + 8 + 1 + 1 + 1 + 1)]
     pub program: Account<'info, ProgramData>,
     /// CHECK: This is a PDA used as the bank
     #[account(mut, seeds = [MY_APP_PREFIX, BANK], bump = bank_bump)]
@@ -28,12 +28,8 @@ pub struct ProgramData {
     pub admin_pubkey: Pubkey,
     /// The price in USD of each NFT fighter pack
     pub fighter_pack_price: u64,
-    /// The price in USD of each NFT points booster
-    pub booster_points_price: u64,
-    /// The price in USD of each NFT energy booster
-    pub booster_energy_price: u64,
-    /// The price in USD of each NFT shield booster
-    pub booster_shield_price: u64,
+    /// The price in USD of each NFT booster
+    pub booster_price: u64,
     /// The amount of fighters contained on each NFT fighter pack
     pub fighter_pack_amount: u8,
     /// This data prevent re-initialization

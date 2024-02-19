@@ -1,3 +1,4 @@
+use super::program::ProgramData;
 use crate::constants::*;
 use crate::ErrorCode;
 use anchor_lang::prelude::*;
@@ -9,6 +10,8 @@ use switchboard_solana::AggregatorAccountData;
 pub struct TransactionEscrow<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
+    #[account(mut)]
+    pub program: Account<'info, ProgramData>,
     /// CHECK: This is a PDA used as the bank
     #[account(mut, seeds = [MY_APP_PREFIX, BANK, signer.key().as_ref()], bump = bank_bump)]
     pub bank: AccountInfo<'info>,
