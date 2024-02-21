@@ -1,3 +1,4 @@
+use super::player::InventoryData;
 use super::program::ProgramData;
 use crate::constants::*;
 use crate::ErrorCode;
@@ -10,8 +11,13 @@ use switchboard_solana::AggregatorAccountData;
 pub struct TransactionEscrow<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
+    /// CHECK: Receiver of the pack we use this account only for crediting fighter packs and boosters
     #[account(mut)]
+    pub recipient: AccountInfo<'info>,
+    #[account(mut, seeds = [MY_APP_PREFIX, PROGRAM_STATE], bump)]
     pub program: Account<'info, ProgramData>,
+    #[account(mut, seeds = [MY_APP_PREFIX, INVENTORY, recipient.key().as_ref()], bump)]
+    pub player_inventory: Account<'info, InventoryData>,
     /// CHECK: This is a PDA used as the bank
     #[account(mut, seeds = [MY_APP_PREFIX, BANK], bump = program.bank_bump)]
     pub bank: AccountInfo<'info>,

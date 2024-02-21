@@ -7,16 +7,18 @@ import { TOKEN_PROGRAM_ID, AccountLayout, MintLayout } from '@solana/spl-token';
 const { SystemProgram, SYSVAR_RENT_PUBKEY } = anchor.web3;
 import {mplTokenMetadata, getMplTokenMetadataProgramId} from "@metaplex-foundation/mpl-token-metadata";
 import {MPL_TOKEN_METADATA_PROGRAM_ID} from "@metaplex-foundation/mpl-token-metadata";
-import {PublicKey, Transaction} from "@solana/web3.js";
+import {Connection, LAMPORTS_PER_SOL, PublicKey, Transaction} from "@solana/web3.js";
 import {before} from "mocha";
 import airdrop_sol from "./utils/airdrop_sol";
 import { sleep } from "@switchboard-xyz/common";
+import {AggregatorAccount, SwitchboardProgram} from "@switchboard-xyz/solana.js";
 
 describe.only("battleboosters", () => {
     const provider = anchor.AnchorProvider.env();
     anchor.setProvider(provider);
 
     const program = anchor.workspace.Battleboosters as Program<Battleboosters>;
+    let switchboardProgram;
 
     const metadata_pubkey = new anchor.web3.PublicKey(MPL_TOKEN_METADATA_PROGRAM_ID);
     const admin_account = anchor.web3.Keypair.fromSecretKey( new Uint8Array([
@@ -49,7 +51,12 @@ describe.only("battleboosters", () => {
 
 
 
+
+
     before("Initialize", async () => {
+        switchboardProgram = await SwitchboardProgram.load(
+            new Connection("https://api.mainnet-beta.solana.com"),
+        );
 
         const programInfo = await provider.connection.getAccountInfo(new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"))
         if (programInfo === null) {
@@ -88,6 +95,11 @@ describe.only("battleboosters", () => {
     })
 
     it.only("Interacts with the mocked oracle", async () => {
+        // Check the latest SOL/USD price
+        const aggregatorAccount = new AggregatorAccount(switchboardProgram, new anchor.web3.PublicKey("GvDMxPzN1sCj7L26YDK2HnMRXEQmQ2aemov8YBtPS7vR"));
+        const lastPrice = await aggregatorAccount.fetchLatestValue();
+
+
         const [bank_pda, bank_bump]  = anchor.web3.PublicKey.findProgramAddressSync(
             [
                 Buffer.from("BattleBoosters"),
@@ -101,23 +113,53 @@ describe.only("battleboosters", () => {
                 provider.wallet.publicKey.toBuffer()
             ], program.programId);
 
+        const [player_inventory_pda, player_inventory_bump]  = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("BattleBoosters"),
+                Buffer.from("inventory"),
+                provider.wallet.publicKey.toBuffer()
+            ], program.programId);
+
+
         const priceFeedAccount = new anchor.web3.PublicKey("GvDMxPzN1sCj7L26YDK2HnMRXEQmQ2aemov8YBtPS7vR");
 
+        // const programPDA = await program.account.programData.fetch(program_pda);
+
+        const boosterQty = 1
+        const fighterQty = 2
+        const boosterPrice = 1
+        const fighterPrice = 100
+        const total = (boosterQty * boosterPrice) + (fighterPrice * fighterQty)
+        const safeAmount = (total + 1) * (1 / lastPrice.toNumber())
+
+        const amountToSend = new anchor.BN(anchor.web3.LAMPORTS_PER_SOL * safeAmount ); // For example, 1 SOL
+
+        // Create a transaction to transfer SOL from the signer to the bank_escrow PDA
+        const transferTx = new anchor.web3.Transaction().add(
+            anchor.web3.SystemProgram.transfer({
+                fromPubkey: provider.wallet.publicKey,
+                toPubkey: user_bank_pda,
+                lamports: amountToSend.toNumber(),
+            })
+        );
+
+        // Sign and send the transaction
+        await provider.sendAndConfirm(transferTx, []);
+
         try {
+            // Initialize the player account first
+            const initializePlayerTx = await program.methods.initializePlayer()
+                .accounts({
+                    creator: provider.wallet.publicKey,
+                    inventory: player_inventory_pda,
+                    program: program_pda,
+                }).signers([]) // Include new_account as a signer
+                .rpc();
 
-            const amountToSend = new anchor.BN(anchor.web3.LAMPORTS_PER_SOL * 2); // For example, 1 SOL
-
-            // Create a transaction to transfer SOL from the signer to the bank_escrow PDA
-            const transferTx = new anchor.web3.Transaction().add(
-                anchor.web3.SystemProgram.transfer({
-                    fromPubkey: provider.wallet.publicKey,
-                    toPubkey: user_bank_pda,
-                    lamports: amountToSend.toNumber(),
-                })
-            );
-
-            // Sign and send the transaction
-            await provider.sendAndConfirm(transferTx, []);
+            const playerInventoryAccountBefore = await program.account.inventoryData.fetch(player_inventory_pda);
+            assert.isTrue(playerInventoryAccountBefore.boosterMintAllowance.eq(new BN(0)))
+            assert.isTrue(playerInventoryAccountBefore.fighterMintAllowance.eq(new BN(0)))
+            assert.isTrue(playerInventoryAccountBefore.isInitialized);
 
             const tx = await program.methods.purchaseNfts(
                 user_bank_bump,
@@ -134,7 +176,9 @@ describe.only("battleboosters", () => {
             )
                 .accounts({
                     signer: provider.wallet.publicKey,
+                    recipient: provider.wallet.publicKey,
                     program: program_pda,
+                    playerInventory: player_inventory_pda,
                     bankEscrow: user_bank_pda,
                     bank: bank_pda,
                     priceFeed: priceFeedAccount
@@ -149,6 +193,12 @@ describe.only("battleboosters", () => {
             );
 
             console.log(JSON.stringify(logs?.meta?.logMessages, undefined, 2));
+
+            const playerInventoryAccountAfter = await program.account.inventoryData.fetch(player_inventory_pda);
+            assert.isTrue(playerInventoryAccountAfter.boosterMintAllowance.eq(new BN(1)))
+            assert.isTrue(playerInventoryAccountAfter.fighterMintAllowance.eq(new BN(2)))
+            assert.isTrue(playerInventoryAccountAfter.isInitialized);
+
 
         }catch (e) {
             console.log(e)

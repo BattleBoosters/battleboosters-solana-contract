@@ -11,11 +11,10 @@ mod utils;
 
 use crate::constants::*;
 use crate::events::*;
-use crate::state::create_spl_nft::*;
-use crate::state::event::*;
-use crate::state::fight_card::*;
-use crate::state::program::*;
-use crate::state::transaction_escrow::*;
+use crate::state::{
+    create_spl_nft::*, event::*, fight_card::*, player::*, program::*, transaction_escrow::*,
+};
+
 use crate::types::*;
 use crate::utils::*;
 
@@ -35,6 +34,7 @@ declare_id!("H85sU4mupXtsMZmtHM4y1Cucjfb7SVh7Q3eFrbZPX6a1");
 #[program]
 pub mod battleboosters {
     use super::*;
+    use crate::state::player::InitializePlayer;
     use anchor_lang::solana_program::program::invoke_signed;
     use anchor_lang::solana_program::system_instruction;
 
@@ -58,6 +58,17 @@ pub mod battleboosters {
         program.booster_price = booster_price;
         program.fighter_pack_amount = fighter_pack_amount;
         program.is_initialized = true;
+
+        Ok(())
+    }
+
+    pub fn initialize_player(ctx: Context<InitializePlayer>) -> Result<()> {
+        let player = &mut ctx.accounts.inventory;
+        require!(!player.is_initialized, ErrorCode::AlreadyInitialized);
+
+        player.fighter_mint_allowance = 0;
+        player.booster_mint_allowance = 0;
+        player.is_initialized = true;
 
         Ok(())
     }
@@ -116,6 +127,8 @@ pub mod battleboosters {
     ) -> Result<()> {
         let program = &ctx.accounts.program;
         let feed = &ctx.accounts.price_feed.load()?;
+        let player_inventory = &mut ctx.accounts.player_inventory;
+
         // get result
         let val: f64 = feed.get_result()?.try_into()?;
         // check whether the feed has been updated in the last 300 seconds
@@ -127,12 +140,18 @@ pub mod battleboosters {
         for request in &requests {
             match request.nft_type {
                 NftType::Booster => {
+                    // update the quantity of fighter mint allowance
+                    player_inventory.booster_mint_allowance += &request.quantity;
+
                     total_usd += request
                         .quantity
                         .checked_mul(program.booster_price.clone())
                         .unwrap();
                 }
                 NftType::FighterPack => {
+                    // update the quantity of fighter mint allowance
+                    player_inventory.fighter_mint_allowance += &request.quantity;
+
                     total_usd += request
                         .quantity
                         .checked_mul(program.fighter_pack_price.clone())
