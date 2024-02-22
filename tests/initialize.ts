@@ -12,6 +12,7 @@ import {before} from "mocha";
 import airdrop_sol from "./utils/airdrop_sol";
 import { sleep } from "@switchboard-xyz/common";
 import {AggregatorAccount, SwitchboardProgram} from "@switchboard-xyz/solana.js";
+import InitializePlayerAccount from "./utils/initialize_player_account";
 
 describe.only("battleboosters", () => {
     const provider = anchor.AnchorProvider.env();
@@ -49,14 +50,14 @@ describe.only("battleboosters", () => {
         ], program.programId);
 
 
-
-
-
-
+    let lastPriceSolUsd;
     before("Initialize", async () => {
         switchboardProgram = await SwitchboardProgram.load(
             new Connection("https://api.mainnet-beta.solana.com"),
         );
+        // Check the latest SOL/USD price
+        const aggregatorAccount = new AggregatorAccount(switchboardProgram, new anchor.web3.PublicKey("GvDMxPzN1sCj7L26YDK2HnMRXEQmQ2aemov8YBtPS7vR"));
+        lastPriceSolUsd = await aggregatorAccount.fetchLatestValue();
 
         const programInfo = await provider.connection.getAccountInfo(new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"))
         if (programInfo === null) {
@@ -94,11 +95,25 @@ describe.only("battleboosters", () => {
         assert.equal(programAccount.fighterPackAmount, 5)
     })
 
-    it.only("Interacts with the mocked oracle", async () => {
-        // Check the latest SOL/USD price
-        const aggregatorAccount = new AggregatorAccount(switchboardProgram, new anchor.web3.PublicKey("GvDMxPzN1sCj7L26YDK2HnMRXEQmQ2aemov8YBtPS7vR"));
-        const lastPrice = await aggregatorAccount.fetchLatestValue();
+    it( "Initialize player account", async () => {
+        const customOwner = anchor.web3.Keypair.generate();
+        const [player_inventory_pda, player_inventory_bump]  = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("BattleBoosters"),
+                Buffer.from("inventory"),
+                customOwner.publicKey.toBuffer()
+            ], program.programId);
 
+        // Initialize the player account first
+        await InitializePlayerAccount(provider, customOwner.publicKey, program, program_pda);
+
+        const playerInventoryAccountBefore = await program.account.inventoryData.fetch(player_inventory_pda);
+        assert.isTrue(playerInventoryAccountBefore.boosterMintAllowance.eq(new BN(0)))
+        assert.isTrue(playerInventoryAccountBefore.fighterMintAllowance.eq(new BN(0)))
+        assert.isTrue(playerInventoryAccountBefore.isInitialized);
+    })
+
+    it("Purchase successfully in-game assets for signer", async () => {
 
         const [bank_pda, bank_bump]  = anchor.web3.PublicKey.findProgramAddressSync(
             [
@@ -123,14 +138,15 @@ describe.only("battleboosters", () => {
 
         const priceFeedAccount = new anchor.web3.PublicKey("GvDMxPzN1sCj7L26YDK2HnMRXEQmQ2aemov8YBtPS7vR");
 
-        // const programPDA = await program.account.programData.fetch(program_pda);
+        let programPDA = await program.account.programData.fetch(program_pda);
 
-        const boosterQty = 1
-        const fighterQty = 2
-        const boosterPrice = 1
-        const fighterPrice = 100
-        const total = (boosterQty * boosterPrice) + (fighterPrice * fighterQty)
-        const safeAmount = (total + 1) * (1 / lastPrice.toNumber())
+        const boosterQty = new anchor.BN(1)
+        const fighterQty = new anchor.BN(2)
+        const boosterPrice = programPDA.boosterPrice
+        const fighterPrice = programPDA.fighterPackPrice
+
+        const total = boosterQty.mul(boosterPrice).add(fighterQty.mul(fighterPrice))
+        const safeAmount = total.add(new BN(1)).toNumber() * (1 / lastPriceSolUsd.toNumber())
 
         const amountToSend = new anchor.BN(anchor.web3.LAMPORTS_PER_SOL * safeAmount ); // For example, 1 SOL
 
@@ -145,32 +161,24 @@ describe.only("battleboosters", () => {
 
         // Sign and send the transaction
         await provider.sendAndConfirm(transferTx, []);
+        const accountData = await provider.connection.getAccountInfo(user_bank_pda);
+        const rentExemptionAmount = await provider.connection.getMinimumBalanceForRentExemption(accountData.data.length);
 
         try {
             // Initialize the player account first
-            const initializePlayerTx = await program.methods.initializePlayer()
-                .accounts({
-                    creator: provider.wallet.publicKey,
-                    inventory: player_inventory_pda,
-                    program: program_pda,
-                }).signers([]) // Include new_account as a signer
-                .rpc();
+            await InitializePlayerAccount(provider, provider.wallet.publicKey, program, program_pda);
 
-            const playerInventoryAccountBefore = await program.account.inventoryData.fetch(player_inventory_pda);
-            assert.isTrue(playerInventoryAccountBefore.boosterMintAllowance.eq(new BN(0)))
-            assert.isTrue(playerInventoryAccountBefore.fighterMintAllowance.eq(new BN(0)))
-            assert.isTrue(playerInventoryAccountBefore.isInitialized);
 
             const tx = await program.methods.purchaseNfts(
                 user_bank_bump,
                 [
                     {
                         nftType: { booster: {} }, // Use the variant name as key for enum
-                        quantity: new anchor.BN(1),
+                        quantity: boosterQty,
                     },
                     {
                         nftType: { fighterPack: {} }, // Use the variant name as key for enum
-                        quantity: new anchor.BN(2),
+                        quantity: fighterQty,
                     }
                 ]
             )
@@ -195,15 +203,296 @@ describe.only("battleboosters", () => {
             console.log(JSON.stringify(logs?.meta?.logMessages, undefined, 2));
 
             const playerInventoryAccountAfter = await program.account.inventoryData.fetch(player_inventory_pda);
-            assert.isTrue(playerInventoryAccountAfter.boosterMintAllowance.eq(new BN(1)))
-            assert.isTrue(playerInventoryAccountAfter.fighterMintAllowance.eq(new BN(2)))
+            assert.isTrue(playerInventoryAccountAfter.boosterMintAllowance.eq(boosterQty))
+            assert.isTrue(playerInventoryAccountAfter.fighterMintAllowance.eq(fighterQty))
             assert.isTrue(playerInventoryAccountAfter.isInitialized);
 
+            // Test if bank PDA received the correct SOL amount
+            const bankPdaBalance = await provider.connection.getBalance(bank_pda);
+            assert.equal(bankPdaBalance, amountToSend.toNumber() - rentExemptionAmount)
+            // Test the user PDA is rent exempt
+            const userBankPdaBalance = await provider.connection.getBalance(user_bank_pda);
+            assert.equal(userBankPdaBalance, rentExemptionAmount)
 
         }catch (e) {
             console.log(e)
         }
     });
+
+    it("Purchase successfully in-game assets for another recipient", async () => {
+
+        const newRecipient = anchor.web3.Keypair.generate();
+
+        const [bank_pda, bank_bump]  = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("BattleBoosters"),
+                Buffer.from("bank")
+            ], program.programId);
+
+        const [user_bank_pda, user_bank_bump]  = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("BattleBoosters"),
+                Buffer.from("bank"),
+                provider.wallet.publicKey.toBuffer()
+            ], program.programId);
+
+        const [player_inventory_pda, player_inventory_bump]  = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("BattleBoosters"),
+                Buffer.from("inventory"),
+                newRecipient.publicKey.toBuffer()
+            ], program.programId);
+
+
+        const priceFeedAccount = new anchor.web3.PublicKey("GvDMxPzN1sCj7L26YDK2HnMRXEQmQ2aemov8YBtPS7vR");
+
+        const programPDA = await program.account.programData.fetch(program_pda);
+
+        const boosterQty = new anchor.BN(1)
+        const fighterQty = new anchor.BN(2)
+        const boosterPrice = programPDA.boosterPrice
+        const fighterPrice = programPDA.fighterPackPrice
+
+        const total = boosterQty.mul(boosterPrice).add(fighterQty.mul(fighterPrice))
+        const safeAmount = total.add(new BN(1)).toNumber() * (1 / lastPriceSolUsd.toNumber())
+
+        const amountToSend = new anchor.BN(anchor.web3.LAMPORTS_PER_SOL * safeAmount ); // For example, 1 SOL
+
+        // Create a transaction to transfer SOL from the signer to the bank_escrow PDA
+        const transferTx = new anchor.web3.Transaction().add(
+            anchor.web3.SystemProgram.transfer({
+                fromPubkey: provider.wallet.publicKey,
+                toPubkey: user_bank_pda,
+                lamports: amountToSend.toNumber(),
+            })
+        );
+
+        // Sign and send the transaction
+        await provider.sendAndConfirm(transferTx, []);
+
+        try {
+            // Initialize the player account first
+            await InitializePlayerAccount(provider, newRecipient.publicKey, program, program_pda);
+
+
+            const tx = await program.methods.purchaseNfts(
+                user_bank_bump,
+                [
+                    {
+                        nftType: { booster: {} }, // Use the variant name as key for enum
+                        quantity: boosterQty,
+                    },
+                    {
+                        nftType: { fighterPack: {} }, // Use the variant name as key for enum
+                        quantity: fighterQty,
+                    }
+                ]
+            )
+                .accounts({
+                    signer: provider.wallet.publicKey,
+                    recipient: newRecipient.publicKey,
+                    program: program_pda,
+                    playerInventory: player_inventory_pda,
+                    bankEscrow: user_bank_pda,
+                    bank: bank_pda,
+                    priceFeed: priceFeedAccount
+                })
+                .signers([]) // Include new_account as a signer
+                .rpc();
+            // wait for RPC
+            await sleep(2000);
+            const logs = await provider.connection.getParsedTransaction(
+                tx,
+                "confirmed"
+            );
+
+            console.log(JSON.stringify(logs?.meta?.logMessages, undefined, 2));
+
+            const playerInventoryAccountAfter = await program.account.inventoryData.fetch(player_inventory_pda);
+            assert.isTrue(playerInventoryAccountAfter.boosterMintAllowance.eq(boosterQty))
+            assert.isTrue(playerInventoryAccountAfter.fighterMintAllowance.eq(fighterQty))
+            assert.isTrue(playerInventoryAccountAfter.isInitialized);
+
+        }catch (e) {
+            console.log(e)
+        }
+    });
+
+    it("Purchase error insuficient amount in purchase request", async () => {
+
+        const newRecipient = anchor.web3.Keypair.generate();
+
+        const [bank_pda, bank_bump]  = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("BattleBoosters"),
+                Buffer.from("bank")
+            ], program.programId);
+
+        const [user_bank_pda, user_bank_bump]  = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("BattleBoosters"),
+                Buffer.from("bank"),
+                provider.wallet.publicKey.toBuffer()
+            ], program.programId);
+
+        const [player_inventory_pda, player_inventory_bump]  = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("BattleBoosters"),
+                Buffer.from("inventory"),
+                newRecipient.publicKey.toBuffer()
+            ], program.programId);
+
+
+        const priceFeedAccount = new anchor.web3.PublicKey("GvDMxPzN1sCj7L26YDK2HnMRXEQmQ2aemov8YBtPS7vR");
+
+        const programPDA = await program.account.programData.fetch(program_pda);
+
+        const boosterQty = new anchor.BN(0)
+        const fighterQty = new anchor.BN(0)
+        const boosterPrice = programPDA.boosterPrice
+        const fighterPrice = programPDA.fighterPackPrice
+
+        const total = boosterQty.mul(boosterPrice).add(fighterQty.mul(fighterPrice))
+        const safeAmount = total.add(new BN(1)).toNumber() * (1 / lastPriceSolUsd.toNumber())
+
+        const amountToSend = new anchor.BN(anchor.web3.LAMPORTS_PER_SOL * safeAmount ); // For example, 1 SOL
+
+        // Create a transaction to transfer SOL from the signer to the bank_escrow PDA
+        const transferTx = new anchor.web3.Transaction().add(
+            anchor.web3.SystemProgram.transfer({
+                fromPubkey: provider.wallet.publicKey,
+                toPubkey: user_bank_pda,
+                lamports: amountToSend.toNumber(),
+            })
+        );
+
+        // Sign and send the transaction
+        await provider.sendAndConfirm(transferTx, []);
+
+        try {
+            // Initialize the player account first
+            await InitializePlayerAccount(provider, newRecipient.publicKey, program, program_pda);
+
+
+            const tx = await program.methods.purchaseNfts(
+                user_bank_bump,
+                [
+                    {
+                        nftType: { booster: {} }, // Use the variant name as key for enum
+                        quantity: boosterQty,
+                    },
+                    {
+                        nftType: { fighterPack: {} }, // Use the variant name as key for enum
+                        quantity: fighterQty,
+                    }
+                ]
+            )
+                .accounts({
+                    signer: provider.wallet.publicKey,
+                    recipient: newRecipient.publicKey,
+                    program: program_pda,
+                    playerInventory: player_inventory_pda,
+                    bankEscrow: user_bank_pda,
+                    bank: bank_pda,
+                    priceFeed: priceFeedAccount
+                })
+                .signers([]) // Include new_account as a signer
+                .rpc();
+
+        }catch (e) {
+
+            assert.include(e.message, 'Insufficient amount in purchase request.')
+        }
+    });
+
+    it("Purchase unsuccessfully not enough money", async () => {
+
+        const newRecipient = anchor.web3.Keypair.generate();
+
+        const [bank_pda, bank_bump]  = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("BattleBoosters"),
+                Buffer.from("bank")
+            ], program.programId);
+
+        const [user_bank_pda, user_bank_bump]  = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("BattleBoosters"),
+                Buffer.from("bank"),
+                provider.wallet.publicKey.toBuffer()
+            ], program.programId);
+
+        const [player_inventory_pda, player_inventory_bump]  = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("BattleBoosters"),
+                Buffer.from("inventory"),
+                newRecipient.publicKey.toBuffer()
+            ], program.programId);
+
+
+        const priceFeedAccount = new anchor.web3.PublicKey("GvDMxPzN1sCj7L26YDK2HnMRXEQmQ2aemov8YBtPS7vR");
+
+        const programPDA = await program.account.programData.fetch(program_pda);
+
+        const boosterQty = new anchor.BN(1)
+        const fighterQty = new anchor.BN(2)
+        const boosterPrice = programPDA.boosterPrice
+        const fighterPrice = programPDA.fighterPackPrice
+
+        const total = boosterQty.mul(boosterPrice).add(fighterQty.mul(fighterPrice))
+        const safeAmount = total.sub(new BN(10)).toNumber() * (1 / lastPriceSolUsd.toNumber())
+
+        const amountToSend = new anchor.BN(anchor.web3.LAMPORTS_PER_SOL * safeAmount ); // For example, 1 SOL
+
+        // Create a transaction to transfer SOL from the signer to the bank_escrow PDA
+        const transferTx = new anchor.web3.Transaction().add(
+            anchor.web3.SystemProgram.transfer({
+                fromPubkey: provider.wallet.publicKey,
+                toPubkey: user_bank_pda,
+                lamports: amountToSend.toNumber(),
+            })
+        );
+
+        // Sign and send the transaction
+        await provider.sendAndConfirm(transferTx, []);
+
+        try {
+            // Initialize the player account first
+            await InitializePlayerAccount(provider, newRecipient.publicKey, program, program_pda);
+
+
+            const tx = await program.methods.purchaseNfts(
+                user_bank_bump,
+                [
+                    {
+                        nftType: { booster: {} }, // Use the variant name as key for enum
+                        quantity: boosterQty,
+                    },
+                    {
+                        nftType: { fighterPack: {} }, // Use the variant name as key for enum
+                        quantity: fighterQty,
+                    }
+                ]
+            )
+                .accounts({
+                    signer: provider.wallet.publicKey,
+                    recipient: newRecipient.publicKey,
+                    program: program_pda,
+                    playerInventory: player_inventory_pda,
+                    bankEscrow: user_bank_pda,
+                    bank: bank_pda,
+                    priceFeed: priceFeedAccount
+                })
+                .signers([]) // Include new_account as a signer
+                .rpc();
+
+        }catch (e) {
+            assert.include(e.message, 'Insufficient funds.')
+        }
+    });
+
+
+
 
     it("Create NFT collection" ,async () => {
 

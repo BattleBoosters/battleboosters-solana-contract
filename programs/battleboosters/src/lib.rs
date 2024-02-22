@@ -35,6 +35,7 @@ declare_id!("H85sU4mupXtsMZmtHM4y1Cucjfb7SVh7Q3eFrbZPX6a1");
 pub mod battleboosters {
     use super::*;
     use crate::state::player::InitializePlayer;
+    use anchor_lang::solana_program::native_token::LAMPORTS_PER_SOL;
     use anchor_lang::solana_program::program::invoke_signed;
     use anchor_lang::solana_program::system_instruction;
 
@@ -62,7 +63,7 @@ pub mod battleboosters {
         Ok(())
     }
 
-    pub fn initialize_player(ctx: Context<InitializePlayer>) -> Result<()> {
+    pub fn initialize_player(ctx: Context<InitializePlayer>, player_pubkey: Pubkey) -> Result<()> {
         let player = &mut ctx.accounts.inventory;
         require!(!player.is_initialized, ErrorCode::AlreadyInitialized);
 
@@ -160,10 +161,12 @@ pub mod battleboosters {
             }
         }
 
+        require!(total_usd > 0, ErrorCode::InsufficientAmount);
+
         let bank = &ctx.accounts.bank;
         let bank_escrow = &ctx.accounts.bank_escrow;
         let total_sol = total_usd as f64 * sol_per_usd;
-        let total_lamports = (total_sol * 1_000_000_000.0).round() as u64;
+        let total_lamports = (total_sol * LAMPORTS_PER_SOL as f64).round() as u64;
         let bank_escrow_balance = bank_escrow.lamports();
 
         if bank_escrow_balance < total_lamports {
@@ -203,6 +206,11 @@ pub mod battleboosters {
 
         Ok(())
     }
+
+    // pub fn open_nft() -> Result<()> {
+    //
+    //     Ok(())
+    // }
 
     pub fn create_new_event(
         ctx: Context<CreateEvent>,

@@ -13,8 +13,10 @@ pub enum ErrorCode {
     InvalidArgumentInPurchaseRequest,
     #[msg("Invalid Price Feed")]
     InvalidPriceFeed,
-    #[msg("Switchboard feed has not been updated in 5 minutes")]
+    #[msg("Feed has not been updated in 5 minutes")]
     StaleFeed,
     #[msg("Insufficient funds")]
     InsufficientFunds,
+    #[msg("Insufficient amount in purchase request")]
+    InsufficientAmount,
 }

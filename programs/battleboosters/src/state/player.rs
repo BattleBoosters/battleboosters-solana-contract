@@ -5,6 +5,7 @@ use anchor_lang::prelude::*;
 
 // Struct for initializing player
 #[derive(Accounts)]
+#[instruction(player_pubkey: Pubkey)]
 pub struct InitializePlayer<'info> {
     #[account(mut)]
     pub creator: Signer<'info>,
@@ -13,7 +14,7 @@ pub struct InitializePlayer<'info> {
     #[account(
     init,
     payer = creator,
-    seeds = [MY_APP_PREFIX, INVENTORY, creator.key().as_ref()],
+    seeds = [MY_APP_PREFIX, INVENTORY, player_pubkey.as_ref()],
     bump,
     space = 8 + 8 + 8 + 1
     )]
