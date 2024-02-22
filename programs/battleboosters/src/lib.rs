@@ -207,10 +207,13 @@ pub mod battleboosters {
         Ok(())
     }
 
-    // pub fn open_nft() -> Result<()> {
-    //
-    //     Ok(())
-    // }
+    pub fn open_nft(ctx: Context<PlayerInventory>, requests: Vec<PurchaseRequest>) -> Result<()> {
+        let player_inventory = &mut ctx.accounts.inventory;
+
+
+
+        Ok(())
+    }
 
     pub fn create_new_event(
         ctx: Context<CreateEvent>,

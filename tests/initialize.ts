@@ -113,6 +113,10 @@ describe.only("battleboosters", () => {
         assert.isTrue(playerInventoryAccountBefore.isInitialized);
     })
 
+    /**
+       Player Purchase in game NFT assets
+     **/
+
     it("Purchase successfully in-game assets for signer", async () => {
 
         const [bank_pda, bank_bump]  = anchor.web3.PublicKey.findProgramAddressSync(
@@ -491,8 +495,17 @@ describe.only("battleboosters", () => {
         }
     });
 
+    /*
+        TODO: Player mint NFT unit test
+     */
 
+    /**
+        Player mint NFT 
+     **/
 
+    /**
+        NFT Collection
+     **/
 
     it("Create NFT collection" ,async () => {
 
