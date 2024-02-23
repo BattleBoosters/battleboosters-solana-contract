@@ -622,6 +622,7 @@ dependencies = [
  "anchor-lang",
  "anchor-spl",
  "mpl-token-metadata",
+ "solana-randomness-service",
  "switchboard-solana",
 ]
 
@@ -3936,6 +3937,17 @@ dependencies = [
  "solana-streamer",
  "thiserror",
  "tokio",
+]
+
+[[package]]
+name = "solana-randomness-service"
+version = "1.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4fe685a40f2315167ed5e6759d6cc6b1c8b23d929e832bbb88722425d65781e0"
+dependencies = [
+ "anchor-lang",
+ "anchor-spl",
+ "switchboard-solana",
 ]
 
 [[package]]

@@ -27,9 +27,14 @@ use mpl_token_metadata::instructions::{
 };
 
 use mpl_token_metadata::types::{DataV2, PrintSupply, TokenStandard};
-// use pyth_sdk_solana::{load_price_feed_from_account_info, PriceFeed, Price};
 
-declare_id!("H85sU4mupXtsMZmtHM4y1Cucjfb7SVh7Q3eFrbZPX6a1");
+use solana_randomness_service::SimpleRandomnessV1Account;
+use solana_randomness_service::{
+    program::SolanaRandomnessService, ID as SolanaRandomnessServiceID,
+};
+use switchboard_solana::utils::get_ixn_discriminator;
+
+declare_id!("HUs7JuY3wtB49A9xr7Dzn1ssdBXGqnSySZW39yZMshV5");
 
 #[program]
 pub mod battleboosters {
@@ -38,6 +43,7 @@ pub mod battleboosters {
     use anchor_lang::solana_program::native_token::LAMPORTS_PER_SOL;
     use anchor_lang::solana_program::program::invoke_signed;
     use anchor_lang::solana_program::system_instruction;
+    use solana_randomness_service::TransactionOptions;
 
     pub fn initialize(
         ctx: Context<InitializeProgram>,
@@ -204,13 +210,48 @@ pub mod battleboosters {
             &[&bank_escrow_seeds],
         )?;
 
+        // Call the randomness service and request a new value
+        solana_randomness_service::cpi::simple_randomness_v1(
+            CpiContext::new(
+                ctx.accounts.randomness_service.to_account_info(),
+                solana_randomness_service::cpi::accounts::SimpleRandomnessV1Request {
+                    request: ctx.accounts.randomness_request.to_account_info(),
+                    escrow: ctx.accounts.randomness_escrow.to_account_info(),
+                    state: ctx.accounts.randomness_state.to_account_info(),
+                    mint: ctx.accounts.randomness_mint.to_account_info(),
+                    payer: ctx.accounts.signer.to_account_info(),
+                    system_program: ctx.accounts.system_program.to_account_info(),
+                    token_program: ctx.accounts.token_program.to_account_info(),
+                    associated_token_program: ctx
+                        .accounts
+                        .associated_token_program
+                        .to_account_info(),
+                },
+            ),
+            8, // Request 8 bytes of randomness
+            solana_randomness_service::Callback {
+                program_id: ID,
+                accounts: vec![
+                    AccountMeta::new_readonly(ctx.accounts.randomness_state.key(), true).into(),
+                    AccountMeta::new_readonly(ctx.accounts.randomness_request.key(), false).into(),
+                ],
+                ix_data: get_ixn_discriminator("consume_randomness").to_vec(), // TODO: hardcode this discriminator [190,217,49,162,99,26,73,234]
+            },
+            Some(TransactionOptions {
+                compute_units: Some(1_000_000),
+                compute_unit_price: Some(100),
+            }),
+        )?;
+
+        Ok(())
+    }
+    pub fn consume_randomness(_ctx: Context<ConsumeRandomness>, result: Vec<u8>) -> Result<()> {
+        msg!("Randomness received: {:?}", result);
         Ok(())
     }
 
     pub fn open_nft(ctx: Context<PlayerInventory>, requests: Vec<PurchaseRequest>) -> Result<()> {
         let player_inventory = &mut ctx.accounts.inventory;
-
-
 
         Ok(())
     }

@@ -1157,6 +1157,15 @@
     protobufjs "^7.2.4"
     yaml "^2.2.1"
 
+"@switchboard-xyz/solana-randomness-service@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.npmjs.org/@switchboard-xyz/solana-randomness-service/-/solana-randomness-service-1.0.0.tgz"
+  integrity sha512-zszfAeOf6KzyH1GkTsYv7L1WGow1wOv9qm3vsym/VZDyeHp3XeThqeEX6XglA8MVi3lejgw6ffn3gLoSoVccbw==
+  dependencies:
+    "@coral-xyz/anchor" "^0.29.0"
+    "@switchboard-xyz/common" "^2.3.17"
+    "@switchboard-xyz/solana.js" "^3.2.5"
+
 "@switchboard-xyz/solana.js@^3.2.5":
   version "3.2.5"
   resolved "https://registry.npmjs.org/@switchboard-xyz/solana.js/-/solana.js-3.2.5.tgz"

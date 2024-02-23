@@ -1,4 +1,5 @@
 import * as anchor from "@coral-xyz/anchor";
+import {assert} from "chai";
 
 const InitializePlayerAccount = async function(provider, publicKey, program, program_pda) {
 
@@ -9,16 +10,22 @@ const InitializePlayerAccount = async function(provider, publicKey, program, pro
             Buffer.from("inventory"),
             publicKey.toBuffer()
         ], program.programId);
-    // Initialize the player account first
-    const initializePlayerTx = await program.methods.initializePlayer(
-        publicKey
-    )
-        .accounts({
-            creator: provider.wallet.publicKey,
-            inventory: player_inventory_pda,
-            program: program_pda,
-        }).signers([]) // Include new_account as a signer
-        .rpc();
+    try {
+        const playerInventoryAccountAfter = await program.account.inventoryData.fetch(player_inventory_pda);
+        console.log(playerInventoryAccountAfter.isInitialized)
+    }catch (e) {
+        console.log(e)
+        const initializePlayerTx = await program.methods.initializePlayer(
+            publicKey
+        )
+            .accounts({
+                creator: provider.wallet.publicKey,
+                inventory: player_inventory_pda,
+                program: program_pda,
+            }).signers([]) // Include new_account as a signer
+            .rpc();
+    }
+
 
 }
 

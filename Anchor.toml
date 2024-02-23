@@ -5,13 +5,13 @@ seeds = false
 skip-lint = false
 
 [programs.localnet]
-battleboosters = "H85sU4mupXtsMZmtHM4y1Cucjfb7SVh7Q3eFrbZPX6a1"
+battleboosters = "HUs7JuY3wtB49A9xr7Dzn1ssdBXGqnSySZW39yZMshV5"
 
 [programs.devnet]
-battleboosters = "H85sU4mupXtsMZmtHM4y1Cucjfb7SVh7Q3eFrbZPX6a1"
+battleboosters = "HUs7JuY3wtB49A9xr7Dzn1ssdBXGqnSySZW39yZMshV5"
 
 [programs.testnet]
-battleboosters = "H85sU4mupXtsMZmtHM4y1Cucjfb7SVh7Q3eFrbZPX6a1"
+battleboosters = "HUs7JuY3wtB49A9xr7Dzn1ssdBXGqnSySZW39yZMshV5"
 
 [[test.genesis]]
 address = "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
@@ -20,11 +20,12 @@ program = "tests/programs/metadata.so"
 
 [test.validator]
 url = "https://api.mainnet-beta.solana.com"
+#ledger = ".anchor/test-ledger"
 
 ## SOL/USD mainnet pyth
 #[[test.validator.clone]]
 #address = "H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712K4AQJEG"
-# Mainnet pyth program
+## Mainnet Switchboard SOL/USD program
 [[test.validator.clone]]
 address = "GvDMxPzN1sCj7L26YDK2HnMRXEQmQ2aemov8YBtPS7vR"
 
@@ -32,11 +33,27 @@ address = "GvDMxPzN1sCj7L26YDK2HnMRXEQmQ2aemov8YBtPS7vR"
 #address = "H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712K4AQJEG"
 #filename = "tests/accounts/pythSolUsdAccount.json"
 
+# Solana Randomness Service
+[[test.validator.clone]]
+address = "RANDMo5gFnqnXJW5Z52KNmd24sAo95KAd5VbiCtq5Rh"
+
+# Sbv3 Program ID
+[[test.validator.clone]]
+address = "sbattyXrzedoNATfc4L31wC9Mhxsi1BmFhTiN8gDshx"
+
+# Sbv3 ProgramStateAccount
+[[test.validator.clone]]
+address = "5MFs7RGTjLi1wtKNBFRtuLipCkkjs4YQwRRU9sjnbQbS"
+
+# Sbv3 IDL
+[[test.validator.clone]]
+address = "5ExuoQR69trmKQfB95fDsUGsUrrChbGq9PFgt8qouncz"
+
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "localnet"
+cluster = "devnet"
 wallet = "/Users/0xantman/.config/solana/id.json"
 
 
