@@ -12,7 +12,8 @@ mod utils;
 use crate::constants::*;
 use crate::events::*;
 use crate::state::{
-    create_spl_nft::*, event::*, fight_card::*, player::*, program::*, transaction_escrow::*,
+    create_spl_nft::*, event::*, fight_card::*, player::*, program::*, rarity::*,
+    transaction_escrow::*,
 };
 
 use crate::types::*;
@@ -40,6 +41,7 @@ declare_id!("HUs7JuY3wtB49A9xr7Dzn1ssdBXGqnSySZW39yZMshV5");
 pub mod battleboosters {
     use super::*;
     use crate::state::player::InitializePlayer;
+    use crate::state::rarity::InitializeRarity;
     use anchor_lang::solana_program::native_token::LAMPORTS_PER_SOL;
     use anchor_lang::solana_program::program::invoke_signed;
     use anchor_lang::solana_program::system_instruction;
@@ -66,10 +68,36 @@ pub mod battleboosters {
         program.fighter_pack_amount = fighter_pack_amount;
         program.is_initialized = true;
 
+        msg!("Program Initialized");
+
         Ok(())
     }
 
-    pub fn initialize_player(ctx: Context<InitializePlayer>, player_pubkey: Pubkey) -> Result<()> {
+    pub fn initialize_rarity(
+        ctx: Context<InitializeRarity>,
+        fighter: Vec<RarityFighter>,
+        booster: Vec<RarityBooster>,
+        fighter_probabilities: Vec<u8>,
+        booster_probabilities: Vec<u8>,
+    ) -> Result<()> {
+        let rarity = &mut ctx.accounts.rarity;
+        require!(!rarity.is_initialized, ErrorCode::AlreadyInitialized);
+
+        rarity.fighter = fighter;
+        rarity.booster = booster;
+        rarity.fighter_probabilities = fighter_probabilities;
+        rarity.booster_probabilities = booster_probabilities;
+        rarity.is_initialized = true;
+
+        msg!("Rarity Initialized");
+
+        Ok(())
+    }
+
+    pub fn initialize_player(
+        ctx: Context<InitializePlayer>,
+        player_pubkey: Pubkey, /* Used in initialization */
+    ) -> Result<()> {
         let player = &mut ctx.accounts.inventory;
         require!(!player.is_initialized, ErrorCode::AlreadyInitialized);
 
@@ -77,12 +105,14 @@ pub mod battleboosters {
         player.booster_mint_allowance = 0;
         player.is_initialized = true;
 
+        msg!("Player Initialized");
+
         Ok(())
     }
 
     pub fn create_nft_collection(
         ctx: Context<CreateSplNft>,
-        collection_id: CollectionType,
+        collection_id: CollectionType, /* Used in initialization */
         collection_name: String,
         uri: String,
         fees: u16,
@@ -232,6 +262,9 @@ pub mod battleboosters {
             solana_randomness_service::Callback {
                 program_id: ID,
                 accounts: vec![
+                    AccountMeta::new_readonly(ctx.accounts.signer.key(), false).into(),
+                    AccountMeta::new_readonly(ctx.accounts.program.key(), false).into(),
+                    AccountMeta::new_readonly(ctx.accounts.signer.key(), false).into(),
                     AccountMeta::new_readonly(ctx.accounts.randomness_state.key(), true).into(),
                     AccountMeta::new_readonly(ctx.accounts.randomness_request.key(), false).into(),
                 ],
@@ -245,12 +278,9 @@ pub mod battleboosters {
 
         Ok(())
     }
-    pub fn consume_randomness(_ctx: Context<ConsumeRandomness>, result: Vec<u8>) -> Result<()> {
-        msg!("Randomness received: {:?}", result);
-        Ok(())
-    }
 
-    pub fn open_nft(ctx: Context<PlayerInventory>, requests: Vec<PurchaseRequest>) -> Result<()> {
+    pub fn consume_randomness(ctx: Context<PlayerInventory>, result: Vec<u8>) -> Result<()> {
+        msg!("Randomness received: {:?}", result);
         let player_inventory = &mut ctx.accounts.inventory;
 
         Ok(())

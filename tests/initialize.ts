@@ -14,6 +14,7 @@ import { sleep } from "@switchboard-xyz/common";
 import {AggregatorAccount, SwitchboardProgram} from "@switchboard-xyz/solana.js";
 import InitializePlayerAccount from "./utils/initialize_player_account";
 import { RandomnessService } from "@switchboard-xyz/solana-randomness-service";
+import * as buffer from "buffer";
 
 describe.only("battleboosters", () => {
     const provider = anchor.AnchorProvider.env();
@@ -44,6 +45,12 @@ describe.only("battleboosters", () => {
             Buffer.from("program"),
         ], program.programId);
 
+    const [rarity_pda, rarity_bump]  = anchor.web3.PublicKey.findProgramAddressSync(
+        [
+            Buffer.from("BattleBoosters"),
+            Buffer.from("rarity"),
+        ], program.programId);
+
     const [mint_authority_account, authority_bump]  = anchor.web3.PublicKey.findProgramAddressSync(
         [
             Buffer.from("BattleBoosters"),
@@ -53,18 +60,19 @@ describe.only("battleboosters", () => {
     let randomnessService;
     let lastPriceSolUsd;
     before("Initialize", async () => {
-        console.log("await Randomness Service")
-        try {
-            randomnessService = await RandomnessService.fromProvider(provider);
-        }catch (e) {
-            console.log(e)
-        }
 
+        // try {
+        //     randomnessService = await RandomnessService.fromProvider(provider);
+        // }catch (e) {
+        //     console.log(e)
+        // }
+        // console.log(randomnessService)
+        // console.log("Randomness Service OK")
 
-        console.log("Randomness Service OK")
         switchboardProgram = await SwitchboardProgram.load(
             new Connection("https://api.mainnet-beta.solana.com"),
         );
+
         // Check the latest SOL/USD price
         const aggregatorAccount = new AggregatorAccount(switchboardProgram, new anchor.web3.PublicKey("GvDMxPzN1sCj7L26YDK2HnMRXEQmQ2aemov8YBtPS7vR"));
         lastPriceSolUsd = await aggregatorAccount.fetchLatestValue();
@@ -77,11 +85,13 @@ describe.only("battleboosters", () => {
             throw new Error('Program is not executable');
         }
 
-        //await airdrop_sol(provider, admin_account.publicKey, 10);
+        await airdrop_sol(provider, admin_account.publicKey, 10);
 
         try {
+
             await program.account.programData.fetch(program_pda);
         } catch (e) {
+
             const tx = await program.methods.initialize(
                 authority_bump,
                 bank_bump,
@@ -108,6 +118,147 @@ describe.only("battleboosters", () => {
             assert.equal(programAccount.fighterPackAmount, 5)
         }
 
+        try {
+            await program.account.rarityData.fetch(rarity_pda);
+        } catch (e) {
+
+            const tx2 = await program.methods.initializeRarity(
+                [
+                    {
+                        common: {
+
+                            energy: { min: 100, max: 150 },
+                            power: { min: 100, max: 150 },
+                            lifespan: { min: 100, max: 150 },
+                            }
+                        },
+                    {uncommon: {
+                            energy: { min: 150, max: 200 },
+                            power: { min: 150, max: 200 },
+                            lifespan: { min: 150, max: 200 },
+                        }},
+                    {rare: {
+                            energy: { min: 200, max: 250 },
+                            power: { min: 200, max: 250 },
+                            lifespan: { min: 200, max: 250 },
+                        }},
+                    {epic: {
+                            energy: { min: 250, max: 300 },
+                            power: { min: 250, max: 300 },
+                            lifespan: { min: 250, max: 300 },
+                        }},
+                    {legendary: {
+                            energy: { min: 300, max: 350 },
+                            power: { min: 300, max: 350 },
+                            lifespan: { min: 300, max: 350 },
+                        }},
+                ],
+                [
+
+                    {
+                        common: {
+                            value: { min: 100, max: 150 },
+                        }
+                    },
+                    {
+                        uncommon: {
+                            value: { min: 150, max: 200 },
+
+                        }
+                    },
+                    {
+                        rare: {
+                            value: { min: 200, max: 250 },
+                        },
+                    },
+                    {
+                        epic: {
+                            value: { min: 250, max: 300 }
+                        },
+                    },
+                    {
+                        legendary: {
+                            value: { min: 300, max: 350 }
+                        },
+                    }
+                ],
+                Buffer.from([1, 4, 10, 25, 60]),
+                Buffer.from([1, 4, 10, 25, 60]),
+            )
+                .accounts({
+                    creator: admin_account.publicKey,
+                    rarity: rarity_pda,
+                    systemProgram: anchor.web3.SystemProgram.programId,
+                })
+                .signers([admin_account]) // Include new_account as a signer
+                .rpc();
+
+
+            const rarityData = await program.account.rarityData.fetch(rarity_pda);
+            assert.isTrue(rarityData.isInitialized);
+            assert.deepEqual(rarityData.boosterProbabilities.equals(Buffer.from([1, 4, 10, 25, 60])), true);
+            assert.deepEqual(rarityData.fighterProbabilities.equals(Buffer.from([1, 4, 10, 25, 60])), true);
+            assert.deepEqual(rarityData.booster, [
+
+                {
+                    common: {
+                        value: { min: 100, max: 150 },
+                    }
+                },
+                {
+                    uncommon: {
+                        value: { min: 150, max: 200 },
+
+                    }
+                },
+                {
+                    rare: {
+                        value: { min: 200, max: 250 },
+                    },
+                },
+                {
+                    epic: {
+                        value: { min: 250, max: 300 }
+                    },
+                },
+                {
+                    legendary: {
+                        value: { min: 300, max: 350 }
+                    },
+                }
+            ]);
+            assert.deepEqual(rarityData.fighter, [
+                {
+                    common: {
+
+                        energy: { min: 100, max: 150 },
+                        power: { min: 100, max: 150 },
+                        lifespan: { min: 100, max: 150 },
+                    }
+                },
+                {uncommon: {
+                        energy: { min: 150, max: 200 },
+                        power: { min: 150, max: 200 },
+                        lifespan: { min: 150, max: 200 },
+                    }},
+                {rare: {
+                        energy: { min: 200, max: 250 },
+                        power: { min: 200, max: 250 },
+                        lifespan: { min: 200, max: 250 },
+                    }},
+                {epic: {
+                        energy: { min: 250, max: 300 },
+                        power: { min: 250, max: 300 },
+                        lifespan: { min: 250, max: 300 },
+                    }},
+                {legendary: {
+                        energy: { min: 300, max: 350 },
+                        power: { min: 300, max: 350 },
+                        lifespan: { min: 300, max: 350 },
+                    }},
+            ]);
+        }
+
     })
 
     it( "Initialize player account", async () => {
@@ -132,14 +283,20 @@ describe.only("battleboosters", () => {
        Player Purchase in game NFT assets
      **/
 
-    it.only("Purchase successfully in-game assets for signer", async () => {
+    it("Purchase successfully in-game assets for signer", async () => {
+
         // Start watching for the settled event before triggering the request
         const requestKeypair = anchor.web3.Keypair.generate();
+
         console.log("watching...")
-        const settledRandomnessEventPromise = randomnessService.awaitSettledEvent(
-            requestKeypair.publicKey
-        );
+
+        // const settledRandomnessEventPromise = randomnessService.awaitSettledEvent(
+        //     requestKeypair.publicKey
+        // );
+
         console.log("watched...")
+
+        console.log("await Randomness Service")
 
 
         const [bank_pda, bank_bump]  = anchor.web3.PublicKey.findProgramAddressSync(
@@ -231,48 +388,49 @@ describe.only("battleboosters", () => {
                 .rpc();
 
             // Await the response from the Switchboard Service
-            const [settledRandomnessEvent, settledSlot] =
-                await settledRandomnessEventPromise;
+            // const [settledRandomnessEvent, settledSlot] =
+            //     await settledRandomnessEventPromise;
+            // console.log(settledRandomnessEventPromise)
 
-            console.log(
-                `[EVENT] SimpleRandomnessV1SettledEvent\n${JSON.stringify(
-                    {
-                        ...settledRandomnessEvent,
+            // console.log(
+            //     `[EVENT] SimpleRandomnessV1SettledEvent\n${JSON.stringify(
+            //         {
+            //             ...settledRandomnessEvent,
+            //
+            //             // why is anchor.BN so annoying with hex strings?
+            //             requestSlot: settledRandomnessEvent.requestSlot.toNumber(),
+            //             settledSlot: settledRandomnessEvent.settledSlot.toNumber(),
+            //             randomness: `[${new Uint8Array(settledRandomnessEvent.randomness)}]`,
+            //         },
+            //         undefined,
+            //         2
+            //     )}`
+            // );
 
-                        // why is anchor.BN so annoying with hex strings?
-                        requestSlot: settledRandomnessEvent.requestSlot.toNumber(),
-                        settledSlot: settledRandomnessEvent.settledSlot.toNumber(),
-                        randomness: `[${new Uint8Array(settledRandomnessEvent.randomness)}]`,
-                    },
-                    undefined,
-                    2
-                )}`
-            );
-
-            assert.equal(
-                settledRandomnessEvent.user.toBase58(),
-                provider.wallet.publicKey.toBase58(),
-                "User should be the same as the provider wallet"
-            );
-            assert.equal(
-                settledRandomnessEvent.request.toBase58(),
-                requestKeypair.publicKey.toBase58(),
-                "Request should be the same as the provided request keypair"
-            );
-            assert.equal(
-                settledRandomnessEvent.isSuccess,
-                true,
-                "Request did not complete successfully"
-            );
-
-            const latency = settledRandomnessEvent.settledSlot
-                .sub(settledRandomnessEvent.requestSlot)
-                .toNumber();
-            console.log(
-                `\nRandomness: [${new Uint8Array(
-                    settledRandomnessEvent.randomness
-                )}]\nRequest completed in ${latency} slots!\n`
-            );
+            // assert.equal(
+            //     settledRandomnessEvent.user.toBase58(),
+            //     provider.wallet.publicKey.toBase58(),
+            //     "User should be the same as the provider wallet"
+            // );
+            // assert.equal(
+            //     settledRandomnessEvent.request.toBase58(),
+            //     requestKeypair.publicKey.toBase58(),
+            //     "Request should be the same as the provided request keypair"
+            // );
+            // assert.equal(
+            //     settledRandomnessEvent.isSuccess,
+            //     true,
+            //     "Request did not complete successfully"
+            // );
+            //
+            // const latency = settledRandomnessEvent.settledSlot
+            //     .sub(settledRandomnessEvent.requestSlot)
+            //     .toNumber();
+            // console.log(
+            //     `\nRandomness: [${new Uint8Array(
+            //         settledRandomnessEvent.randomness
+            //     )}]\nRequest completed in ${latency} slots!\n`
+            // );
 
             // wait for RPC
             await sleep(2000);

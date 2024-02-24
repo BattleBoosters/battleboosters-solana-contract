@@ -1,22 +1,16 @@
-use super::program::ProgramData;
 use crate::constants::*;
-use crate::state::fight_card::FightCardData;
 use anchor_lang::prelude::*;
 
 #[derive(Accounts)]
-pub struct CreateEvent<'info> {
+pub struct InitializeRarity<'info> {
     #[account(mut)]
     pub creator: Signer<'info>,
-    #[account(mut)]
-    pub program: Account<'info, ProgramData>,
-    #[account(mut)]
-    pub fight_card: Account<'info, FightCardData>,
     #[account(
     init,
     payer = creator,
     seeds = [MY_APP_PREFIX, RARITY],
     bump,
-    space = 8 + 13 + 5 + 12 + 12
+    space = 8 + 140 + 50 + 5 + 5 + 1
     )]
     pub rarity: Account<'info, RarityData>,
     pub system_program: Program<'info, System>,
@@ -25,19 +19,21 @@ pub struct CreateEvent<'info> {
 #[account]
 pub struct RarityData {
     /// Rarity tiers for NFTs fighter with associated stats
-    pub fighter: RarityFighter,
+    pub fighter: Vec<RarityFighter>,
     /// Rarity tiers for NFTs booster with associated stats
-    pub booster: RarityBooster,
+    pub booster: Vec<RarityBooster>,
     /// Drop probabilities for each NFTs fighter rarity tier, represented as percentage
     pub fighter_probabilities: Vec<u8>,
     /// Drop probabilities for each NFTs booster rarity tier, represented as percentage
     pub booster_probabilities: Vec<u8>,
+    /// This data prevent re-initialization
+    pub is_initialized: bool,
 }
 
 #[derive(Clone, Debug, AnchorSerialize, AnchorDeserialize)]
 pub struct Stats {
-    pub max: i16,
-    pub min: i16,
+    pub min: u32,
+    pub max: u32,
 }
 
 #[derive(Clone, Debug, AnchorSerialize, AnchorDeserialize)]
@@ -69,12 +65,12 @@ pub enum RarityFighter {
     },
 }
 
-#[derive(Clone, Debug, AnchorSerialize, AnchorDeserialize)]
-pub enum Booster {
-    Points { rarity: RarityBooster },
-    Shield { rarity: RarityBooster },
-    Energy { rarity: RarityBooster },
-}
+// #[derive(Clone, Debug, AnchorSerialize, AnchorDeserialize)]
+// pub enum Booster {
+//     Points { rarity: RarityBooster },
+//     Shield { rarity: RarityBooster },
+//     Energy { rarity: RarityBooster },
+// }
 
 #[derive(Clone, Debug, AnchorSerialize, AnchorDeserialize)]
 pub enum RarityBooster {

@@ -20,3 +20,17 @@ pub enum NftType {
     Booster,
     FighterPack,
 }
+
+#[derive(Clone, Debug, AnchorSerialize, AnchorDeserialize)]
+pub enum BoosterType {
+    Points,
+    Shield,
+    Energy,
+}
+
+#[derive(Clone, Debug, AnchorSerialize, AnchorDeserialize)]
+pub enum FighterType {
+    Boxer,
+    Shield,
+    Energy,
+}

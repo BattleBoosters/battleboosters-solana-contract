@@ -10,11 +10,11 @@ const InitializePlayerAccount = async function(provider, publicKey, program, pro
             Buffer.from("inventory"),
             publicKey.toBuffer()
         ], program.programId);
+
     try {
-        const playerInventoryAccountAfter = await program.account.inventoryData.fetch(player_inventory_pda);
-        console.log(playerInventoryAccountAfter.isInitialized)
+        await program.account.inventoryData.fetch(player_inventory_pda);
     }catch (e) {
-        console.log(e)
+
         const initializePlayerTx = await program.methods.initializePlayer(
             publicKey
         )
