@@ -3,6 +3,7 @@ use crate::constants::*;
 use crate::state::fight_card::FightCardData;
 use anchor_lang::prelude::*;
 
+use crate::state::rarity::RarityData;
 use solana_randomness_service::SimpleRandomnessV1Account;
 use solana_randomness_service::{
     program::SolanaRandomnessService, ID as SolanaRandomnessServiceID,
@@ -15,8 +16,6 @@ use switchboard_solana::prelude::*;
 pub struct InitializePlayer<'info> {
     #[account(mut)]
     pub creator: Signer<'info>,
-    #[account(mut, seeds = [MY_APP_PREFIX, PROGRAM_STATE], bump)]
-    pub program: Account<'info, ProgramData>,
     #[account(
     init,
     payer = creator,
@@ -33,22 +32,29 @@ pub struct InitializePlayer<'info> {
 pub struct PlayerInventory<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
-    #[account(mut, seeds = [MY_APP_PREFIX, PROGRAM_STATE], bump)]
-    pub program: Account<'info, ProgramData>,
     #[account(mut,
     seeds = [MY_APP_PREFIX, INVENTORY, signer.key().as_ref()],
     bump)]
     pub inventory: Account<'info, InventoryData>,
     pub system_program: Program<'info, System>,
+}
+
+// Struct for managing player inventory
+#[derive(Accounts)]
+pub struct PlayerInventoryCallback<'info> {
+    #[account(mut, seeds = [MY_APP_PREFIX, PROGRAM_STATE], bump)]
+    pub program: Box<Account<'info, ProgramData>>,
+
     /// We need to make sure the randomness service signed this requests so it can only be invoked by a PDA and not a user.
     #[account(
-        signer,
-        seeds = [b"STATE"],
-        seeds::program = SolanaRandomnessServiceID,
-        bump = randomness_state.bump,
+    signer,
+    seeds = [b"STATE"],
+    seeds::program = SolanaRandomnessServiceID,
+    bump = randomness_state.bump,
     )]
     pub randomness_state: Box<Account<'info, solana_randomness_service::State>>,
     pub request: Box<Account<'info, SimpleRandomnessV1Account>>,
+    pub system_program: Program<'info, System>,
 }
 
 #[account]

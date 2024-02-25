@@ -35,7 +35,7 @@ use solana_randomness_service::{
 };
 use switchboard_solana::utils::get_ixn_discriminator;
 
-declare_id!("HUs7JuY3wtB49A9xr7Dzn1ssdBXGqnSySZW39yZMshV5");
+declare_id!("Gj79kPnmGM6fs5kRyFW3uhQ3tNaQPtUSgzLujMS7k54V");
 
 #[program]
 pub mod battleboosters {
@@ -152,6 +152,7 @@ pub mod battleboosters {
             MINT_AUTHORITY,
             &[program.authority_bump.clone()],
         ];
+
         create_cpi.invoke_signed(&[&authority_seeds])?;
 
         Ok(())
@@ -164,7 +165,7 @@ pub mod battleboosters {
     ) -> Result<()> {
         let program = &ctx.accounts.program;
         let feed = &ctx.accounts.price_feed.load()?;
-        let player_inventory = &mut ctx.accounts.player_inventory;
+        //let player_inventory = &mut ctx.accounts.player_inventory;
 
         // get result
         let val: f64 = feed.get_result()?.try_into()?;
@@ -178,7 +179,7 @@ pub mod battleboosters {
             match request.nft_type {
                 NftType::Booster => {
                     // update the quantity of fighter mint allowance
-                    player_inventory.booster_mint_allowance += &request.quantity;
+                    // player_inventory.booster_mint_allowance += &request.quantity;
 
                     total_usd += request
                         .quantity
@@ -187,7 +188,7 @@ pub mod battleboosters {
                 }
                 NftType::FighterPack => {
                     // update the quantity of fighter mint allowance
-                    player_inventory.fighter_mint_allowance += &request.quantity;
+                    // player_inventory.fighter_mint_allowance += &request.quantity;
 
                     total_usd += request
                         .quantity
@@ -214,31 +215,38 @@ pub mod battleboosters {
             return Err(ErrorCode::InsufficientFunds.into());
         }
 
-        // Calculate the minimum balance required to remain rent-exempt
-        let rent_exempt_balance = Rent::get()?.minimum_balance(bank_escrow.data_len());
-        // Calculate the maximum amount that can be safely withdrawn while keeping the account rent-exempt
-        let withdrawable_balance = bank_escrow_balance.saturating_sub(rent_exempt_balance);
-
-        // Construct the transfer instruction
-        let transfer_instruction = system_instruction::transfer(
-            &bank_escrow.key(),
-            &bank.key(),
-            withdrawable_balance, // Amount in lamports to transfer
-        );
+        // // //Calculate the minimum balance required to remain rent-exempt
+        // // let rent_exempt_balance = Rent::get()?.minimum_balance(bank_escrow.data_len());
+        // // // Calculate the maximum amount that can be safely withdrawn while keeping the account rent-exempt
+        // // let withdrawable_balance = bank_escrow_balance.saturating_sub(rent_exempt_balance);
+        //
+        // // Construct the transfer instruction
+        // let transfer_instruction = system_instruction::transfer(
+        //     &bank_escrow.key(),
+        //     &bank.key(),
+        //     // Withdraw the full balance
+        //     bank_escrow_balance //withdrawable_balance, // Amount in lamports to transfer
+        // );
+        //
+        // let signer = &ctx.accounts.signer.key();
+        // let bank_escrow_seeds = [MY_APP_PREFIX, BANK, signer.as_ref(), &[bank_escrow_bump]];
+        //
+        // // Perform the transfer
+        // invoke_signed(
+        //     &transfer_instruction,
+        //     &[
+        //         bank_escrow.to_account_info(),
+        //         bank.to_account_info(),
+        //         ctx.accounts.system_program.to_account_info(),
+        //     ],
+        //     &[&bank_escrow_seeds],
+        // )?;
 
         let signer = &ctx.accounts.signer.key();
-        let bank_escrow_seeds = [MY_APP_PREFIX, BANK, signer.as_ref(), &[bank_escrow_bump]];
-
-        // Perform the transfer
-        invoke_signed(
-            &transfer_instruction,
-            &[
-                bank_escrow.to_account_info(),
-                bank.to_account_info(),
-                ctx.accounts.system_program.to_account_info(),
-            ],
-            &[&bank_escrow_seeds],
-        )?;
+        let mut ix_data = get_ixn_discriminator("consume_randomness").to_vec();
+        ix_data.extend_from_slice(&[bank_escrow_bump.clone()]);
+        ix_data.extend_from_slice(&total_lamports.to_le_bytes());
+        ix_data.extend_from_slice(&signer.as_ref());
 
         // Call the randomness service and request a new value
         solana_randomness_service::cpi::simple_randomness_v1(
@@ -262,13 +270,11 @@ pub mod battleboosters {
             solana_randomness_service::Callback {
                 program_id: ID,
                 accounts: vec![
-                    AccountMeta::new_readonly(ctx.accounts.signer.key(), false).into(),
-                    AccountMeta::new_readonly(ctx.accounts.program.key(), false).into(),
-                    AccountMeta::new_readonly(ctx.accounts.signer.key(), false).into(),
+                    AccountMeta::new(ctx.accounts.program.key(), false).into(),
                     AccountMeta::new_readonly(ctx.accounts.randomness_state.key(), true).into(),
                     AccountMeta::new_readonly(ctx.accounts.randomness_request.key(), false).into(),
                 ],
-                ix_data: get_ixn_discriminator("consume_randomness").to_vec(), // TODO: hardcode this discriminator [190,217,49,162,99,26,73,234]
+                ix_data, // TODO: hardcode this discriminator [190,217,49,162,99,26,73,234]
             },
             Some(TransactionOptions {
                 compute_units: Some(1_000_000),
@@ -279,9 +285,89 @@ pub mod battleboosters {
         Ok(())
     }
 
-    pub fn consume_randomness(ctx: Context<PlayerInventory>, result: Vec<u8>) -> Result<()> {
+    pub fn consume_randomness(
+        ctx: Context<PlayerInventoryCallback>,
+        bank_escrow_bump: u8,
+        total_lamports: u64,
+        signer: Pubkey,
+        result: Vec<u8>,
+    ) -> Result<()> {
         msg!("Randomness received: {:?}", result);
-        let player_inventory = &mut ctx.accounts.inventory;
+        msg!("Total lamports: {:?}", total_lamports);
+        msg!("Signer: {:?}", signer);
+        msg!("Bump key: {:?}", bank_escrow_bump);
+
+        // let bank_escrow_seed = &[
+        //     MY_APP_PREFIX,
+        //     BANK,
+        //     &signer.as_ref(),
+        //     &[bank_escrow_bump.clone()],
+        // ];
+        //
+        // let (bank_escrow_pda, bank_escrow_bump_seed) = Pubkey::find_program_address(bank_escrow_seed, &ctx.program_id);
+
+        // let player_inventory = &mut ctx.accounts.inventory;
+        // let rarity = &mut ctx.accounts.rarity;
+
+        //
+        // if bank_escrow_balance < total_lamports {
+        //     msg!(
+        //         "Insufficient funds: required {}, available {}.",
+        //         total_lamports,
+        //         bank_escrow_balance
+        //     );
+        //     return Err(ErrorCode::InsufficientFunds.into());
+        // }
+
+        // let mint_cpi = MintV1CpiBuilder::new(token_metadata_program_info)
+        //     .token(token_info)
+        //     .token_owner(Some(token_owner_info))
+        //     .metadata(metadata_info)
+        //     .master_edition(Some(master_edition_info))
+        //     .mint(mint_info)
+        //     .payer(payer_info)
+        //     .authority(update_authority_info)
+        //     .system_program(system_program_info)
+        //     .sysvar_instructions(sysvar_instructions_info)
+        //     .spl_token_program(spl_token_program_info)
+        //     .spl_ata_program(spl_ata_program_info)
+        //     .amount(1);
+        //
+        // let authority_seeds = [
+        //     MY_APP_PREFIX,
+        //     MINT_AUTHORITY,
+        //     &[program.authority_bump.clone()],
+        // ];
+        // mint_cpi.invoke_signed(&[&authority_seeds])?;
+
+        // TODO: Empty the PDA anc close it
+
+        // //Calculate the minimum balance required to remain rent-exempt
+        // let rent_exempt_balance = Rent::get()?.minimum_balance(bank_escrow.data_len());
+        // // Calculate the maximum amount that can be safely withdrawn while keeping the account rent-exempt
+        // let withdrawable_balance = bank_escrow_balance.saturating_sub(rent_exempt_balance);
+
+        // // Construct the transfer instruction
+        // let transfer_instruction = system_instruction::transfer(
+        //     &bank_escrow.key(),
+        //     &bank.key(),
+        //     // Withdraw the full balance
+        //     bank_escrow_balance, //withdrawable_balance, // Amount in lamports to transfer
+        // );
+        //
+        // let signer = &ctx.accounts.signer.key();
+        // let bank_escrow_seeds = [MY_APP_PREFIX, BANK, signer.as_ref(), &[bank_escrow_bump]];
+        //
+        // // Perform the transfer
+        // invoke_signed(
+        //     &transfer_instruction,
+        //     &[
+        //         bank_escrow.to_account_info(),
+        //         bank.to_account_info(),
+        //         ctx.accounts.system_program.to_account_info(),
+        //     ],
+        //     &[&bank_escrow_seeds],
+        // )?;
 
         Ok(())
     }

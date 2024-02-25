@@ -61,13 +61,13 @@ describe.only("battleboosters", () => {
     let lastPriceSolUsd;
     before("Initialize", async () => {
 
-        // try {
-        //     randomnessService = await RandomnessService.fromProvider(provider);
-        // }catch (e) {
-        //     console.log(e)
-        // }
-        // console.log(randomnessService)
-        // console.log("Randomness Service OK")
+        try {
+            randomnessService = await RandomnessService.fromProvider(provider);
+        }catch (e) {
+            console.log(e)
+        }
+        console.log(randomnessService)
+        console.log("Randomness Service OK")
 
         switchboardProgram = await SwitchboardProgram.load(
             new Connection("https://api.mainnet-beta.solana.com"),
@@ -85,7 +85,9 @@ describe.only("battleboosters", () => {
             throw new Error('Program is not executable');
         }
 
-        await airdrop_sol(provider, admin_account.publicKey, 10);
+        if (provider.connection.rpcEndpoint.includes("localhost")){
+            await airdrop_sol(provider, admin_account.publicKey, 10);
+        }
 
         try {
 
@@ -263,6 +265,7 @@ describe.only("battleboosters", () => {
 
     it( "Initialize player account", async () => {
         const customOwner = anchor.web3.Keypair.generate();
+
         const [player_inventory_pda, player_inventory_bump]  = anchor.web3.PublicKey.findProgramAddressSync(
             [
                 Buffer.from("BattleBoosters"),
@@ -283,16 +286,16 @@ describe.only("battleboosters", () => {
        Player Purchase in game NFT assets
      **/
 
-    it("Purchase successfully in-game assets for signer", async () => {
+    it.only("Purchase successfully in-game assets for signer", async () => {
 
         // Start watching for the settled event before triggering the request
         const requestKeypair = anchor.web3.Keypair.generate();
 
         console.log("watching...")
 
-        // const settledRandomnessEventPromise = randomnessService.awaitSettledEvent(
-        //     requestKeypair.publicKey
-        // );
+        const settledRandomnessEventPromise = randomnessService.awaitSettledEvent(
+            requestKeypair.publicKey
+        );
 
         console.log("watched...")
 
@@ -352,7 +355,7 @@ describe.only("battleboosters", () => {
         try {
             // Initialize the player account first
             await InitializePlayerAccount(provider, provider.wallet.publicKey, program, program_pda);
-
+            console.log("tx start")
 
             const tx = await program.methods.purchaseNfts(
                 user_bank_bump,
@@ -374,6 +377,7 @@ describe.only("battleboosters", () => {
                     playerInventory: player_inventory_pda,
                     bankEscrow: user_bank_pda,
                     bank: bank_pda,
+
                     priceFeed: priceFeedAccount,
                     randomnessService: randomnessService.programId,
                     randomnessRequest: requestKeypair.publicKey,
@@ -387,50 +391,52 @@ describe.only("battleboosters", () => {
                 .signers([requestKeypair]) // Include new_account as a signer
                 .rpc();
 
-            // Await the response from the Switchboard Service
-            // const [settledRandomnessEvent, settledSlot] =
-            //     await settledRandomnessEventPromise;
-            // console.log(settledRandomnessEventPromise)
+            console.log("tx await")
+            //Await the response from the Switchboard Service
+            const [settledRandomnessEvent, settledSlot] =
+                await settledRandomnessEventPromise;
+            console.log(settledRandomnessEventPromise)
 
-            // console.log(
-            //     `[EVENT] SimpleRandomnessV1SettledEvent\n${JSON.stringify(
-            //         {
-            //             ...settledRandomnessEvent,
-            //
-            //             // why is anchor.BN so annoying with hex strings?
-            //             requestSlot: settledRandomnessEvent.requestSlot.toNumber(),
-            //             settledSlot: settledRandomnessEvent.settledSlot.toNumber(),
-            //             randomness: `[${new Uint8Array(settledRandomnessEvent.randomness)}]`,
-            //         },
-            //         undefined,
-            //         2
-            //     )}`
-            // );
 
-            // assert.equal(
-            //     settledRandomnessEvent.user.toBase58(),
-            //     provider.wallet.publicKey.toBase58(),
-            //     "User should be the same as the provider wallet"
-            // );
-            // assert.equal(
-            //     settledRandomnessEvent.request.toBase58(),
-            //     requestKeypair.publicKey.toBase58(),
-            //     "Request should be the same as the provided request keypair"
-            // );
-            // assert.equal(
-            //     settledRandomnessEvent.isSuccess,
-            //     true,
-            //     "Request did not complete successfully"
-            // );
-            //
-            // const latency = settledRandomnessEvent.settledSlot
-            //     .sub(settledRandomnessEvent.requestSlot)
-            //     .toNumber();
-            // console.log(
-            //     `\nRandomness: [${new Uint8Array(
-            //         settledRandomnessEvent.randomness
-            //     )}]\nRequest completed in ${latency} slots!\n`
-            // );
+            console.log(
+                `[EVENT] SimpleRandomnessV1SettledEvent\n${JSON.stringify(
+                    {
+                        ...settledRandomnessEvent,
+
+                        // why is anchor.BN so annoying with hex strings?
+                        requestSlot: settledRandomnessEvent.requestSlot.toNumber(),
+                        settledSlot: settledRandomnessEvent.settledSlot.toNumber(),
+                        randomness: `[${new Uint8Array(settledRandomnessEvent.randomness)}]`,
+                    },
+                    undefined,
+                    2
+                )}`
+            );
+
+            assert.equal(
+                settledRandomnessEvent.user.toBase58(),
+                provider.wallet.publicKey.toBase58(),
+                "User should be the same as the provider wallet"
+            );
+            assert.equal(
+                settledRandomnessEvent.request.toBase58(),
+                requestKeypair.publicKey.toBase58(),
+                "Request should be the same as the provided request keypair"
+            );
+            assert.equal(
+                settledRandomnessEvent.isSuccess,
+                true,
+                "Request did not complete successfully"
+            );
+
+            const latency = settledRandomnessEvent.settledSlot
+                .sub(settledRandomnessEvent.requestSlot)
+                .toNumber();
+            console.log(
+                `\nRandomness: [${new Uint8Array(
+                    settledRandomnessEvent.randomness
+                )}]\nRequest completed in ${latency} slots!\n`
+            );
 
             // wait for RPC
             await sleep(2000);
