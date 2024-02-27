@@ -41,10 +41,7 @@ pub struct PlayerInventory<'info> {
 
 // Struct for managing player inventory
 #[derive(Accounts)]
-pub struct PlayerInventoryCallback<'info> {
-    #[account(mut, seeds = [MY_APP_PREFIX, PROGRAM_STATE], bump)]
-    pub program: Box<Account<'info, ProgramData>>,
-
+pub struct ConsumeRandomness<'info> {
     /// We need to make sure the randomness service signed this requests so it can only be invoked by a PDA and not a user.
     #[account(
     signer,
@@ -54,7 +51,6 @@ pub struct PlayerInventoryCallback<'info> {
     )]
     pub randomness_state: Box<Account<'info, solana_randomness_service::State>>,
     pub request: Box<Account<'info, SimpleRandomnessV1Account>>,
-    pub system_program: Program<'info, System>,
 }
 
 #[account]

@@ -62,7 +62,7 @@ describe.only("battleboosters", () => {
     before("Initialize", async () => {
 
         try {
-            randomnessService = await RandomnessService.fromProvider(provider);
+            randomnessService = await RandomnessService.fromCluster("devnet");
         }catch (e) {
             console.log(e)
         }
@@ -77,15 +77,17 @@ describe.only("battleboosters", () => {
         const aggregatorAccount = new AggregatorAccount(switchboardProgram, new anchor.web3.PublicKey("GvDMxPzN1sCj7L26YDK2HnMRXEQmQ2aemov8YBtPS7vR"));
         lastPriceSolUsd = await aggregatorAccount.fetchLatestValue();
 
-        const programInfo = await provider.connection.getAccountInfo(new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"))
-        if (programInfo === null) {
-            throw new Error('Program has not been deployed');
-        }
-        if (!programInfo.executable) {
-            throw new Error('Program is not executable');
-        }
 
-        if (provider.connection.rpcEndpoint.includes("localhost")){
+
+        const programInfo = await provider.connection.getAccountInfo(new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"))
+        // if (programInfo === null) {
+        //     throw new Error('Program has not been deployed');
+        // }
+        // if (!programInfo.executable) {
+        //     throw new Error('Program is not executable');
+        // }
+
+        if (provider.connection.rpcEndpoint.includes("localhost") || provider.connection.rpcEndpoint.includes("http://127.0.0.1:8899")){
             await airdrop_sol(provider, admin_account.publicKey, 10);
         }
 
@@ -107,7 +109,7 @@ describe.only("battleboosters", () => {
                     program: program_pda,
                     bank: bank_pda,
                     mintAuthority: mint_authority_account,
-                    systemProgram: anchor.web3.SystemProgram.programId,
+                    //systemProgram: anchor.web3.SystemProgram.programId,
                 })
                 .signers([admin_account]) // Include new_account as a signer
                 .rpc();
@@ -190,7 +192,7 @@ describe.only("battleboosters", () => {
                 .accounts({
                     creator: admin_account.publicKey,
                     rarity: rarity_pda,
-                    systemProgram: anchor.web3.SystemProgram.programId,
+                    //systemProgram: anchor.web3.SystemProgram.programId,
                 })
                 .signers([admin_account]) // Include new_account as a signer
                 .rpc();
@@ -293,6 +295,7 @@ describe.only("battleboosters", () => {
 
         console.log("watching...")
 
+        // Start watching for the settled event before triggering the request
         const settledRandomnessEventPromise = randomnessService.awaitSettledEvent(
             requestKeypair.publicKey
         );
@@ -356,6 +359,7 @@ describe.only("battleboosters", () => {
             // Initialize the player account first
             await InitializePlayerAccount(provider, provider.wallet.publicKey, program, program_pda);
             console.log("tx start")
+            console.log(randomnessService.accounts.state)
 
             const tx = await program.methods.purchaseNfts(
                 user_bank_bump,
@@ -377,9 +381,9 @@ describe.only("battleboosters", () => {
                     playerInventory: player_inventory_pda,
                     bankEscrow: user_bank_pda,
                     bank: bank_pda,
-
                     priceFeed: priceFeedAccount,
                     randomnessService: randomnessService.programId,
+                    rarity: rarity_pda,
                     randomnessRequest: requestKeypair.publicKey,
                     randomnessEscrow: anchor.utils.token.associatedAddress({
                         mint: randomnessService.accounts.mint,
@@ -387,17 +391,18 @@ describe.only("battleboosters", () => {
                     }),
                     randomnessState: randomnessService.accounts.state,
                     randomnessMint: randomnessService.accounts.mint,
+
                 })
                 .signers([requestKeypair]) // Include new_account as a signer
                 .rpc();
 
             console.log("tx await")
+            console.log(`[TX] requestRandomness: ${tx}`);
             //Await the response from the Switchboard Service
+
             const [settledRandomnessEvent, settledSlot] =
                 await settledRandomnessEventPromise;
             console.log(settledRandomnessEventPromise)
-
-
             console.log(
                 `[EVENT] SimpleRandomnessV1SettledEvent\n${JSON.stringify(
                     {
@@ -437,6 +442,10 @@ describe.only("battleboosters", () => {
                     settledRandomnessEvent.randomness
                 )}]\nRequest completed in ${latency} slots!\n`
             );
+
+
+
+
 
             // wait for RPC
             await sleep(2000);
