@@ -4,6 +4,7 @@ use crate::state::fight_card::FightCardData;
 use anchor_lang::prelude::*;
 
 use crate::state::rarity::RarityData;
+use anchor_lang::solana_program::sysvar;
 use solana_randomness_service::SimpleRandomnessV1Account;
 use solana_randomness_service::{
     program::SolanaRandomnessService, ID as SolanaRandomnessServiceID,
@@ -16,6 +17,14 @@ use switchboard_solana::prelude::*;
 pub struct InitializePlayer<'info> {
     #[account(mut)]
     pub creator: Signer<'info>,
+    #[account(
+    init,
+    payer = creator,
+    seeds = [MY_APP_PREFIX, PLAYER, player_pubkey.as_ref()],
+    bump,
+    space = 8 + 8
+    )]
+    pub player_account: Account<'info, PlayerData>,
     #[account(
     init,
     payer = creator,
@@ -39,19 +48,33 @@ pub struct PlayerInventory<'info> {
     pub system_program: Program<'info, System>,
 }
 
-// Struct for managing player inventory
-#[derive(Accounts)]
-pub struct ConsumeRandomness<'info> {
-    /// We need to make sure the randomness service signed this requests so it can only be invoked by a PDA and not a user.
-    #[account(
-    signer,
-    seeds = [b"STATE"],
-    seeds::program = SolanaRandomnessServiceID,
-    bump = randomness_state.bump,
-    )]
-    pub randomness_state: Box<Account<'info, solana_randomness_service::State>>,
-    pub request: Box<Account<'info, SimpleRandomnessV1Account>>,
-}
+// // Struct for managing player inventory
+// #[derive(Accounts)]
+// pub struct ConsumeRandomness<'info> {
+//     /// We need to make sure the randomness service signed this requests so it can only be invoked by a PDA and not a user.
+//     #[account(
+//     signer,
+//     seeds = [b"STATE"],
+//     seeds::program = SolanaRandomnessServiceID,
+//     bump = randomness_state.bump,
+//     )]
+//     pub randomness_state: Box<Account<'info, solana_randomness_service::State>>,
+//     pub request: Box<Account<'info, SimpleRandomnessV1Account>>,
+//
+//     #[account(mut)]
+//     pub recipient: AccountInfo<'info>,
+//     #[account(
+//     mut,
+//     seeds = [MY_APP_PREFIX, RARITY],
+//     bump
+//     )]
+//     pub rarity: Account<'info, RarityData>,
+//     /// CHECK: account constraints checked in account trait
+//     #[account(address = sysvar::instructions::ID)]
+//     pub sysvar_instructions: AccountInfo<'info>,
+//     pub token_program: Program<'info, Token>,
+//     pub system_program: Program<'info, System>,
+// }
 
 #[account]
 pub struct InventoryData {
@@ -61,6 +84,12 @@ pub struct InventoryData {
     pub booster_mint_allowance: u64,
     /// This data prevent re-initialization
     pub is_initialized: bool,
+}
+
+#[account]
+pub struct PlayerData {
+    /// Represent the nonce of the current amount orders the player have made
+    pub order_nonce: u64,
 }
 
 // #[derive(Accounts)]

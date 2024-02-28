@@ -1,4 +1,5 @@
-use super::player::InventoryData;
+use super::collector_pack::CollectorPack;
+use super::player::PlayerData;
 use super::program::ProgramData;
 use super::rarity::RarityData;
 use crate::constants::*;
@@ -23,27 +24,32 @@ pub struct TransactionEscrow<'info> {
     pub recipient: AccountInfo<'info>,
     #[account(mut, seeds = [MY_APP_PREFIX, PROGRAM_STATE], bump)]
     pub program: Account<'info, ProgramData>,
-    #[account(mut, seeds = [MY_APP_PREFIX, INVENTORY, recipient.key().as_ref()], bump)]
-    pub player_inventory: Account<'info, InventoryData>,
     #[account(
-    mut,
-    seeds = [MY_APP_PREFIX, RARITY],
-    bump
+        mut,
+        seeds = [MY_APP_PREFIX, PLAYER, recipient.key().as_ref()],
+        bump,
     )]
-    pub rarity: Account<'info, RarityData>,
+    pub player_account: Account<'info, PlayerData>,
+    #[account(
+        init,
+        payer = signer,
+        seeds = [MY_APP_PREFIX, COLLECTOR, recipient.key().as_ref(), player_account.order_nonce.to_le_bytes().as_ref()],
+        bump,
+        space = 8 + 8 + 8 + 1 + 8
+    )]
+    pub collector_pack: Account<'info, CollectorPack>,
     /// CHECK: This is a PDA used as the bank
     #[account(mut, seeds = [MY_APP_PREFIX, BANK], bump = program.bank_bump)]
     pub bank: AccountInfo<'info>,
     /// CHECK: This is a PDA used as the bank
     #[account(mut, seeds = [MY_APP_PREFIX, BANK, signer.key().as_ref()], bump)]
     pub bank_escrow: AccountInfo<'info>,
+
     /// CHECK: Switchboard network price feed id
     #[account(address = Pubkey::from_str(SOL_USD_FEED_MAINNET).unwrap() @ ErrorCode::InvalidPriceFeed)]
     pub price_feed: AccountLoader<'info, AggregatorAccountData>,
-
     /// The Solana Randomness Service program.
     pub randomness_service: Program<'info, SolanaRandomnessService>,
-
     /// The account that will be created on-chain to hold the randomness request.
     /// Used by the off-chain oracle to pickup the request and fulfill it.
     /// CHECK: todo
