@@ -62,7 +62,7 @@ describe.only("battleboosters", () => {
     before("Initialize", async () => {
 
         try {
-            randomnessService = await RandomnessService.fromCluster("devnet");
+            randomnessService = await RandomnessService.fromProvider(provider);
         }catch (e) {
             console.log(e)
         }
@@ -86,8 +86,9 @@ describe.only("battleboosters", () => {
         // if (!programInfo.executable) {
         //     throw new Error('Program is not executable');
         // }
-
-        if (provider.connection.rpcEndpoint.includes("localhost") || provider.connection.rpcEndpoint.includes("http://127.0.0.1:8899")){
+        if (provider.connection.rpcEndpoint.includes("localhost") ||
+            provider.connection.rpcEndpoint.includes("http://127.0.0.1:8899") ||
+            provider.connection.rpcEndpoint.includes("http://0.0.0.0:8899")){
             await airdrop_sol(provider, admin_account.publicKey, 10);
         }
 
@@ -268,20 +269,16 @@ describe.only("battleboosters", () => {
     it( "Initialize player account", async () => {
         const customOwner = anchor.web3.Keypair.generate();
 
-        const [player_inventory_pda, player_inventory_bump]  = anchor.web3.PublicKey.findProgramAddressSync(
-            [
-                Buffer.from("BattleBoosters"),
-                Buffer.from("inventory"),
-                customOwner.publicKey.toBuffer()
-            ], program.programId);
-
         // Initialize the player account first
-        await InitializePlayerAccount(provider, customOwner.publicKey, program, program_pda);
+        const [player_inventory_pda, player_account_pda] = await InitializePlayerAccount(provider, customOwner.publicKey, program, program_pda);
 
-        const playerInventoryAccountBefore = await program.account.inventoryData.fetch(player_inventory_pda);
-        assert.isTrue(playerInventoryAccountBefore.boosterMintAllowance.eq(new BN(0)))
-        assert.isTrue(playerInventoryAccountBefore.fighterMintAllowance.eq(new BN(0)))
-        assert.isTrue(playerInventoryAccountBefore.isInitialized);
+        const playerInventory = await program.account.inventoryData.fetch(player_inventory_pda);
+        assert.isTrue(playerInventory.boosterMintAllowance.eq(new BN(0)))
+        assert.isTrue(playerInventory.fighterMintAllowance.eq(new BN(0)))
+        assert.isTrue(playerInventory.isInitialized);
+
+        const playerAccount = await program.account.playerData.fetch(player_account_pda);
+        assert.isTrue(playerAccount.orderNonce.eq(new BN(0)));
     })
 
     /**
@@ -295,7 +292,7 @@ describe.only("battleboosters", () => {
 
         console.log("watching...")
 
-        // Start watching for the settled event before triggering the request
+        //Start watching for the settled event before triggering the request
         const settledRandomnessEventPromise = randomnessService.awaitSettledEvent(
             requestKeypair.publicKey
         );
@@ -323,6 +320,24 @@ describe.only("battleboosters", () => {
                 Buffer.from("BattleBoosters"),
                 Buffer.from("inventory"),
                 provider.wallet.publicKey.toBuffer()
+            ], program.programId);
+
+        const [player_account_pda, player_account_bump]  = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("BattleBoosters"),
+                Buffer.from("player"),
+                provider.wallet.publicKey.toBuffer()
+            ], program.programId);
+
+
+        const playerAccountData =  await program.account.playerData.fetch(player_account_pda);
+        // MY_APP_PREFIX, COLLECTOR, recipient.key().as_ref(), player_account.order_nonce.to_le_bytes().as_ref()
+        const [collector_pack_pda, collector_pack_bump]  = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("BattleBoosters"),
+                Buffer.from("collector"),
+                provider.wallet.publicKey.toBuffer(),
+                new BN(playerAccountData.orderNonce).toBuffer("le", 8)
             ], program.programId);
 
 
@@ -378,12 +393,12 @@ describe.only("battleboosters", () => {
                     signer: provider.wallet.publicKey,
                     recipient: provider.wallet.publicKey,
                     program: program_pda,
-                    playerInventory: player_inventory_pda,
+                    playerAccount: player_account_pda,
+                    collectorPack: collector_pack_pda,
                     bankEscrow: user_bank_pda,
                     bank: bank_pda,
                     priceFeed: priceFeedAccount,
                     randomnessService: randomnessService.programId,
-                    rarity: rarity_pda,
                     randomnessRequest: requestKeypair.publicKey,
                     randomnessEscrow: anchor.utils.token.associatedAddress({
                         mint: randomnessService.accounts.mint,
@@ -442,9 +457,6 @@ describe.only("battleboosters", () => {
                     settledRandomnessEvent.randomness
                 )}]\nRequest completed in ${latency} slots!\n`
             );
-
-
-
 
 
             // wait for RPC
@@ -546,7 +558,7 @@ describe.only("battleboosters", () => {
                     signer: provider.wallet.publicKey,
                     recipient: newRecipient.publicKey,
                     program: program_pda,
-                    playerInventory: player_inventory_pda,
+                    //playerInventory: player_inventory_pda,
                     bankEscrow: user_bank_pda,
                     bank: bank_pda,
                     priceFeed: priceFeedAccount
@@ -645,7 +657,7 @@ describe.only("battleboosters", () => {
                     signer: provider.wallet.publicKey,
                     recipient: newRecipient.publicKey,
                     program: program_pda,
-                    playerInventory: player_inventory_pda,
+                    // playerInventory: player_inventory_pda,
                     bankEscrow: user_bank_pda,
                     bank: bank_pda,
                     priceFeed: priceFeedAccount
@@ -732,7 +744,7 @@ describe.only("battleboosters", () => {
                     signer: provider.wallet.publicKey,
                     recipient: newRecipient.publicKey,
                     program: program_pda,
-                    playerInventory: player_inventory_pda,
+                    //playerInventory: player_inventory_pda,
                     bankEscrow: user_bank_pda,
                     bank: bank_pda,
                     priceFeed: priceFeedAccount

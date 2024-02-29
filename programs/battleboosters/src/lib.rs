@@ -31,7 +31,7 @@ use anchor_lang::solana_program::program::{invoke, invoke_signed};
 use solana_randomness_service::ID as SolanaRandomnessServiceID;
 use switchboard_solana::utils::get_ixn_discriminator;
 
-declare_id!("2A1e7TJ6cehtwAdPR5jWkDRuxNcZb4UxBYwfs6JLH3ZY");
+declare_id!("3aMhXWHYkZ8AwPtZs1bPd1nmNJd9vV5QtHbgRaVuyqmd");
 
 #[program]
 pub mod battleboosters {
@@ -307,6 +307,11 @@ pub mod battleboosters {
             &[&bank_escrow_seeds],
         )?;
 
+        Ok(())
+    }
+
+    pub fn mint_collector_pack() -> Result<()> {
+        // TODO load the collector_pack and random mint to the user
         Ok(())
     }
 

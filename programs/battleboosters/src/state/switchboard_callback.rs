@@ -22,6 +22,7 @@ pub struct ConsumeRandomness<'info> {
     pub randomness_state: Box<Account<'info, solana_randomness_service::State>>,
     pub request: Box<Account<'info, SimpleRandomnessV1Account>>,
 
+    /// CHECK: Only used to verify
     #[account(mut)]
     pub signer: AccountInfo<'info>,
     #[account(mut, seeds = [MY_APP_PREFIX, PROGRAM_STATE], bump)]

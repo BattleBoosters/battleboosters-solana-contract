@@ -11,6 +11,13 @@ const InitializePlayerAccount = async function(provider, publicKey, program, pro
             publicKey.toBuffer()
         ], program.programId);
 
+    const [player_account_pda, player_account_bump]  = anchor.web3.PublicKey.findProgramAddressSync(
+        [
+            Buffer.from("BattleBoosters"),
+            Buffer.from("player"),
+            publicKey.toBuffer()
+        ], program.programId);
+
     try {
         await program.account.inventoryData.fetch(player_inventory_pda);
     }catch (e) {
@@ -21,11 +28,14 @@ const InitializePlayerAccount = async function(provider, publicKey, program, pro
             .accounts({
                 creator: provider.wallet.publicKey,
                 inventory: player_inventory_pda,
+                playerAccount: player_account_pda,
                 program: program_pda,
             }).signers([]) // Include new_account as a signer
             .rpc();
-    }
 
+
+    }
+    return [player_inventory_pda, player_account_pda]
 
 }
 
