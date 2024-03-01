@@ -6,11 +6,11 @@ pub struct InitializeRarity<'info> {
     #[account(mut)]
     pub creator: Signer<'info>,
     #[account(
-    init,
-    payer = creator,
-    seeds = [MY_APP_PREFIX, RARITY],
-    bump,
-    space = 8 + 140 + 50 + 5 + 5 + 1
+        init,
+        payer = creator,
+        seeds = [MY_APP_PREFIX, RARITY],
+        bump,
+        space = 8 + 140 + 50 + 5 + 5 + 1
     )]
     pub rarity: Account<'info, RarityData>,
     pub system_program: Program<'info, System>,

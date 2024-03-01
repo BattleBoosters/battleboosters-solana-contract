@@ -19,4 +19,6 @@ pub enum ErrorCode {
     InsufficientFunds,
     #[msg("Insufficient amount in purchase request")]
     InsufficientAmount,
+    #[msg("Randomness unavailable for now")]
+    RandomnessUnavailable,
 }

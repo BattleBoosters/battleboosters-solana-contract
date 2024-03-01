@@ -11,8 +11,8 @@ mod utils;
 use crate::constants::*;
 use crate::events::*;
 use crate::state::{
-    create_spl_nft::*, event::*, fight_card::*, player::*, program::*, rarity::*,
-    switchboard_callback::*, transaction_escrow::*,
+    collector_pack::*, create_spl_nft::*, event::*, fight_card::*, player::*, program::*,
+    rarity::*, switchboard_callback::*, transaction_escrow::*,
 };
 
 use crate::types::*;
@@ -40,8 +40,9 @@ pub mod battleboosters {
     use crate::state::rarity::InitializeRarity;
     use anchor_lang::solana_program::native_token::LAMPORTS_PER_SOL;
     use anchor_lang::solana_program::system_instruction;
+    use mpl_token_metadata::types::DataV2;
     use solana_randomness_service::TransactionOptions;
-    use std::ops::Add;
+    use switchboard_solana::rust_decimal::prelude::ToPrimitive;
 
     pub fn initialize(
         ctx: Context<InitializeProgram>,
@@ -310,8 +311,101 @@ pub mod battleboosters {
         Ok(())
     }
 
-    pub fn mint_collector_pack() -> Result<()> {
-        // TODO load the collector_pack and random mint to the user
+    pub fn mint_collector_pack(
+        ctx: Context<MintCollectorPack>,
+        requests: Vec<PurchaseRequest>,
+    ) -> Result<()> {
+        let program = &ctx.accounts.program;
+        let collector_pack = &mut ctx.accounts.collector_pack;
+        // let rarity = &ctx.accounts.rarity;
+        //
+        // let randomness = collector_pack.randomness.clone().ok_or(ErrorCode::RandomnessUnavailable)?;
+        //
+        // let rng_seed = u64::from_le_bytes([
+        //     randomness[0].clone(), randomness[1].clone(), randomness[2].clone(), randomness[3].clone(),
+        //     randomness[4].clone(), randomness[5].clone(), randomness[6].clone(), randomness[7].clone(),
+        // ]);
+        // let random_number = ((xorshift64(rng_seed) % 100) + 1) as u8;
+
+        let metadata_program = &ctx.accounts.metadata_program.to_account_info();
+        let energy_metadata = &ctx.accounts.energy_metadata.to_account_info();
+        let minter = &ctx.accounts.energy_minter.to_account_info();
+        let token_owner = &ctx.accounts.creator.to_account_info();
+        let master_edition = &ctx.accounts.energy_master_edition.to_account_info();
+        let mint_authority = &ctx.accounts.mint_authority.to_account_info();
+
+        let energy_token_account = &ctx.accounts.energy_token_account.to_account_info();
+
+        let mut binding = MintV1CpiBuilder::new(metadata_program);
+        let mint_cpi = binding
+            .token(energy_token_account)
+            .token_owner(Some(token_owner))
+            .metadata(energy_metadata)
+            .master_edition(Some(master_edition))
+            .mint(minter)
+            .payer(token_owner)
+            .authority(mint_authority)
+            .system_program(&ctx.accounts.system_program)
+            .sysvar_instructions(&ctx.accounts.sysvar_instructions)
+            .spl_token_program(&ctx.accounts.token_program)
+            .spl_ata_program(&ctx.accounts.associated_token_program)
+            .amount(1);
+
+        let authority_seeds = [
+            MY_APP_PREFIX,
+            MINT_AUTHORITY,
+            &[program.authority_bump.clone()],
+        ];
+
+        mint_cpi.invoke_signed(&[&authority_seeds])?;
+
+        // for request in &requests {
+        //     match request.nft_type {
+        //         NftType::Booster => {
+        //             // update the quantity of booster mint allowance
+        //             collector_pack.booster_mint_allowance = collector_pack.booster_mint_allowance.checked_sub(1).unwrap();
+        //
+        //
+        //             let metadata_program = &ctx.accounts.metadata_program.to_account_info();
+        //             let energy_metadata = &ctx.accounts.energy_metadata.to_account_info();
+        //             let minter = &ctx.accounts.energy_minter.to_account_info();
+        //             let token_owner = &ctx.accounts.creator.to_account_info();
+        //             let master_edition = &ctx.accounts.energy_master_edition.to_account_info();
+        //             let mint_authority = &ctx.accounts.mint_authority.to_account_info();
+        //
+        //             let energy_token_account = &ctx.accounts.energy_token_account.to_account_info();
+        //
+        //             let mut binding = MintV1CpiBuilder::new(metadata_program);
+        //             let mint_cpi = binding
+        //                 .token(energy_token_account)
+        //                 .token_owner(Some(token_owner))
+        //                 .metadata(energy_metadata)
+        //                 .master_edition(Some(master_edition))
+        //                 .mint(minter)
+        //                 .payer(token_owner)
+        //                 .authority(mint_authority)
+        //                 .system_program(&ctx.accounts.system_program)
+        //                 .sysvar_instructions(&ctx.accounts.sysvar_instructions)
+        //                 .spl_token_program(&ctx.accounts.token_program)
+        //                 .spl_ata_program(&ctx.accounts.associated_token_program)
+        //                 .amount(1);
+        //
+        //             let authority_seeds = [
+        //                 MY_APP_PREFIX,
+        //                 MINT_AUTHORITY,
+        //                 &[program.authority_bump.clone()],
+        //             ];
+        //
+        //             mint_cpi.invoke_signed(&[&authority_seeds])?;
+        //
+        //         }
+        //         NftType::FighterPack => {
+        //             // update the quantity of fighter mint allowance
+        //             collector_pack.fighter_mint_allowance = collector_pack.fighter_mint_allowance.checked_sub(1).unwrap();
+        //         }
+        //     }
+        // }
+
         Ok(())
     }
 

@@ -34,6 +34,14 @@ pub fn set_fight_card_properties(fight_card: &mut FightCardData, params: &FightC
     }
 }
 
+pub fn xorshift64(seed: u64) -> u64 {
+    let mut new_seed = seed;
+    new_seed ^= new_seed.clone() << 13;
+    new_seed ^= new_seed.clone() >> 7; // Changed for better distribution with u64
+    new_seed ^= new_seed.clone() << 17;
+    new_seed
+}
+
 // pub fn create_game_token_mint(
 //     mint: AccountInfo,
 //     rent: AccountInfo,
