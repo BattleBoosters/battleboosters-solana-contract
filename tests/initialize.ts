@@ -285,7 +285,7 @@ describe.only("battleboosters", () => {
        Player Purchase in game NFT assets
      **/
 
-    it.only("Purchase successfully in-game assets for signer", async () => {
+    it("Purchase successfully in-game assets for signer", async () => {
 
         // Start watching for the settled event before triggering the request
         const requestKeypair = anchor.web3.Keypair.generate();
@@ -769,7 +769,7 @@ describe.only("battleboosters", () => {
         NFT Collection
      **/
 
-    it("Create NFT collection" ,async () => {
+    it.only("Create NFT collection" ,async () => {
 
         const [minter]  = anchor.web3.PublicKey.findProgramAddressSync(
             [
@@ -809,6 +809,170 @@ describe.only("battleboosters", () => {
                 minter: minter,
                 metadata: metadata,
                 masterEdition: masterEdition,
+                sysvarInstructions: anchor.web3.SYSVAR_INSTRUCTIONS_PUBKEY,
+                rent: anchor.web3.SYSVAR_RENT_PUBKEY,
+                systemProgram: anchor.web3.SystemProgram.programId,
+                tokenProgram: TOKEN_PROGRAM_ID,
+                metadataProgram: MPL_TOKEN_METADATA_PROGRAM_ID
+            })
+            .signers([admin_account]) // Include new_account as a signer
+            .rpc();
+    })
+
+    it("Mint an nft" ,async () => {
+
+        const player = anchor.web3.Keypair.generate();
+
+        if (provider.connection.rpcEndpoint.includes("localhost") ||
+            provider.connection.rpcEndpoint.includes("http://127.0.0.1:8899") ||
+            provider.connection.rpcEndpoint.includes("http://0.0.0.0:8899")){
+            await airdrop_sol(provider, player.publicKey, 10);
+        }
+        //await airdrop_sol(provider, player.publicKey, 1);
+
+        //let programPDA = await program.account.programData.fetch(program_pda);
+
+        // const [collector_pack]  = anchor.web3.PublicKey.findProgramAddressSync(
+        //     [
+        //         Buffer.from("BattleBoosters"),
+        //         Buffer.from("collector"),
+        //         player.publicKey.toBuffer(),
+        //         new BN(programPDA.)
+        //     ], program.programId);
+
+        const [energy_minter]  = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("BattleBoosters"),
+                Buffer.from("mint"),
+                Buffer.from([0])
+            ], program.programId);
+        const [energy_metadata]  = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("metadata"),
+                metadata_pubkey.toBuffer(),
+                energy_minter.toBuffer()
+            ], metadata_pubkey);
+
+        const [energy_master_edition]  = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("metadata"),
+                metadata_pubkey.toBuffer(),
+                energy_minter.toBuffer(),
+                Buffer.from("edition"),
+            ], metadata_pubkey);
+
+
+
+        const [shield_minter]  = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("BattleBoosters"),
+                Buffer.from("mint"),
+                Buffer.from([1])
+            ], program.programId);
+
+
+
+        const [shield_metadata]  = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("metadata"),
+                metadata_pubkey.toBuffer(),
+                shield_minter.toBuffer()
+            ], metadata_pubkey);
+
+        const [shield_master_edition]  = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("metadata"),
+                metadata_pubkey.toBuffer(),
+                shield_minter.toBuffer(),
+                Buffer.from("edition"),
+            ], metadata_pubkey);
+        const [points_minter]  = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("BattleBoosters"),
+                Buffer.from("mint"),
+                Buffer.from([2])
+            ], program.programId);
+
+        const [points_metadata]  = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("metadata"),
+                metadata_pubkey.toBuffer(),
+                points_minter.toBuffer()
+            ], metadata_pubkey);
+
+        const [points_master_edition]  = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("metadata"),
+                metadata_pubkey.toBuffer(),
+                points_minter.toBuffer(),
+                Buffer.from("edition"),
+            ], metadata_pubkey);
+
+        const [fighter_minter]  = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("BattleBoosters"),
+                Buffer.from("mint"),
+                Buffer.from([3])
+            ], program.programId);
+
+        const [fighter_metadata]  = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("metadata"),
+                metadata_pubkey.toBuffer(),
+                fighter_minter.toBuffer()
+            ], metadata_pubkey);
+
+        const [fighter_master_edition]  = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("metadata"),
+                metadata_pubkey.toBuffer(),
+                fighter_minter.toBuffer(),
+                Buffer.from("edition"),
+            ], metadata_pubkey);
+
+
+
+
+        let energy_token_account = anchor.utils.token.associatedAddress( {mint: energy_minter, owner: admin_account.publicKey})
+        let shield_token_account = anchor.utils.token.associatedAddress( {mint: shield_minter, owner: admin_account.publicKey})
+        let points_token_account = anchor.utils.token.associatedAddress( {mint: points_minter, owner: admin_account.publicKey})
+        let fighter_token_account = anchor.utils.token.associatedAddress( {mint: fighter_minter, owner: admin_account.publicKey})
+
+        const [energy_token_record]  = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("metadata"),
+                metadata_pubkey.toBuffer(),
+                energy_minter.toBuffer(),
+                Buffer.from("token_record"),
+                energy_token_account.toBuffer()
+            ], metadata_pubkey);
+
+        const tx = await program.methods.mintCollectorPack(
+
+        )
+            .accounts({
+                creator: admin_account.publicKey,
+                program: program_pda,
+                mintAuthority: mint_authority_account,
+                energyMinter:energy_minter,
+                energyMetadata: energy_metadata,
+                energyMasterEdition: energy_master_edition,
+                // shieldMinter: shield_minter,
+                // shieldMetadata: shield_metadata,
+                // shieldMasterEdition: shield_master_edition,
+                // pointsMinter: points_minter,
+                // pointsMetadata: points_metadata,
+                // pointsMasterEdition: points_master_edition,
+                // fighterMinter: fighter_minter,
+                // fighterMetadata: fighter_metadata,
+                // fighterMasterEdition: fighter_master_edition,
+                energyTokenAccount: energy_token_account,
+                energyTokenRecord: energy_token_record,
+                // shieldTokenAccount: shield_token_account,
+                // pointsTokenAccount: points_token_account,
+                // fighterTokenAccount: fighter_token_account,
+                rarity: rarity_pda,
+                // collectorPack: collector_pack,
                 sysvarInstructions: anchor.web3.SYSVAR_INSTRUCTIONS_PUBKEY,
                 rent: anchor.web3.SYSVAR_RENT_PUBKEY,
                 systemProgram: anchor.web3.SystemProgram.programId,
