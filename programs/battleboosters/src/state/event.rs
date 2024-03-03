@@ -11,7 +11,7 @@ pub struct CreateEvent<'info> {
     #[account(
     init,
     payer = creator,
-    seeds = [MY_APP_PREFIX, EVENT, program.event_counter.to_le_bytes().as_ref()],
+    seeds = [MY_APP_PREFIX, EVENT, program.event_nonce.to_le_bytes().as_ref()],
     bump,
     space = 8 + 1 + 8 + 8
     )]

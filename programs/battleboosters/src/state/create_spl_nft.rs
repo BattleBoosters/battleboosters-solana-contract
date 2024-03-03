@@ -15,7 +15,7 @@ pub struct CreateSplNft<'info> {
     #[account(mut)]
     pub creator: Signer<'info>,
     #[account(mut)]
-    pub program: Account<'info, ProgramData>,
+    pub program: Box<Account<'info, ProgramData>>,
     /// CHECK: This is a PDA used as the mint authority
     #[account(mut, seeds = [MY_APP_PREFIX, MINT_AUTHORITY], bump = program.authority_bump)]
     pub mint_authority: AccountInfo<'info>,
@@ -55,6 +55,31 @@ pub struct CreateSplNft<'info> {
         seeds::program = metadata_program.key()
     )]
     pub master_edition: UncheckedAccount<'info>,
+
+    #[account(
+    init,
+    payer = creator,
+    associated_token::mint = minter,
+    associated_token::authority = mint_authority,
+    )]
+    pub token_account: Box<Account<'info, TokenAccount>>,
+
+    /// CHECK: This is a token record account
+    #[account(
+    mut,
+    seeds = [
+    b"metadata".as_ref(),
+    metadata_program.key().as_ref(),
+    minter.key().as_ref(),
+    b"token_record",
+    token_account.key().as_ref(),
+    ],
+    seeds::program = metadata_program.key(),
+    bump,
+    )]
+    pub token_record: UncheckedAccount<'info>,
+
+    pub associated_token_program: Program<'info, AssociatedToken>,
     pub system_program: Program<'info, System>,
     pub rent: Sysvar<'info, Rent>,
     /// CHECK: account constraints checked in account trait

@@ -9,7 +9,7 @@ pub struct InitializeProgram<'info> {
     #[account(init, payer = creator,
     seeds = [MY_APP_PREFIX, PROGRAM_STATE],
     bump,
-    space = 8 + 8 + 32 + 8 + 8 + 1 + 1 + 1 + 1)]
+    space = 8 + 8 + 8 + 32 + 8 + 8 + 1 + 1 + 1 + 1)]
     pub program: Account<'info, ProgramData>,
     /// CHECK: This is a PDA used as the bank
     #[account(mut, seeds = [MY_APP_PREFIX, BANK], bump = bank_bump)]
@@ -23,7 +23,9 @@ pub struct InitializeProgram<'info> {
 #[account]
 pub struct ProgramData {
     /// Represent the current amount of created event
-    pub event_counter: u64,
+    pub event_nonce: u64,
+    /// Represent the current amount of created collector pack
+    pub collector_pack_nonce: u64,
     /// The authority which are allowed to administrate the contract
     pub admin_pubkey: Pubkey,
     /// The price in USD of each NFT fighter pack

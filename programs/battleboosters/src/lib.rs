@@ -32,7 +32,7 @@ use anchor_lang::solana_program::program::{invoke, invoke_signed};
 use solana_randomness_service::ID as SolanaRandomnessServiceID;
 use switchboard_solana::utils::get_ixn_discriminator;
 
-declare_id!("BfB9pE17fXGJpWvamo7WceEkQ9VHqaxEzCnvs3Ac42Rg");
+declare_id!("CAkQWidBwtYRzpWYYzrdwQyNH1WQMnY7zfCSFciWXQro");
 
 #[program]
 pub mod battleboosters {
@@ -43,7 +43,6 @@ pub mod battleboosters {
     use anchor_lang::solana_program::system_instruction;
     use mpl_token_metadata::types::{Collection, CollectionDetails, DataV2};
     use solana_randomness_service::TransactionOptions;
-    use switchboard_solana::rust_decimal::prelude::ToPrimitive;
 
     pub fn initialize(
         ctx: Context<InitializeProgram>,
@@ -59,7 +58,8 @@ pub mod battleboosters {
 
         program.authority_bump = authority_bump;
         program.bank_bump = bank_bump;
-        program.event_counter = 0_u64;
+        program.event_nonce = 0_u64;
+        program.collector_pack_nonce = 0_u64;
         program.admin_pubkey = admin_pubkey;
         program.fighter_pack_price = nft_fighter_pack_price;
         program.booster_price = booster_price;
@@ -118,6 +118,7 @@ pub mod battleboosters {
         ctx: Context<CreateSplNft>,
         collection_id: CollectionType, /* Used in initialization */
         collection_name: String,
+        symbol: String,
         uri: String,
         fees: u16,
     ) -> Result<()> {
@@ -131,29 +132,48 @@ pub mod battleboosters {
         let spl_token_program = ctx.accounts.token_program.to_account_info();
         let metadata = ctx.accounts.metadata.to_account_info();
         let minter = ctx.accounts.minter.to_account_info();
+        let token_account = ctx.accounts.token_account.to_account_info();
+        let token_record = ctx.accounts.token_record.to_account_info();
 
-        let mut binding = CreateV1CpiBuilder::new(&metadata_program);
+        let mut binding_create = CreateV1CpiBuilder::new(&metadata_program);
 
-        let create_cpi = binding
+        let create_cpi = binding_create
             .metadata(&metadata)
             .mint(&minter, false)
             .authority(&authority)
             .payer(&payer)
             .update_authority(&authority, true)
             .master_edition(Some(&ctx.accounts.master_edition))
-            .collection(Collection {
-                key: minter.key.clone(),
-                verified: false,
-            })
+            // .collection(Collection {
+            //     key: minter.key.clone(),
+            //     verified: false,
+            // })
             .system_program(&ctx.accounts.system_program)
             .sysvar_instructions(&sysvar)
             .spl_token_program(Some(&spl_token_program))
             .token_standard(TokenStandard::ProgrammableNonFungible)
             .name(collection_name)
+            .symbol(symbol)
             .uri(uri)
             .seller_fee_basis_points(fees)
             .is_mutable(true)
-            .print_supply(PrintSupply::Unlimited);
+            .print_supply(PrintSupply::Zero);
+
+        let mut binding_mint = MintV1CpiBuilder::new(&metadata_program);
+        let mint_cpi = binding_mint
+            .token(&token_account)
+            .token_owner(Some(&authority))
+            .metadata(&metadata)
+            .token_record(Some(&token_record))
+            .master_edition(Some(&ctx.accounts.master_edition))
+            .mint(&minter)
+            .payer(&payer)
+            .authority(&authority)
+            .system_program(&ctx.accounts.system_program)
+            .sysvar_instructions(&ctx.accounts.sysvar_instructions)
+            .spl_token_program(&ctx.accounts.token_program)
+            .spl_ata_program(&ctx.accounts.associated_token_program)
+            .amount(1);
 
         let authority_seeds = [
             MY_APP_PREFIX,
@@ -162,16 +182,7 @@ pub mod battleboosters {
         ];
 
         create_cpi.invoke_signed(&[&authority_seeds])?;
-
-        let mut binding_verify = VerifyCollectionV1CpiBuilder::new(&metadata_program);
-        let create_cpi_verify = binding_verify
-            .collection_mint(&minter)
-            .authority(&authority)
-            .collection_master_edition(Some(&ctx.accounts.master_edition))
-            .sysvar_instructions(&sysvar)
-            .system_program(&ctx.accounts.system_program)
-            .collection_metadata(Some(&metadata));
-        create_cpi_verify.invoke_signed(&[&authority_seeds])?;
+        mint_cpi.invoke_signed(&[&authority_seeds])?;
 
         Ok(())
     }
@@ -330,7 +341,7 @@ pub mod battleboosters {
         ctx: Context<MintCollectorPack>,
         //requests: Vec<PurchaseRequest>,
     ) -> Result<()> {
-        let program = &ctx.accounts.program;
+        let program = &mut ctx.accounts.program;
         // let collector_pack = &mut ctx.accounts.collector_pack;
         // let rarity = &ctx.accounts.rarity;
         //
@@ -343,22 +354,52 @@ pub mod battleboosters {
         // let random_number = ((xorshift64(rng_seed) % 100) + 1) as u8;
 
         let metadata_program = &ctx.accounts.metadata_program.to_account_info();
-        let energy_metadata = &ctx.accounts.energy_metadata.to_account_info();
-        let energy_token_record = &ctx.accounts.energy_token_record.to_account_info();
-        let minter = &ctx.accounts.energy_minter.to_account_info();
+        let metadata = &ctx.accounts.metadata.to_account_info();
+        let token_record = &ctx.accounts.token_record.to_account_info();
+        let minter = &ctx.accounts.minter.to_account_info();
         let token_owner = &ctx.accounts.creator.to_account_info();
-        let master_edition = &ctx.accounts.energy_master_edition.to_account_info();
+        let master_edition = &ctx.accounts.master_edition.to_account_info();
         let mint_authority = &ctx.accounts.mint_authority.to_account_info();
+        let token_account = &ctx.accounts.token_account.to_account_info();
 
-        let energy_token_account = &ctx.accounts.energy_token_account.to_account_info();
+        let sysvar = &ctx.accounts.sysvar_instructions.to_account_info();
+        let spl_token_program = &ctx.accounts.token_program.to_account_info();
+
+        // Energy
+        let energy_metadata = &ctx.accounts.energy_metadata.to_account_info();
+        let energy_master_edition = &ctx.accounts.energy_master_edition.to_account_info();
+        let energy_minter = &ctx.accounts.energy_minter.to_account_info();
+
+        let mut binding_create = CreateV1CpiBuilder::new(&metadata_program);
+
+        let create_cpi = binding_create
+            .metadata(&metadata)
+            .mint(&minter, false)
+            .authority(&mint_authority)
+            .payer(&token_owner)
+            .update_authority(&mint_authority, true)
+            .master_edition(Some(&ctx.accounts.master_edition))
+            .collection(Collection {
+                key: energy_minter.key(),
+                verified: false,
+            })
+            .system_program(&ctx.accounts.system_program)
+            .sysvar_instructions(&sysvar)
+            .spl_token_program(Some(&spl_token_program))
+            .token_standard(TokenStandard::ProgrammableNonFungible)
+            .name("Energy booster".to_string())
+            .uri("https://battleboosters.com".to_string())
+            .seller_fee_basis_points(500)
+            .is_mutable(true)
+            .print_supply(PrintSupply::Zero);
 
         let mut binding = MintV1CpiBuilder::new(metadata_program);
         let mint_cpi = binding
-            .token(energy_token_account)
+            .token(token_account)
             .token_owner(Some(token_owner))
-            .metadata(energy_metadata)
+            .metadata(metadata)
             .master_edition(Some(master_edition))
-            .token_record(Some(energy_token_record))
+            .token_record(Some(token_record))
             .mint(minter)
             .payer(token_owner)
             .authority(mint_authority)
@@ -368,13 +409,25 @@ pub mod battleboosters {
             .spl_ata_program(&ctx.accounts.associated_token_program)
             .amount(1);
 
+        let mut binding_verify = VerifyCollectionV1CpiBuilder::new(&metadata_program);
+        let create_cpi_verify = binding_verify
+            .collection_mint(&energy_minter)
+            .authority(&mint_authority)
+            .metadata(&metadata)
+            .collection_metadata(Some(&energy_metadata))
+            .collection_master_edition(Some(&energy_master_edition))
+            .sysvar_instructions(&ctx.accounts.sysvar_instructions)
+            .system_program(&ctx.accounts.system_program);
+
         let authority_seeds = [
             MY_APP_PREFIX,
             MINT_AUTHORITY,
             &[program.authority_bump.clone()],
         ];
 
+        create_cpi.invoke_signed(&[&authority_seeds])?;
         mint_cpi.invoke_signed(&[&authority_seeds])?;
+        create_cpi_verify.invoke_signed(&[&authority_seeds])?;
 
         // for request in &requests {
         //     match request.nft_type {
@@ -423,6 +476,7 @@ pub mod battleboosters {
         //     }
         // }
 
+        program.collector_pack_nonce = program.collector_pack_nonce.checked_add(1).unwrap();
         Ok(())
     }
 
@@ -441,11 +495,11 @@ pub mod battleboosters {
         create_event.end_date = end_date;
 
         emit!(EventCreated {
-            event_id: program.event_counter
+            event_id: program.event_nonce
         });
 
         // Increment event counter
-        program.event_counter += 1_u64;
+        program.event_nonce += 1_u64;
 
         Ok(())
     }
@@ -464,7 +518,7 @@ pub mod battleboosters {
         update_event.end_date = end_date;
 
         emit!(EventUpdated {
-            event_id: program.event_counter
+            event_id: program.event_nonce
         });
 
         Ok(())

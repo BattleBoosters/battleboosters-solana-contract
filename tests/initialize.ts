@@ -1,9 +1,9 @@
 import * as anchor from "@coral-xyz/anchor";
-import {BN, Program} from "@coral-xyz/anchor";
+import {BN, Program, web3} from "@coral-xyz/anchor";
 import { Battleboosters } from "../target/types/battleboosters";
 import {assert} from "chai";
 import airdropSol from "./utils/airdrop_sol";
-import { TOKEN_PROGRAM_ID, AccountLayout, MintLayout } from '@solana/spl-token';
+import {TOKEN_PROGRAM_ID, AccountLayout, MintLayout, ASSOCIATED_TOKEN_PROGRAM_ID} from '@solana/spl-token';
 const { SystemProgram, SYSVAR_RENT_PUBKEY } = anchor.web3;
 import {mplTokenMetadata, getMplTokenMetadataProgramId} from "@metaplex-foundation/mpl-token-metadata";
 import {MPL_TOKEN_METADATA_PROGRAM_ID} from "@metaplex-foundation/mpl-token-metadata";
@@ -17,7 +17,9 @@ import { RandomnessService } from "@switchboard-xyz/solana-randomness-service";
 import * as buffer from "buffer";
 
 describe.only("battleboosters", () => {
+
     const provider = anchor.AnchorProvider.env();
+
     anchor.setProvider(provider);
 
     const program = anchor.workspace.Battleboosters as Program<Battleboosters>;
@@ -86,11 +88,13 @@ describe.only("battleboosters", () => {
         // if (!programInfo.executable) {
         //     throw new Error('Program is not executable');
         // }
-        if (provider.connection.rpcEndpoint.includes("localhost") ||
-            provider.connection.rpcEndpoint.includes("http://127.0.0.1:8899") ||
-            provider.connection.rpcEndpoint.includes("http://0.0.0.0:8899")){
-            await airdrop_sol(provider, admin_account.publicKey, 10);
-        }
+
+        let admin_account_balance = await provider.connection.getBalance(admin_account.publicKey);
+        console.log(admin_account_balance)
+         if (admin_account_balance < LAMPORTS_PER_SOL * 2){
+             await airdrop_sol(provider, admin_account.publicKey, 10);
+         }
+
 
         try {
 
@@ -116,7 +120,8 @@ describe.only("battleboosters", () => {
                 .rpc();
 
             const programAccount = await program.account.programData.fetch(program_pda);
-            assert.equal(programAccount.eventCounter.eq(new BN(0)),  true);
+            assert.equal(programAccount.eventNonce.eq(new BN(0)),  true);
+            assert.equal(programAccount.collectorPackNonce.eq(new BN(0)),  true);
             assert.deepEqual(programAccount.adminPubkey, admin_account.publicKey);
             assert.equal(programAccount.fighterPackPrice.eq(new BN(1)), true)
             assert.equal(programAccount.boosterPrice.eq(new BN(1)), true)
@@ -769,7 +774,7 @@ describe.only("battleboosters", () => {
         NFT Collection
      **/
 
-    it.only("Create NFT collection" ,async () => {
+    it("Create NFT collection" ,async () => {
 
         const [minter]  = anchor.web3.PublicKey.findProgramAddressSync(
             [
@@ -787,7 +792,7 @@ describe.only("battleboosters", () => {
                 minter.toBuffer()
             ], metadata_pubkey);
 
-        const [masterEdition]  = anchor.web3.PublicKey.findProgramAddressSync(
+        const [master_edition]  = anchor.web3.PublicKey.findProgramAddressSync(
             [
                 Buffer.from("metadata"),
                 metadata_pubkey.toBuffer(),
@@ -795,31 +800,59 @@ describe.only("battleboosters", () => {
                 Buffer.from("edition"),
             ], metadata_pubkey);
 
+        let token_account = anchor.utils.token.associatedAddress( {mint: minter, owner: mint_authority_account})
+        const [token_record]  = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("metadata"),
+                metadata_pubkey.toBuffer(),
+                minter.toBuffer(),
+                Buffer.from("token_record"),
+                token_account.toBuffer()
+            ], metadata_pubkey);
 
-        const tx = await program.methods.createNftCollection(
-            { energy:{} },
-            "Energy Booster",
-            "https://battleboosters.com/metadata",
-            500 // 5% royalty
-        )
-            .accounts({
-                creator: admin_account.publicKey,
-                program: program_pda,
-                mintAuthority: mint_authority_account,
-                minter: minter,
-                metadata: metadata,
-                masterEdition: masterEdition,
-                sysvarInstructions: anchor.web3.SYSVAR_INSTRUCTIONS_PUBKEY,
-                rent: anchor.web3.SYSVAR_RENT_PUBKEY,
-                systemProgram: anchor.web3.SystemProgram.programId,
-                tokenProgram: TOKEN_PROGRAM_ID,
-                metadataProgram: MPL_TOKEN_METADATA_PROGRAM_ID
-            })
-            .signers([admin_account]) // Include new_account as a signer
-            .rpc();
+        try {
+
+
+            // const update_cu_ix = anchor.web3.ComputeBudgetProgram.setComputeUnitLimit({units: 1000000});
+            //
+            // const tx_ = new anchor.web3.Transaction().add(update_cu_ix)
+            //    anchor.utils.
+
+
+            const tx = await program.methods.createNftCollection(
+                { energy:{} },
+                "Energy Booster",
+                "EB",
+                "https://battleboosters.com/metadata",
+                500 // 5% royalty
+            )
+                .accounts({
+                    creator: admin_account.publicKey,
+                    program: program_pda,
+                    mintAuthority: mint_authority_account,
+                    minter: minter,
+                    metadata: metadata,
+                    masterEdition: master_edition,
+                    tokenAccount: token_account,
+                    tokenRecord: token_record,
+                    associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+                    sysvarInstructions: anchor.web3.SYSVAR_INSTRUCTIONS_PUBKEY,
+                    rent: anchor.web3.SYSVAR_RENT_PUBKEY,
+                    systemProgram: anchor.web3.SystemProgram.programId,
+                    tokenProgram: TOKEN_PROGRAM_ID,
+                    metadataProgram: MPL_TOKEN_METADATA_PROGRAM_ID
+                }).preInstructions([
+                    anchor.web3.ComputeBudgetProgram.setComputeUnitLimit({ units: 300000 })
+                ])
+                .signers([admin_account])// Include new_account as a signer
+                .rpc();
+        }catch (e) {
+            console.log(e)
+        }
+
     })
 
-    it("Mint an nft" ,async () => {
+    it.only("Mint an nft" ,async () => {
 
         const player = anchor.web3.Keypair.generate();
 
@@ -830,7 +863,7 @@ describe.only("battleboosters", () => {
         }
         //await airdrop_sol(provider, player.publicKey, 1);
 
-        //let programPDA = await program.account.programData.fetch(program_pda);
+        let programPDA = await program.account.programData.fetch(program_pda);
 
         // const [collector_pack]  = anchor.web3.PublicKey.findProgramAddressSync(
         //     [
@@ -840,12 +873,34 @@ describe.only("battleboosters", () => {
         //         new BN(programPDA.)
         //     ], program.programId);
 
+        const [minter]  = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("BattleBoosters"),
+                Buffer.from("mint"),
+                new BN(programPDA.collectorPackNonce).toBuffer("le", 8)
+            ], program.programId);
+        const [master_edition]  = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("metadata"),
+                metadata_pubkey.toBuffer(),
+                minter.toBuffer(),
+                Buffer.from("edition"),
+            ], metadata_pubkey);
+
+        const [metadata]  = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("metadata"),
+                metadata_pubkey.toBuffer(),
+                minter.toBuffer()
+            ], metadata_pubkey);
+
         const [energy_minter]  = anchor.web3.PublicKey.findProgramAddressSync(
             [
                 Buffer.from("BattleBoosters"),
                 Buffer.from("mint"),
                 Buffer.from([0])
             ], program.programId);
+
         const [energy_metadata]  = anchor.web3.PublicKey.findProgramAddressSync(
             [
                 Buffer.from("metadata"),
@@ -933,30 +988,33 @@ describe.only("battleboosters", () => {
 
 
 
-        let energy_token_account = anchor.utils.token.associatedAddress( {mint: energy_minter, owner: admin_account.publicKey})
+        let token_account = anchor.utils.token.associatedAddress( {mint: minter, owner: admin_account.publicKey})
         let shield_token_account = anchor.utils.token.associatedAddress( {mint: shield_minter, owner: admin_account.publicKey})
         let points_token_account = anchor.utils.token.associatedAddress( {mint: points_minter, owner: admin_account.publicKey})
         let fighter_token_account = anchor.utils.token.associatedAddress( {mint: fighter_minter, owner: admin_account.publicKey})
 
-        const [energy_token_record]  = anchor.web3.PublicKey.findProgramAddressSync(
+        const [token_record]  = anchor.web3.PublicKey.findProgramAddressSync(
             [
                 Buffer.from("metadata"),
                 metadata_pubkey.toBuffer(),
-                energy_minter.toBuffer(),
+                minter.toBuffer(),
                 Buffer.from("token_record"),
-                energy_token_account.toBuffer()
+                token_account.toBuffer()
             ], metadata_pubkey);
 
-        const tx = await program.methods.mintCollectorPack(
 
-        )
+        try {
+            const tx = await program.methods.mintCollectorPack(
+
+            )
             .accounts({
                 creator: admin_account.publicKey,
                 program: program_pda,
                 mintAuthority: mint_authority_account,
-                energyMinter:energy_minter,
+                energyMinter: energy_minter,
                 energyMetadata: energy_metadata,
                 energyMasterEdition: energy_master_edition,
+                minter: minter,
                 // shieldMinter: shield_minter,
                 // shieldMetadata: shield_metadata,
                 // shieldMasterEdition: shield_master_edition,
@@ -966,21 +1024,30 @@ describe.only("battleboosters", () => {
                 // fighterMinter: fighter_minter,
                 // fighterMetadata: fighter_metadata,
                 // fighterMasterEdition: fighter_master_edition,
-                energyTokenAccount: energy_token_account,
-                energyTokenRecord: energy_token_record,
+                tokenAccount: token_account,
+                tokenRecord: token_record,
+                masterEdition: master_edition,
+                metadata: metadata,
                 // shieldTokenAccount: shield_token_account,
                 // pointsTokenAccount: points_token_account,
                 // fighterTokenAccount: fighter_token_account,
-                rarity: rarity_pda,
+                // rarity: rarity_pda,
                 // collectorPack: collector_pack,
                 sysvarInstructions: anchor.web3.SYSVAR_INSTRUCTIONS_PUBKEY,
-                rent: anchor.web3.SYSVAR_RENT_PUBKEY,
+                //rent: anchor.web3.SYSVAR_RENT_PUBKEY,
                 systemProgram: anchor.web3.SystemProgram.programId,
                 tokenProgram: TOKEN_PROGRAM_ID,
                 metadataProgram: MPL_TOKEN_METADATA_PROGRAM_ID
-            })
+            }).preInstructions([
+                anchor.web3.ComputeBudgetProgram.setComputeUnitLimit({ units: 1000000 })
+            ])
             .signers([admin_account]) // Include new_account as a signer
             .rpc();
+
+        }catch (e) {
+            console.log(e)
+        }
+
     })
     //
     // it ("test", async () => {

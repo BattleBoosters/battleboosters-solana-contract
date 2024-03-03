@@ -36,14 +36,13 @@ pub struct InitializeCollectorPack<'info> {
 }
 
 #[derive(Accounts)]
-// #[instruction(player_pubkey: Pubkey, order_nonce: u64)]
 pub struct MintCollectorPack<'info> {
     #[account(mut)]
     pub creator: Signer<'info>,
     #[account(mut, seeds = [MY_APP_PREFIX, PROGRAM_STATE], bump)]
-    pub program: Account<'info, ProgramData>,
+    pub program: Box<Account<'info, ProgramData>>,
     /// CHECK: This is a PDA used as the mint authority
-    #[account(mut, seeds = [MY_APP_PREFIX, MINT_AUTHORITY], bump = program.authority_bump)]
+    #[account(mut, seeds = [MY_APP_PREFIX, MINT_AUTHORITY], bump)]
     pub mint_authority: AccountInfo<'info>,
 
     // #[account(
@@ -52,23 +51,24 @@ pub struct MintCollectorPack<'info> {
     // bump,
     // )]
     // pub collector_pack: Account<'info, CollectorPack>,
-    #[account(
-    mut,
-    seeds = [MY_APP_PREFIX, RARITY],
-    bump,
-    )]
-    pub rarity: Account<'info, RarityData>,
+
+    // #[account(
+    // mut,
+    // seeds = [MY_APP_PREFIX, RARITY],
+    // bump,
+    // )]
+    // pub rarity: Account<'info, RarityData>,
 
     /*
        Energy Booster
     */
-    /// CHECK: This is a PDA used as the mint authority
+    /// CHECK: This is a energy minter PDA
     #[account(
     mut,
     seeds = [MY_APP_PREFIX, MINT, &[CollectionType::Energy as u8]],
     bump
     )]
-    pub energy_minter: Account<'info, Mint>,
+    pub energy_minter: Box<Account<'info, Mint>>,
     /// CHECK: This is a metadata account
     #[account(
     mut,
@@ -192,11 +192,47 @@ pub struct MintCollectorPack<'info> {
     // pub fighter_master_edition: UncheckedAccount<'info>,
     #[account(
     init,
+    mint::decimals = 0,
+    mint::authority = mint_authority,
+    mint::freeze_authority = mint_authority,
     payer = creator,
-    associated_token::mint = energy_minter,
+    seeds = [MY_APP_PREFIX, MINT, program.collector_pack_nonce.to_le_bytes().as_ref()],
+    bump
+    )]
+    pub minter: Box<Account<'info, Mint>>,
+    /// CHECK: This is a metadata account
+    #[account(
+    mut,
+    seeds = [
+    b"metadata".as_ref(),
+    metadata_program.key().as_ref(),
+    minter.key().as_ref(),
+    ],
+    bump,
+    seeds::program = metadata_program.key()
+    )]
+    pub metadata: UncheckedAccount<'info>,
+    /// CHECK: This is a master edition account
+    #[account(
+    mut,
+    seeds = [
+    b"metadata".as_ref(),
+    metadata_program.key().as_ref(),
+    minter.key().as_ref(),
+    b"edition".as_ref(),
+    ],
+    bump,
+    seeds::program = metadata_program.key()
+    )]
+    pub master_edition: UncheckedAccount<'info>,
+
+    #[account(
+    init,
+    payer = creator,
+    associated_token::mint = minter,
     associated_token::authority = creator,
     )]
-    pub energy_token_account: Account<'info, TokenAccount>,
+    pub token_account: Box<Account<'info, TokenAccount>>,
 
     /// CHECK: This is a token record account
     #[account(
@@ -204,14 +240,14 @@ pub struct MintCollectorPack<'info> {
     seeds = [
     b"metadata".as_ref(),
     metadata_program.key().as_ref(),
-    energy_minter.key().as_ref(),
+    minter.key().as_ref(),
     b"token_record",
-    energy_token_account.key().as_ref(),
+    token_account.key().as_ref(),
     ],
     seeds::program = metadata_program.key(),
     bump,
     )]
-    pub energy_token_record: UncheckedAccount<'info>,
+    pub token_record: UncheckedAccount<'info>,
 
     // #[account(
     // init,
@@ -236,7 +272,7 @@ pub struct MintCollectorPack<'info> {
     // pub fighter_token_account: Account<'info, TokenAccount>,
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub system_program: Program<'info, System>,
-    pub rent: Sysvar<'info, Rent>,
+
     /// CHECK: account constraints checked in account trait
     #[account(address = sysvar::instructions::ID)]
     pub sysvar_instructions: AccountInfo<'info>,
