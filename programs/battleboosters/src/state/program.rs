@@ -25,7 +25,7 @@ pub struct ProgramData {
     /// Represent the current amount of created event
     pub event_nonce: u64,
     /// Represent the current amount of created collector pack
-    pub collector_pack_nonce: u64,
+    pub pre_mint_nonce: u64,
     /// The authority which are allowed to administrate the contract
     pub admin_pubkey: Pubkey,
     /// The price in USD of each NFT fighter pack

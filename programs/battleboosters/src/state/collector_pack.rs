@@ -57,7 +57,7 @@ pub struct MintCollectorPack<'info> {
     // seeds = [MY_APP_PREFIX, RARITY],
     // bump,
     // )]
-    // pub rarity: Account<'info, RarityData>,
+    // pub rarity: Box<Account<'info, RarityData>>,
 
     /*
        Energy Booster
@@ -95,108 +95,13 @@ pub struct MintCollectorPack<'info> {
     )]
     pub energy_master_edition: UncheckedAccount<'info>,
 
-    /*
-       Shield Booster
-    */
-    // /// CHECK: This is a PDA used as the mint authority
-    // #[account(
-    // mut,
-    // seeds = [MY_APP_PREFIX, MINT, &[CollectionType::Shield as u8]],
-    // bump
-    // )]
-    // pub shield_minter: Account<'info, Mint>,
-    // /// CHECK: This is a metadata account
-    // #[account(
-    // mut,
-    // seeds = [
-    // b"metadata".as_ref(),
-    // metadata_program.key().as_ref(),
-    // shield_minter.key().as_ref(),
-    // ],
-    // bump,
-    // seeds::program = metadata_program.key()
-    // )]
-    // pub shield_metadata: UncheckedAccount<'info>,
-    // /// CHECK: This is a master edition account
-    // #[account(
-    // mut,
-    // seeds = [
-    // b"metadata".as_ref(),
-    // metadata_program.key().as_ref(),
-    // shield_minter.key().as_ref(),
-    // b"edition".as_ref(),
-    // ],
-    // bump,
-    // seeds::program = metadata_program.key()
-    // )]
-    // pub shield_master_edition: UncheckedAccount<'info>,
-    //
-    // /*
-    //    Points Booster
-    // */
-    // pub points_minter: Account<'info, Mint>,
-    // /// CHECK: This is a metadata account
-    // #[account(
-    // mut,
-    // seeds = [
-    // b"metadata".as_ref(),
-    // metadata_program.key().as_ref(),
-    // points_minter.key().as_ref(),
-    // ],
-    // bump,
-    // seeds::program = metadata_program.key()
-    // )]
-    // pub points_metadata: UncheckedAccount<'info>,
-    // /// CHECK: This is a master edition account
-    // #[account(
-    // mut,
-    // seeds = [
-    // b"metadata".as_ref(),
-    // metadata_program.key().as_ref(),
-    // points_minter.key().as_ref(),
-    // b"edition".as_ref(),
-    // ],
-    // bump,
-    // seeds::program = metadata_program.key()
-    // )]
-    // pub points_master_edition: UncheckedAccount<'info>,
-    //
-    // /*
-    //   Fighter
-    // */
-    // pub fighter_minter: Account<'info, Mint>,
-    // /// CHECK: This is a metadata account
-    // #[account(
-    // mut,
-    // seeds = [
-    // b"metadata".as_ref(),
-    // metadata_program.key().as_ref(),
-    // fighter_minter.key().as_ref(),
-    // ],
-    // bump,
-    // seeds::program = metadata_program.key()
-    // )]
-    // pub fighter_metadata: UncheckedAccount<'info>,
-    // /// CHECK: This is a master edition account
-    // #[account(
-    // mut,
-    // seeds = [
-    // b"metadata".as_ref(),
-    // metadata_program.key().as_ref(),
-    // fighter_minter.key().as_ref(),
-    // b"edition".as_ref(),
-    // ],
-    // bump,
-    // seeds::program = metadata_program.key()
-    // )]
-    // pub fighter_master_edition: UncheckedAccount<'info>,
     #[account(
     init,
     mint::decimals = 0,
     mint::authority = mint_authority,
     mint::freeze_authority = mint_authority,
     payer = creator,
-    seeds = [MY_APP_PREFIX, MINT, program.collector_pack_nonce.to_le_bytes().as_ref()],
+    seeds = [MY_APP_PREFIX, MINT, program.pre_mint_nonce.to_le_bytes().as_ref()],
     bump
     )]
     pub minter: Box<Account<'info, Mint>>,
@@ -248,28 +153,6 @@ pub struct MintCollectorPack<'info> {
     bump,
     )]
     pub token_record: UncheckedAccount<'info>,
-
-    // #[account(
-    // init,
-    // payer = creator,
-    // associated_token::mint = shield_minter,
-    // associated_token::authority = creator,
-    // )]
-    // pub shield_token_account: Account<'info, TokenAccount>,
-    // #[account(
-    // init,
-    // payer = creator,
-    // associated_token::mint = points_minter,
-    // associated_token::authority = creator,
-    // )]
-    // pub points_token_account: Account<'info, TokenAccount>,
-    // #[account(
-    // init,
-    // payer = creator,
-    // associated_token::mint = fighter_minter,
-    // associated_token::authority = creator,
-    // )]
-    // pub fighter_token_account: Account<'info, TokenAccount>,
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub system_program: Program<'info, System>,
 
@@ -288,3 +171,31 @@ pub struct CollectorPack {
     pub booster_mint_allowance: u64,
     pub randomness: Option<Vec<u8>>,
 }
+// {
+// "attributes": [
+//     {
+//     "trait_type": "Fighting Style",
+//     "value": "Boxing"
+//     },
+//     {
+//     "trait_type": "Category",
+//     "value": "Striker"
+//     },
+//     {
+//     "trait_type": "Rarity",
+//     "value": "Common"
+//     },
+//     {
+//     "trait_type": "Health",
+//     "value": 100
+//     },
+//     {
+//     "trait_type": "Power",
+//     "value": 100
+//     },
+//     {
+//     "trait_type": "Energy",
+//     "value": 200
+//     },
+// ]
+// }

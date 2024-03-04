@@ -1031,7 +1031,7 @@ describe.only("battleboosters", () => {
                 // shieldTokenAccount: shield_token_account,
                 // pointsTokenAccount: points_token_account,
                 // fighterTokenAccount: fighter_token_account,
-                // rarity: rarity_pda,
+                rarity: rarity_pda,
                 // collectorPack: collector_pack,
                 sysvarInstructions: anchor.web3.SYSVAR_INSTRUCTIONS_PUBKEY,
                 //rent: anchor.web3.SYSVAR_RENT_PUBKEY,

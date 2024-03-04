@@ -1,3 +1,4 @@
+use super::collector_pack::CollectorPack;
 use super::program::ProgramData;
 use crate::constants::*;
 use crate::state::fight_card::FightCardData;
@@ -22,74 +23,100 @@ pub struct InitializePlayer<'info> {
     payer = creator,
     seeds = [MY_APP_PREFIX, PLAYER, player_pubkey.as_ref()],
     bump,
-    space = 8 + 8
-    )]
-    pub player_account: Account<'info, PlayerData>,
-    #[account(
-    init,
-    payer = creator,
-    seeds = [MY_APP_PREFIX, INVENTORY, player_pubkey.as_ref()],
-    bump,
     space = 8 + 8 + 8 + 1
     )]
-    pub inventory: Account<'info, InventoryData>,
-    pub system_program: Program<'info, System>,
-}
-
-// Struct for managing player inventory
-#[derive(Accounts)]
-pub struct PlayerInventory<'info> {
-    #[account(mut)]
-    pub signer: Signer<'info>,
-    #[account(mut,
-    seeds = [MY_APP_PREFIX, INVENTORY, signer.key().as_ref()],
-    bump)]
-    pub inventory: Account<'info, InventoryData>,
+    pub player_account: Account<'info, PlayerData>,
     pub system_program: Program<'info, System>,
 }
 
 // // Struct for managing player inventory
 // #[derive(Accounts)]
-// pub struct ConsumeRandomness<'info> {
-//     /// We need to make sure the randomness service signed this requests so it can only be invoked by a PDA and not a user.
-//     #[account(
-//     signer,
-//     seeds = [b"STATE"],
-//     seeds::program = SolanaRandomnessServiceID,
-//     bump = randomness_state.bump,
-//     )]
-//     pub randomness_state: Box<Account<'info, solana_randomness_service::State>>,
-//     pub request: Box<Account<'info, SimpleRandomnessV1Account>>,
-//
+// pub struct PlayerInventory<'info> {
 //     #[account(mut)]
-//     pub recipient: AccountInfo<'info>,
-//     #[account(
-//     mut,
-//     seeds = [MY_APP_PREFIX, RARITY],
-//     bump
-//     )]
-//     pub rarity: Account<'info, RarityData>,
-//     /// CHECK: account constraints checked in account trait
-//     #[account(address = sysvar::instructions::ID)]
-//     pub sysvar_instructions: AccountInfo<'info>,
-//     pub token_program: Program<'info, Token>,
+//     pub signer: Signer<'info>,
+//     #[account(mut,
+//     seeds = [MY_APP_PREFIX, INVENTORY, signer.key().as_ref()],
+//     bump)]
+//     pub inventory: Account<'info, InventoryData>,
 //     pub system_program: Program<'info, System>,
 // }
 
+#[derive(Accounts)]
+pub struct GenerateRandomNftPreMint<'info> {
+    #[account(mut)]
+    pub signer: Signer<'info>,
+    #[account(mut, seeds = [MY_APP_PREFIX, PROGRAM_STATE], bump)]
+    pub program: Account<'info, ProgramData>,
+    #[account(
+    mut,
+    seeds = [MY_APP_PREFIX, PLAYER, signer.key().as_ref()],
+    bump,
+    )]
+    pub player_account: Box<Account<'info, PlayerData>>,
+    #[account(
+    mut,
+    seeds = [MY_APP_PREFIX, COLLECTOR, signer.key().as_ref(), player_account.order_nonce.to_le_bytes().as_ref()],
+    bump,
+    )]
+    pub collector_pack: Box<Account<'info, CollectorPack>>,
+    #[account(
+    mut,
+    seeds = [MY_APP_PREFIX, RARITY],
+    bump,
+    )]
+    pub rarity: Box<Account<'info, RarityData>>,
+    #[account(
+    mut,
+    seeds = [MY_APP_PREFIX, NFT_PRE_MINT, program.pre_mint_nonce.to_le_bytes().as_ref()],
+    bump,
+    )]
+    pub nft_pre_mint: Box<Account<'info, NftPreMintData>>,
+
+    #[account(
+    mut,
+    seeds = [MY_APP_PREFIX, NFT_PRE_MINT, signer.key().as_ref(), player_account.nft_pre_mint_player_nonce.to_le_bytes().as_ref()],
+    bump,
+    )]
+    pub nft_pre_mint_player: Box<Account<'info, NftPreMintPlayerData>>,
+
+    pub system_program: Program<'info, System>,
+}
+
 #[account]
-pub struct InventoryData {
-    /// Represent the current amount of fighter mint allowance available
-    pub fighter_mint_allowance: u64,
-    /// Represent the current amount of booster mint allowance available
-    pub booster_mint_allowance: u64,
-    /// This data prevent re-initialization
-    pub is_initialized: bool,
+pub struct NftPreMintPlayerData {
+    pub nft_pre_mint_nonce: u64,
+}
+
+#[account]
+pub struct NftPreMintData {
+    pub is_locked: bool,
+    pub is_minted: bool,
+    pub owner: Pubkey,
+    pub metadata: NftMetadata,
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]
+pub struct NftMetadata {
+    name: String,
+    description: String,
+    image: String,
+    animation_url: Option<String>,
+    external_url: Option<String>,
+    attributes: Vec<Attribute>,
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]
+pub struct Attribute {
+    trait_type: String,
+    value: String,
 }
 
 #[account]
 pub struct PlayerData {
     /// Represent the nonce of the current amount orders the player have made
     pub order_nonce: u64,
+    pub nft_pre_mint_player_nonce: u64,
+    pub is_initialized: bool,
 }
 
 // #[derive(Accounts)]

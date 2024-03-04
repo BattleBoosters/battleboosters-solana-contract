@@ -32,7 +32,7 @@ use anchor_lang::solana_program::program::{invoke, invoke_signed};
 use solana_randomness_service::ID as SolanaRandomnessServiceID;
 use switchboard_solana::utils::get_ixn_discriminator;
 
-declare_id!("CAkQWidBwtYRzpWYYzrdwQyNH1WQMnY7zfCSFciWXQro");
+declare_id!("676k3Wp1HeE8H6heYq88wqELiaUG5sRRg1i4aRkmMrSD");
 
 #[program]
 pub mod battleboosters {
@@ -43,6 +43,7 @@ pub mod battleboosters {
     use anchor_lang::solana_program::system_instruction;
     use mpl_token_metadata::types::{Collection, CollectionDetails, DataV2};
     use solana_randomness_service::TransactionOptions;
+    use std::ops::Add;
 
     pub fn initialize(
         ctx: Context<InitializeProgram>,
@@ -59,7 +60,7 @@ pub mod battleboosters {
         program.authority_bump = authority_bump;
         program.bank_bump = bank_bump;
         program.event_nonce = 0_u64;
-        program.collector_pack_nonce = 0_u64;
+        program.pre_mint_nonce = 0_u64;
         program.admin_pubkey = admin_pubkey;
         program.fighter_pack_price = nft_fighter_pack_price;
         program.booster_price = booster_price;
@@ -96,18 +97,20 @@ pub mod battleboosters {
         ctx: Context<InitializePlayer>,
         player_pubkey: Pubkey, /* Used in initialization */
     ) -> Result<()> {
-        let player_inventory = &mut ctx.accounts.inventory;
+        //let player_inventory = &mut ctx.accounts.inventory;
         let player_account = &mut ctx.accounts.player_account;
         require!(
-            !player_inventory.is_initialized,
+            !player_account.is_initialized,
             ErrorCode::AlreadyInitialized
         );
-
-        player_inventory.fighter_mint_allowance = 0;
-        player_inventory.booster_mint_allowance = 0;
-        player_inventory.is_initialized = true;
+        //
+        // player_inventory.fighter_mint_allowance = 0;
+        // player_inventory.booster_mint_allowance = 0;
+        // player_inventory.is_initialized = true;
 
         player_account.order_nonce = 0;
+        player_account.nft_pre_mint_player_nonce = 0;
+        player_account.is_initialized = true;
 
         msg!("Player Initialized");
 
@@ -337,21 +340,51 @@ pub mod battleboosters {
         Ok(())
     }
 
+    pub fn generate_random_nft_pre_mint(
+        ctx: Context<GenerateRandomNftPreMint>,
+        requests: Option<Vec<PurchaseRequest>>,
+    ) -> Result<()> {
+        let collector_pack = &mut ctx.accounts.collector_pack;
+        let rarity = &ctx.accounts.rarity;
+        let nft_pre_mint_player = &mut ctx.accounts.nft_pre_mint_player;
+        let nft_pre_mint = &mut ctx.accounts.nft_pre_mint;
+        let player_account = &mut ctx.accounts.player_account;
+
+        let randomness = collector_pack
+            .randomness
+            .clone()
+            .ok_or(ErrorCode::RandomnessUnavailable)?;
+
+        let rng_seed = u64::from_le_bytes([
+            randomness[0].clone(),
+            randomness[1].clone(),
+            randomness[2].clone(),
+            randomness[3].clone(),
+            randomness[4].clone(),
+            randomness[5].clone(),
+            randomness[6].clone(),
+            randomness[7].clone(),
+        ]);
+        let random_number = ((xorshift64(rng_seed) % 100) + 1) as u8;
+
+        // TODO: Check the request
+        //      Ensure there is not twice the same type inside
+
+        let mut x = 0;
+        while x < collector_pack.booster_mint_allowance {
+            // Your loop body here
+
+            x += 1;
+        }
+
+        Ok(())
+    }
+
     pub fn mint_collector_pack(
         ctx: Context<MintCollectorPack>,
         //requests: Vec<PurchaseRequest>,
     ) -> Result<()> {
         let program = &mut ctx.accounts.program;
-        // let collector_pack = &mut ctx.accounts.collector_pack;
-        // let rarity = &ctx.accounts.rarity;
-        //
-        // let randomness = collector_pack.randomness.clone().ok_or(ErrorCode::RandomnessUnavailable)?;
-        //
-        // let rng_seed = u64::from_le_bytes([
-        //     randomness[0].clone(), randomness[1].clone(), randomness[2].clone(), randomness[3].clone(),
-        //     randomness[4].clone(), randomness[5].clone(), randomness[6].clone(), randomness[7].clone(),
-        // ]);
-        // let random_number = ((xorshift64(rng_seed) % 100) + 1) as u8;
 
         let metadata_program = &ctx.accounts.metadata_program.to_account_info();
         let metadata = &ctx.accounts.metadata.to_account_info();
@@ -476,7 +509,7 @@ pub mod battleboosters {
         //     }
         // }
 
-        program.collector_pack_nonce = program.collector_pack_nonce.checked_add(1).unwrap();
+        program.pre_mint_nonce = program.pre_mint_nonce.checked_add(1).unwrap();
         Ok(())
     }
 

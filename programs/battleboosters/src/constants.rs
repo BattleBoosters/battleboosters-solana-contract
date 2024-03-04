@@ -9,6 +9,7 @@ pub const MINT: &[u8] = b"mint";
 pub const INVENTORY: &[u8] = b"inventory";
 pub const PLAYER: &[u8] = b"player";
 pub const COLLECTOR: &[u8] = b"collector";
+pub const NFT_PRE_MINT: &[u8] = b"nftPreMint";
 
 pub const STALENESS_THRESHOLD: i64 = 300;
 pub const SOL_USD_FEED_MAINNET: &str = "GvDMxPzN1sCj7L26YDK2HnMRXEQmQ2aemov8YBtPS7vR";
