@@ -15,6 +15,11 @@ pub struct PurchaseRequest {
     pub quantity: u64,
 }
 
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Debug)]
+pub struct OpenRequest {
+    pub nft_type: NftType,
+}
+
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, PartialEq, Debug, Eq, Hash)]
 pub enum NftType {
     Booster,

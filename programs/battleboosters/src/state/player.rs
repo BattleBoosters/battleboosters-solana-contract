@@ -101,18 +101,18 @@ pub struct NftPreMintData {
 
 #[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]
 pub struct NftMetadata {
-    name: String,
-    description: String,
-    image: String,
-    animation_url: Option<String>,
-    external_url: Option<String>,
-    attributes: Vec<Attribute>,
+    pub name: String,
+    pub description: String,
+    pub image: String,
+    pub animation_url: Option<String>,
+    pub external_url: Option<String>,
+    pub attributes: Vec<Attribute>,
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]
 pub struct Attribute {
-    trait_type: String,
-    value: String,
+    pub trait_type: String,
+    pub value: String,
 }
 
 #[account]

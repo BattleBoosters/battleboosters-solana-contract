@@ -351,13 +351,14 @@ pub mod battleboosters {
 
     pub fn generate_random_nft_pre_mint(
         ctx: Context<GenerateRandomNftPreMint>,
-        requests: Vec<PurchaseRequest>,
+        request: OpenRequest,
     ) -> Result<()> {
-        require!(
-            check_unique_nft_types(Some(requests.clone())),
-            ErrorCode::Unauthorized
-        );
+        // require!(
+        //     check_unique_nft_types(Some(requests.clone())),
+        //     ErrorCode::Unauthorized
+        // );
 
+        let program = &mut ctx.accounts.program;
         let collector_pack = &mut ctx.accounts.collector_pack;
         let rarity = &ctx.accounts.rarity;
         let nft_pre_mint_player = &mut ctx.accounts.nft_pre_mint_player;
@@ -365,11 +366,11 @@ pub mod battleboosters {
         let player_account = &mut ctx.accounts.player_account;
         let signer = &ctx.accounts.signer;
         let public_key_bytes = signer.key().to_bytes();
-
         let randomness = collector_pack
             .randomness
             .clone()
             .ok_or(ErrorCode::RandomnessUnavailable)?;
+        let nonce_byte = (collector_pack.booster_mint_allowance.clone() & 0xFF) as u8;
 
         let rng_seed = u64::from_le_bytes([
             randomness[0].clone(),
@@ -379,39 +380,56 @@ pub mod battleboosters {
             public_key_bytes[0].clone(),
             public_key_bytes[1].clone(),
             public_key_bytes[2].clone(),
-            public_key_bytes[3].clone(),
+            nonce_byte,
         ]);
         let random_number = ((xorshift64(rng_seed) % 100) + 1) as u8;
+        msg!("{}", random_number);
 
         // TODO: Check the request
         //      Ensure there is not twice the same type inside
 
-        for request in &requests {
-            match request.nft_type {
-                NftType::Booster => {
-                    require!(
-                        collector_pack.booster_mint_allowance >= request.quantity,
-                        ErrorCode::Unauthorized
-                    );
-                    msg!("GOOD");
-                }
-                NftType::FighterPack => {
-                    require!(
-                        collector_pack.fighter_mint_allowance >= request.quantity,
-                        ErrorCode::Unauthorized
-                    );
-                    msg!("GOOD");
-                }
+        match request.nft_type {
+            NftType::Booster => {
+                require!(
+                    collector_pack.booster_mint_allowance >= 1,
+                    ErrorCode::Unauthorized
+                );
+
+                nft_pre_mint.metadata = NftMetadata {
+                    name: "booster".to_string(),
+                    description: "test".to_string(),
+                    image: "x".to_string(),
+                    animation_url: None,
+                    external_url: None,
+                    attributes: vec![Attribute {
+                        trait_type: "randomness".to_string(),
+                        value: random_number.to_string(),
+                    }],
+                };
+
+                collector_pack.booster_mint_allowance = collector_pack
+                    .booster_mint_allowance
+                    .checked_sub(1)
+                    .unwrap();
+                program.pre_mint_nonce = program.pre_mint_nonce.checked_add(1).unwrap();
+
+                msg!("GOOD");
+            }
+            NftType::FighterPack => {
+                require!(
+                    collector_pack.fighter_mint_allowance >= 1,
+                    ErrorCode::Unauthorized
+                );
+                msg!("GOOD");
             }
         }
-        let mut x = 0;
-        while x < collector_pack.booster_mint_allowance {
-            // Your loop body here
 
-            x += 1;
-        }
-        msg!("random_number");
-        msg!("{}", random_number);
+        // let mut x = 0;
+        // while x < collector_pack.booster_mint_allowance {
+        //     // Your loop body here
+        //
+        //     x += 1;
+        // }
 
         Ok(())
     }

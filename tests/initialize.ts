@@ -824,20 +824,11 @@ describe.only("battleboosters", () => {
         assert.isTrue(collector_pack_pda_data.boosterMintAllowance.eq(new BN(3)));
         assert.isTrue(collector_pack_pda_data.fighterMintAllowance.eq(new BN(1)));
 
-
-
         try {
             const tx2 = await program.methods.generateRandomNftPreMint(
-                [
-                    {
+                {
                         nftType: { booster: {} }, // Use the variant name as key for enum
-                        quantity: new anchor.BN(3),
-                    },
-                    {
-                        nftType: { fighterPack: {} }, // Use the variant name as key for enum
-                        quantity: new anchor.BN(1),
-                    },
-                ]
+                    }
             ).accounts({
                 signer: provider.wallet.publicKey,
                 program: program_pda,
@@ -858,12 +849,13 @@ describe.only("battleboosters", () => {
             console.log(JSON.stringify(logs?.meta?.logMessages, undefined, 2));
 
 
+            const pre_mint_pda_data = await program.account.nftPreMintData.fetch(nft_pre_mint_pda);
+
+
+
         }catch (e) {
             console.log(e)
         }
-
-
-
 
     })
 
