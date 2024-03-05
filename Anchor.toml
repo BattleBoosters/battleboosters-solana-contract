@@ -5,13 +5,13 @@ seeds = false
 skip-lint = false
 
 [programs.localnet]
-battleboosters = "676k3Wp1HeE8H6heYq88wqELiaUG5sRRg1i4aRkmMrSD"
+battleboosters = "32pkjHX1E7VKhY79YgAynriPojk8Sf4RC5d4pGWDLpsj"
 
 [programs.devnet]
-battleboosters = "676k3Wp1HeE8H6heYq88wqELiaUG5sRRg1i4aRkmMrSD"
+battleboosters = "32pkjHX1E7VKhY79YgAynriPojk8Sf4RC5d4pGWDLpsj"
 
 [programs.testnet]
-battleboosters = "676k3Wp1HeE8H6heYq88wqELiaUG5sRRg1i4aRkmMrSD"
+battleboosters = "32pkjHX1E7VKhY79YgAynriPojk8Sf4RC5d4pGWDLpsj"
 
 [[test.genesis]]
 address = "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
@@ -54,7 +54,7 @@ address = "5ExuoQR69trmKQfB95fDsUGsUrrChbGq9PFgt8qouncz"
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "devnet"
+cluster = "localnet"
 wallet = "/Users/0xantman/.config/solana/id.json"
 
 

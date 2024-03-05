@@ -29,7 +29,7 @@ pub struct InitializeCollectorPack<'info> {
         payer = creator,
         seeds = [MY_APP_PREFIX, COLLECTOR, player_pubkey.key().as_ref(), player_account.order_nonce.to_le_bytes().as_ref()],
         bump,
-        space = 8 + 8 + 8 + 1 + 8
+        space = 8 + 8 + 8 + 1 + 8 + 8
     )]
     pub collector_pack: Account<'info, CollectorPack>,
     pub system_program: Program<'info, System>,

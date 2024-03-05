@@ -66,15 +66,19 @@ pub struct GenerateRandomNftPreMint<'info> {
     )]
     pub rarity: Box<Account<'info, RarityData>>,
     #[account(
-    mut,
+    init,
+    payer = signer,
     seeds = [MY_APP_PREFIX, NFT_PRE_MINT, program.pre_mint_nonce.to_le_bytes().as_ref()],
-    bump,
+    space = 8 + 1 + 1 + 32 + (4 + 20) + (4 + 100) + (4 + 100) + (4 + 100) + (4 + 100) + (4 + 480),
+    bump
     )]
     pub nft_pre_mint: Box<Account<'info, NftPreMintData>>,
 
     #[account(
-    mut,
+    init,
+    payer = signer,
     seeds = [MY_APP_PREFIX, NFT_PRE_MINT, signer.key().as_ref(), player_account.nft_pre_mint_player_nonce.to_le_bytes().as_ref()],
+    space = 8 + 8,
     bump,
     )]
     pub nft_pre_mint_player: Box<Account<'info, NftPreMintPlayerData>>,

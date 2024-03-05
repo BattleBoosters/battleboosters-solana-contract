@@ -1,5 +1,6 @@
 use crate::errors::ErrorCode;
 use crate::state::fight_card::*;
+use crate::types::*;
 use anchor_lang::prelude::*;
 use anchor_spl::token::{initialize_mint, InitializeMint};
 
@@ -40,6 +41,34 @@ pub fn xorshift64(seed: u64) -> u64 {
     new_seed ^= new_seed.clone() >> 7; // Changed for better distribution with u64
     new_seed ^= new_seed.clone() << 17;
     new_seed
+}
+
+pub fn check_unique_nft_types(purchase_requests: Option<Vec<PurchaseRequest>>) -> bool {
+    if let Some(requests) = purchase_requests {
+        let mut booster_found = false;
+        let mut fighter_pack_found = false;
+
+        for request in requests {
+            match request.nft_type {
+                NftType::Booster => {
+                    if booster_found {
+                        // A Booster type was already found before, so return false.
+                        return false;
+                    }
+                    booster_found = true;
+                }
+                NftType::FighterPack => {
+                    if fighter_pack_found {
+                        // A FighterPack type was already found before, so return false.
+                        return false;
+                    }
+                    fighter_pack_found = true;
+                }
+            }
+        }
+    }
+    // If we get here, it means there are at most one of each type.
+    true
 }
 
 // pub fn create_game_token_mint(

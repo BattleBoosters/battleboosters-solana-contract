@@ -32,7 +32,7 @@ use anchor_lang::solana_program::program::{invoke, invoke_signed};
 use solana_randomness_service::ID as SolanaRandomnessServiceID;
 use switchboard_solana::utils::get_ixn_discriminator;
 
-declare_id!("676k3Wp1HeE8H6heYq88wqELiaUG5sRRg1i4aRkmMrSD");
+declare_id!("32pkjHX1E7VKhY79YgAynriPojk8Sf4RC5d4pGWDLpsj");
 
 #[program]
 pub mod battleboosters {
@@ -340,15 +340,31 @@ pub mod battleboosters {
         Ok(())
     }
 
+    pub fn test_gift_collector_pack(ctx: Context<TransactionTest>) -> Result<()> {
+        let collector_pack = &mut ctx.accounts.collector_pack;
+
+        collector_pack.randomness = Some(vec![12, 23, 34, 34, 54, 34, 34, 23]);
+        collector_pack.booster_mint_allowance = 3;
+        collector_pack.fighter_mint_allowance = 1;
+        Ok(())
+    }
+
     pub fn generate_random_nft_pre_mint(
         ctx: Context<GenerateRandomNftPreMint>,
-        requests: Option<Vec<PurchaseRequest>>,
+        requests: Vec<PurchaseRequest>,
     ) -> Result<()> {
+        require!(
+            check_unique_nft_types(Some(requests.clone())),
+            ErrorCode::Unauthorized
+        );
+
         let collector_pack = &mut ctx.accounts.collector_pack;
         let rarity = &ctx.accounts.rarity;
         let nft_pre_mint_player = &mut ctx.accounts.nft_pre_mint_player;
         let nft_pre_mint = &mut ctx.accounts.nft_pre_mint;
         let player_account = &mut ctx.accounts.player_account;
+        let signer = &ctx.accounts.signer;
+        let public_key_bytes = signer.key().to_bytes();
 
         let randomness = collector_pack
             .randomness
@@ -360,22 +376,42 @@ pub mod battleboosters {
             randomness[1].clone(),
             randomness[2].clone(),
             randomness[3].clone(),
-            randomness[4].clone(),
-            randomness[5].clone(),
-            randomness[6].clone(),
-            randomness[7].clone(),
+            public_key_bytes[0].clone(),
+            public_key_bytes[1].clone(),
+            public_key_bytes[2].clone(),
+            public_key_bytes[3].clone(),
         ]);
         let random_number = ((xorshift64(rng_seed) % 100) + 1) as u8;
 
         // TODO: Check the request
         //      Ensure there is not twice the same type inside
 
+        for request in &requests {
+            match request.nft_type {
+                NftType::Booster => {
+                    require!(
+                        collector_pack.booster_mint_allowance >= request.quantity,
+                        ErrorCode::Unauthorized
+                    );
+                    msg!("GOOD");
+                }
+                NftType::FighterPack => {
+                    require!(
+                        collector_pack.fighter_mint_allowance >= request.quantity,
+                        ErrorCode::Unauthorized
+                    );
+                    msg!("GOOD");
+                }
+            }
+        }
         let mut x = 0;
         while x < collector_pack.booster_mint_allowance {
             // Your loop body here
 
             x += 1;
         }
+        msg!("random_number");
+        msg!("{}", random_number);
 
         Ok(())
     }

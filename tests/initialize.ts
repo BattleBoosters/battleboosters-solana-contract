@@ -63,13 +63,13 @@ describe.only("battleboosters", () => {
     let lastPriceSolUsd;
     before("Initialize", async () => {
 
-        try {
-            randomnessService = await RandomnessService.fromProvider(provider);
-        }catch (e) {
-            console.log(e)
-        }
-        console.log(randomnessService)
-        console.log("Randomness Service OK")
+        // try {
+        //     randomnessService = await RandomnessService.fromProvider(provider);
+        // }catch (e) {
+        //     console.log(e)
+        // }
+        // console.log(randomnessService)
+        // console.log("Randomness Service OK")
 
         switchboardProgram = await SwitchboardProgram.load(
             new Connection("https://api.mainnet-beta.solana.com"),
@@ -121,7 +121,7 @@ describe.only("battleboosters", () => {
 
             const programAccount = await program.account.programData.fetch(program_pda);
             assert.equal(programAccount.eventNonce.eq(new BN(0)),  true);
-            assert.equal(programAccount.collectorPackNonce.eq(new BN(0)),  true);
+            assert.equal(programAccount.preMintNonce.eq(new BN(0)),  true);
             assert.deepEqual(programAccount.adminPubkey, admin_account.publicKey);
             assert.equal(programAccount.fighterPackPrice.eq(new BN(1)), true)
             assert.equal(programAccount.boosterPrice.eq(new BN(1)), true)
@@ -277,13 +277,14 @@ describe.only("battleboosters", () => {
         // Initialize the player account first
         const [player_inventory_pda, player_account_pda] = await InitializePlayerAccount(provider, customOwner.publicKey, program, program_pda);
 
-        const playerInventory = await program.account.inventoryData.fetch(player_inventory_pda);
-        assert.isTrue(playerInventory.boosterMintAllowance.eq(new BN(0)))
-        assert.isTrue(playerInventory.fighterMintAllowance.eq(new BN(0)))
-        assert.isTrue(playerInventory.isInitialized);
+        // const playerInventory = await program.account.inventoryData.fetch(player_inventory_pda);
+        // assert.isTrue(playerInventory.boosterMintAllowance.eq(new BN(0)))
+        // assert.isTrue(playerInventory.fighterMintAllowance.eq(new BN(0)))
+        // assert.isTrue(playerInventory.isInitialized);
 
         const playerAccount = await program.account.playerData.fetch(player_account_pda);
         assert.isTrue(playerAccount.orderNonce.eq(new BN(0)));
+        assert.isTrue(playerAccount.nftPreMintPlayerNonce.eq(new BN(0)));
     })
 
     /**
@@ -411,6 +412,9 @@ describe.only("battleboosters", () => {
                     }),
                     randomnessState: randomnessService.accounts.state,
                     randomnessMint: randomnessService.accounts.mint,
+                    tokenProgram: TOKEN_PROGRAM_ID,
+                    associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+                    systemProgram:anchor.web3.SystemProgram.programId,
 
                 })
                 .signers([requestKeypair]) // Include new_account as a signer
@@ -769,6 +773,99 @@ describe.only("battleboosters", () => {
     /**
         Player mint NFT
      **/
+    it.only("Open nft pack randomly", async () => {
+
+        await InitializePlayerAccount(provider, provider.wallet.publicKey, program, program_pda);
+
+
+        const program_pda_data = await program.account.programData.fetch(program_pda);
+        const [nft_pre_mint_pda, nft_pre_mint_bump]  = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("BattleBoosters"),
+                Buffer.from("nftPreMint"),
+                new BN(program_pda_data.preMintNonce).toBuffer("le", 8)
+            ], program.programId);
+
+        const [player_account_pda, player_account_bump]  = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("BattleBoosters"),
+                Buffer.from("player"),
+                provider.wallet.publicKey.toBuffer()
+            ], program.programId);
+
+        const player_account_pda_data = await program.account.playerData.fetch(player_account_pda);
+
+        const [player_nft_pre_mint_pda, player_nft_pre_mint_bump]  = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("BattleBoosters"),
+                Buffer.from("nftPreMint"),
+                provider.wallet.publicKey.toBuffer(),
+                new BN(player_account_pda_data.nftPreMintPlayerNonce).toBuffer("le", 8)
+            ], program.programId);
+
+        const [collector_pack_pda, collector_pack_bump]  = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("BattleBoosters"),
+                Buffer.from("collector"),
+                provider.wallet.publicKey.toBuffer(),
+                new BN(player_account_pda_data.orderNonce).toBuffer("le", 8)
+            ], program.programId);
+
+        const tx = await program.methods.testGiftCollectorPack().accounts({
+            signer: provider.wallet.publicKey,
+            recipient: provider.wallet.publicKey,
+            program: program_pda,
+            playerAccount: player_account_pda,
+            collectorPack: collector_pack_pda,
+
+        }).signers([]).rpc()
+
+        const collector_pack_pda_data = await program.account.collectorPack.fetch(collector_pack_pda);
+        assert.isTrue(collector_pack_pda_data.boosterMintAllowance.eq(new BN(3)));
+        assert.isTrue(collector_pack_pda_data.fighterMintAllowance.eq(new BN(1)));
+
+
+
+        try {
+            const tx2 = await program.methods.generateRandomNftPreMint(
+                [
+                    {
+                        nftType: { booster: {} }, // Use the variant name as key for enum
+                        quantity: new anchor.BN(3),
+                    },
+                    {
+                        nftType: { fighterPack: {} }, // Use the variant name as key for enum
+                        quantity: new anchor.BN(1),
+                    },
+                ]
+            ).accounts({
+                signer: provider.wallet.publicKey,
+                program: program_pda,
+                playerAccount: player_account_pda,
+                collectorPack: collector_pack_pda,
+                rarity: rarity_pda,
+                nftPreMint: nft_pre_mint_pda,
+                nftPreMintPlayer:player_nft_pre_mint_pda
+            }).signers([]).rpc()
+
+            console.log(tx2)
+            await sleep(2000);
+            const logs = await provider.connection.getParsedTransaction(
+                tx2,
+                "confirmed"
+            );
+
+            console.log(JSON.stringify(logs?.meta?.logMessages, undefined, 2));
+
+
+        }catch (e) {
+            console.log(e)
+        }
+
+
+
+
+    })
 
     /**
         NFT Collection
@@ -852,7 +949,7 @@ describe.only("battleboosters", () => {
 
     })
 
-    it.only("Mint an nft" ,async () => {
+    it("Mint an nft" ,async () => {
 
         const player = anchor.web3.Keypair.generate();
 
@@ -861,23 +958,14 @@ describe.only("battleboosters", () => {
             provider.connection.rpcEndpoint.includes("http://0.0.0.0:8899")){
             await airdrop_sol(provider, player.publicKey, 10);
         }
-        //await airdrop_sol(provider, player.publicKey, 1);
 
         let programPDA = await program.account.programData.fetch(program_pda);
-
-        // const [collector_pack]  = anchor.web3.PublicKey.findProgramAddressSync(
-        //     [
-        //         Buffer.from("BattleBoosters"),
-        //         Buffer.from("collector"),
-        //         player.publicKey.toBuffer(),
-        //         new BN(programPDA.)
-        //     ], program.programId);
 
         const [minter]  = anchor.web3.PublicKey.findProgramAddressSync(
             [
                 Buffer.from("BattleBoosters"),
                 Buffer.from("mint"),
-                new BN(programPDA.collectorPackNonce).toBuffer("le", 8)
+                new BN(programPDA.preMintNonce).toBuffer("le", 8)
             ], program.programId);
         const [master_edition]  = anchor.web3.PublicKey.findProgramAddressSync(
             [
@@ -989,9 +1077,6 @@ describe.only("battleboosters", () => {
 
 
         let token_account = anchor.utils.token.associatedAddress( {mint: minter, owner: admin_account.publicKey})
-        let shield_token_account = anchor.utils.token.associatedAddress( {mint: shield_minter, owner: admin_account.publicKey})
-        let points_token_account = anchor.utils.token.associatedAddress( {mint: points_minter, owner: admin_account.publicKey})
-        let fighter_token_account = anchor.utils.token.associatedAddress( {mint: fighter_minter, owner: admin_account.publicKey})
 
         const [token_record]  = anchor.web3.PublicKey.findProgramAddressSync(
             [
@@ -1015,26 +1100,11 @@ describe.only("battleboosters", () => {
                 energyMetadata: energy_metadata,
                 energyMasterEdition: energy_master_edition,
                 minter: minter,
-                // shieldMinter: shield_minter,
-                // shieldMetadata: shield_metadata,
-                // shieldMasterEdition: shield_master_edition,
-                // pointsMinter: points_minter,
-                // pointsMetadata: points_metadata,
-                // pointsMasterEdition: points_master_edition,
-                // fighterMinter: fighter_minter,
-                // fighterMetadata: fighter_metadata,
-                // fighterMasterEdition: fighter_master_edition,
                 tokenAccount: token_account,
                 tokenRecord: token_record,
                 masterEdition: master_edition,
                 metadata: metadata,
-                // shieldTokenAccount: shield_token_account,
-                // pointsTokenAccount: points_token_account,
-                // fighterTokenAccount: fighter_token_account,
-                rarity: rarity_pda,
-                // collectorPack: collector_pack,
                 sysvarInstructions: anchor.web3.SYSVAR_INSTRUCTIONS_PUBKEY,
-                //rent: anchor.web3.SYSVAR_RENT_PUBKEY,
                 systemProgram: anchor.web3.SystemProgram.programId,
                 tokenProgram: TOKEN_PROGRAM_ID,
                 metadataProgram: MPL_TOKEN_METADATA_PROGRAM_ID
@@ -1043,6 +1113,10 @@ describe.only("battleboosters", () => {
             ])
             .signers([admin_account]) // Include new_account as a signer
             .rpc();
+
+            const program_pda_data = await program.account.programData.fetch(program_pda);
+            assert.equal(program_pda_data.preMintNonce.eq(new BN(1)), true);
+
 
         }catch (e) {
             console.log(e)

@@ -91,3 +91,31 @@ pub struct TransactionEscrow<'info> {
     /// The Solana Associated Token program. Used to create the TokenAccount for the randomness escrow.
     pub associated_token_program: Program<'info, AssociatedToken>,
 }
+
+#[derive(Accounts)]
+pub struct TransactionTest<'info> {
+    #[account(mut)]
+    pub signer: Signer<'info>,
+    /// CHECK: Receiver of the pack we use this account only for crediting fighter packs and boosters
+    #[account(mut)]
+    pub recipient: AccountInfo<'info>,
+    #[account(mut, seeds = [MY_APP_PREFIX, PROGRAM_STATE], bump)]
+    pub program: Account<'info, ProgramData>,
+    #[account(
+    mut,
+    seeds = [MY_APP_PREFIX, PLAYER, recipient.key().as_ref()],
+    bump,
+    )]
+    pub player_account: Account<'info, PlayerData>,
+    #[account(
+    init,
+    payer = signer,
+    seeds = [MY_APP_PREFIX, COLLECTOR, recipient.key().as_ref(), player_account.order_nonce.to_le_bytes().as_ref()],
+    bump,
+    space = 8 + 8 + 8 + 1 + 8 + 8
+    )]
+    pub collector_pack: Account<'info, CollectorPack>,
+
+    /// The Solana System program. Used to allocate space on-chain for the randomness_request account.
+    pub system_program: Program<'info, System>,
+}
