@@ -353,11 +353,6 @@ pub mod battleboosters {
         ctx: Context<GenerateRandomNftPreMint>,
         request: OpenRequest,
     ) -> Result<()> {
-        // require!(
-        //     check_unique_nft_types(Some(requests.clone())),
-        //     ErrorCode::Unauthorized
-        // );
-
         let program = &mut ctx.accounts.program;
         let collector_pack = &mut ctx.accounts.collector_pack;
         let rarity = &ctx.accounts.rarity;
@@ -365,11 +360,12 @@ pub mod battleboosters {
         let nft_pre_mint = &mut ctx.accounts.nft_pre_mint;
         let player_account = &mut ctx.accounts.player_account;
         let signer = &ctx.accounts.signer;
-        let public_key_bytes = signer.key().to_bytes();
+
         let randomness = collector_pack
             .randomness
             .clone()
             .ok_or(ErrorCode::RandomnessUnavailable)?;
+        let public_key_bytes = signer.key().to_bytes();
         let nonce_byte = (collector_pack.booster_mint_allowance.clone() & 0xFF) as u8;
 
         let rng_seed = u64::from_le_bytes([
@@ -382,7 +378,8 @@ pub mod battleboosters {
             public_key_bytes[2].clone(),
             nonce_byte,
         ]);
-        let random_number = ((xorshift64(rng_seed) % 100) + 1) as u8;
+        let random_number = ((xorshift64(rng_seed.clone()) % 100) + 1) as u8;
+
         msg!("{}", random_number);
 
         // TODO: Check the request
@@ -394,6 +391,12 @@ pub mod battleboosters {
                     collector_pack.booster_mint_allowance >= 1,
                     ErrorCode::Unauthorized
                 );
+
+                let rarity_index = find_rarity(rarity.booster_probabilities.clone(), random_number);
+
+                msg!(" rarity index {:?}", rarity_index);
+
+                //let scaled_random_number = ((xorshift64(rng_seed) % range) + stats.min) as u32;
 
                 nft_pre_mint.metadata = NftMetadata {
                     name: "booster".to_string(),

@@ -42,6 +42,20 @@ pub fn xorshift64(seed: u64) -> u64 {
     new_seed ^= new_seed.clone() << 17;
     new_seed
 }
+pub fn find_rarity(rarity: Vec<u8>, random_number: u8) -> usize {
+    let mut cumulative_probs = vec![];
+    let mut sum = 0;
+
+    for prob in rarity {
+        sum += prob; // Sum the probabilities to make them cumulative
+        cumulative_probs.push(sum.clone());
+    }
+
+    cumulative_probs
+        .iter()
+        .position(|&prob| random_number <= prob)
+        .unwrap_or(cumulative_probs.len() - 1)
+}
 
 pub fn check_unique_nft_types(purchase_requests: Option<Vec<PurchaseRequest>>) -> bool {
     if let Some(requests) = purchase_requests {
