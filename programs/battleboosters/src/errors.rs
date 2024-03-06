@@ -21,4 +21,10 @@ pub enum ErrorCode {
     InsufficientAmount,
     #[msg("Randomness unavailable for now")]
     RandomnessUnavailable,
+    #[msg("No matching rarity found")]
+    NoMatchingRarityFound,
+    #[msg("The nonce must not exceed the last known nonce in the player's state")]
+    WrongPlayerGameAssetLinkNonce,
+    #[msg("This player game asset pda is not free")]
+    NotFreePDA,
 }

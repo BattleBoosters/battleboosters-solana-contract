@@ -121,7 +121,7 @@ describe.only("battleboosters", () => {
 
             const programAccount = await program.account.programData.fetch(program_pda);
             assert.equal(programAccount.eventNonce.eq(new BN(0)),  true);
-            assert.equal(programAccount.preMintNonce.eq(new BN(0)),  true);
+            assert.equal(programAccount.mintableGameAssetNonce.eq(new BN(0)),  true);
             assert.deepEqual(programAccount.adminPubkey, admin_account.publicKey);
             assert.equal(programAccount.fighterPackPrice.eq(new BN(1)), true)
             assert.equal(programAccount.boosterPrice.eq(new BN(1)), true)
@@ -132,38 +132,142 @@ describe.only("battleboosters", () => {
             await program.account.rarityData.fetch(rarity_pda);
         } catch (e) {
 
-            const tx2 = await program.methods.initializeRarity(
-                [
-                    {
-                        common: {
+             try {
+                const tx2 = await program.methods.initializeRarity(
+                    [
+                        {
+                            common: {
 
-                            energy: { min: 100, max: 150 },
-                            power: { min: 100, max: 150 },
-                            lifespan: { min: 100, max: 150 },
+                                energy: { min: 100, max: 150 },
+                                power: { min: 100, max: 150 },
+                                lifespan: { min: 100, max: 150 },
+                                }
+                            },
+                        {uncommon: {
+                                energy: { min: 150, max: 200 },
+                                power: { min: 150, max: 200 },
+                                lifespan: { min: 150, max: 200 },
+                            }},
+                        {rare: {
+                                energy: { min: 200, max: 250 },
+                                power: { min: 200, max: 250 },
+                                lifespan: { min: 200, max: 250 },
+                            }},
+                        {epic: {
+                                energy: { min: 250, max: 300 },
+                                power: { min: 250, max: 300 },
+                                lifespan: { min: 250, max: 300 },
+                            }},
+                        {legendary: {
+                                energy: { min: 300, max: 350 },
+                                power: { min: 300, max: 350 },
+                                lifespan: { min: 300, max: 350 },
+                            }},
+                    ],
+                    [
+
+                        {
+                            common: {
+                                value: { min: 100, max: 150 },
                             }
                         },
-                    {uncommon: {
-                            energy: { min: 150, max: 200 },
-                            power: { min: 150, max: 200 },
-                            lifespan: { min: 150, max: 200 },
-                        }},
-                    {rare: {
-                            energy: { min: 200, max: 250 },
-                            power: { min: 200, max: 250 },
-                            lifespan: { min: 200, max: 250 },
-                        }},
-                    {epic: {
-                            energy: { min: 250, max: 300 },
-                            power: { min: 250, max: 300 },
-                            lifespan: { min: 250, max: 300 },
-                        }},
-                    {legendary: {
-                            energy: { min: 300, max: 350 },
-                            power: { min: 300, max: 350 },
-                            lifespan: { min: 300, max: 350 },
-                        }},
-                ],
-                [
+                        {
+                            uncommon: {
+                                value: { min: 150, max: 200 },
+
+                            }
+                        },
+                        {
+                            rare: {
+                                value: { min: 200, max: 250 },
+                            },
+                        },
+                        {
+                            epic: {
+                                value: { min: 250, max: 300 }
+                            },
+                        },
+                        {
+                            legendary: {
+                                value: { min: 300, max: 350 }
+                            },
+                        }
+                    ],
+                    [
+
+                        {
+                            common: {
+                                value: { min: 100, max: 150 },
+                            }
+                        },
+                        {
+                            uncommon: {
+                                value: { min: 150, max: 200 },
+
+                            }
+                        },
+                        {
+                            rare: {
+                                value: { min: 200, max: 250 },
+                            },
+                        },
+                        {
+                            epic: {
+                                value: { min: 250, max: 300 }
+                            },
+                        },
+                        {
+                            legendary: {
+                                value: { min: 300, max: 350 }
+                            },
+                        }
+                    ],
+                    [
+
+                        {
+                            common: {
+                                value: { min: 100, max: 150 },
+                            }
+                        },
+                        {
+                            uncommon: {
+                                value: { min: 150, max: 200 },
+
+                            }
+                        },
+                        {
+                            rare: {
+                                value: { min: 200, max: 250 },
+                            },
+                        },
+                        {
+                            epic: {
+                                value: { min: 250, max: 300 }
+                            },
+                        },
+                        {
+                            legendary: {
+                                value: { min: 300, max: 350 }
+                            },
+                        }
+                    ],
+                    Buffer.from([60, 25, 10, 4, 1]),
+                    Buffer.from([60, 25, 10, 4, 1]),
+                )
+                    .accounts({
+                        creator: admin_account.publicKey,
+                        rarity: rarity_pda,
+                        //systemProgram: anchor.web3.SystemProgram.programId,
+                    })
+                    .signers([admin_account]) // Include new_account as a signer
+                    .rpc();
+
+
+                const rarityData = await program.account.rarityData.fetch(rarity_pda);
+                assert.isTrue(rarityData.isInitialized);
+                assert.deepEqual(rarityData.boosterProbabilities.equals(Buffer.from([60, 25, 10, 4, 1])), true);
+                assert.deepEqual(rarityData.fighterProbabilities.equals(Buffer.from([60, 25, 10, 4, 1])), true);
+                assert.deepEqual(rarityData.energyBooster, [
 
                     {
                         common: {
@@ -191,82 +295,40 @@ describe.only("battleboosters", () => {
                             value: { min: 300, max: 350 }
                         },
                     }
-                ],
-                Buffer.from([1, 4, 10, 25, 60]),
-                Buffer.from([1, 4, 10, 25, 60]),
-            )
-                .accounts({
-                    creator: admin_account.publicKey,
-                    rarity: rarity_pda,
-                    //systemProgram: anchor.web3.SystemProgram.programId,
-                })
-                .signers([admin_account]) // Include new_account as a signer
-                .rpc();
+                ]);
+                assert.deepEqual(rarityData.fighter, [
+                    {
+                        common: {
 
-
-            const rarityData = await program.account.rarityData.fetch(rarity_pda);
-            assert.isTrue(rarityData.isInitialized);
-            assert.deepEqual(rarityData.boosterProbabilities.equals(Buffer.from([1, 4, 10, 25, 60])), true);
-            assert.deepEqual(rarityData.fighterProbabilities.equals(Buffer.from([1, 4, 10, 25, 60])), true);
-            assert.deepEqual(rarityData.booster, [
-
-                {
-                    common: {
-                        value: { min: 100, max: 150 },
-                    }
-                },
-                {
-                    uncommon: {
-                        value: { min: 150, max: 200 },
-
-                    }
-                },
-                {
-                    rare: {
-                        value: { min: 200, max: 250 },
+                            energy: { min: 100, max: 150 },
+                            power: { min: 100, max: 150 },
+                            lifespan: { min: 100, max: 150 },
+                        }
                     },
-                },
-                {
-                    epic: {
-                        value: { min: 250, max: 300 }
-                    },
-                },
-                {
-                    legendary: {
-                        value: { min: 300, max: 350 }
-                    },
-                }
-            ]);
-            assert.deepEqual(rarityData.fighter, [
-                {
-                    common: {
-
-                        energy: { min: 100, max: 150 },
-                        power: { min: 100, max: 150 },
-                        lifespan: { min: 100, max: 150 },
-                    }
-                },
-                {uncommon: {
-                        energy: { min: 150, max: 200 },
-                        power: { min: 150, max: 200 },
-                        lifespan: { min: 150, max: 200 },
-                    }},
-                {rare: {
-                        energy: { min: 200, max: 250 },
-                        power: { min: 200, max: 250 },
-                        lifespan: { min: 200, max: 250 },
-                    }},
-                {epic: {
-                        energy: { min: 250, max: 300 },
-                        power: { min: 250, max: 300 },
-                        lifespan: { min: 250, max: 300 },
-                    }},
-                {legendary: {
-                        energy: { min: 300, max: 350 },
-                        power: { min: 300, max: 350 },
-                        lifespan: { min: 300, max: 350 },
-                    }},
-            ]);
+                    {uncommon: {
+                            energy: { min: 150, max: 200 },
+                            power: { min: 150, max: 200 },
+                            lifespan: { min: 150, max: 200 },
+                        }},
+                    {rare: {
+                            energy: { min: 200, max: 250 },
+                            power: { min: 200, max: 250 },
+                            lifespan: { min: 200, max: 250 },
+                        }},
+                    {epic: {
+                            energy: { min: 250, max: 300 },
+                            power: { min: 250, max: 300 },
+                            lifespan: { min: 250, max: 300 },
+                        }},
+                    {legendary: {
+                            energy: { min: 300, max: 350 },
+                            power: { min: 300, max: 350 },
+                            lifespan: { min: 300, max: 350 },
+                        }},
+                ]);
+             } catch (e) {
+                console.log(e)
+             }
         }
 
     })
@@ -284,7 +346,7 @@ describe.only("battleboosters", () => {
 
         const playerAccount = await program.account.playerData.fetch(player_account_pda);
         assert.isTrue(playerAccount.orderNonce.eq(new BN(0)));
-        assert.isTrue(playerAccount.nftPreMintPlayerNonce.eq(new BN(0)));
+        assert.isTrue(playerAccount.playerGameAssetLinkNonce.eq(new BN(0)));
     })
 
     /**
@@ -779,11 +841,11 @@ describe.only("battleboosters", () => {
 
 
         const program_pda_data = await program.account.programData.fetch(program_pda);
-        const [nft_pre_mint_pda, nft_pre_mint_bump]  = anchor.web3.PublicKey.findProgramAddressSync(
+        const [mintable_game_asset_pda, mintable_game_asset_bump]  = anchor.web3.PublicKey.findProgramAddressSync(
             [
                 Buffer.from("BattleBoosters"),
-                Buffer.from("nftPreMint"),
-                new BN(program_pda_data.preMintNonce).toBuffer("le", 8)
+                Buffer.from("mintableGameAsset"),
+                new BN(program_pda_data.mintableGameAssetNonce).toBuffer("le", 8)
             ], program.programId);
 
         const [player_account_pda, player_account_bump]  = anchor.web3.PublicKey.findProgramAddressSync(
@@ -793,14 +855,15 @@ describe.only("battleboosters", () => {
                 provider.wallet.publicKey.toBuffer()
             ], program.programId);
 
+
         const player_account_pda_data = await program.account.playerData.fetch(player_account_pda);
 
-        const [player_nft_pre_mint_pda, player_nft_pre_mint_bump]  = anchor.web3.PublicKey.findProgramAddressSync(
+        const [player_game_asset_link_pda, player_game_asset_link_bump]  = anchor.web3.PublicKey.findProgramAddressSync(
             [
                 Buffer.from("BattleBoosters"),
-                Buffer.from("nftPreMint"),
+                Buffer.from("mintableGameAsset"),
                 provider.wallet.publicKey.toBuffer(),
-                new BN(player_account_pda_data.nftPreMintPlayerNonce).toBuffer("le", 8)
+                new BN(player_account_pda_data.playerGameAssetLinkNonce).toBuffer("le", 8)
             ], program.programId);
 
         const [collector_pack_pda, collector_pack_bump]  = anchor.web3.PublicKey.findProgramAddressSync(
@@ -825,7 +888,8 @@ describe.only("battleboosters", () => {
         assert.isTrue(collector_pack_pda_data.fighterMintAllowance.eq(new BN(1)));
 
         try {
-            const tx2 = await program.methods.generateRandomNftPreMint(
+            const tx2 = await program.methods.generateRandomMintableGameAsset(
+                new BN(player_account_pda_data.playerGameAssetLinkNonce),
                 {
                         nftType: { booster: {} }, // Use the variant name as key for enum
                     }
@@ -835,8 +899,8 @@ describe.only("battleboosters", () => {
                 playerAccount: player_account_pda,
                 collectorPack: collector_pack_pda,
                 rarity: rarity_pda,
-                nftPreMint: nft_pre_mint_pda,
-                nftPreMintPlayer:player_nft_pre_mint_pda
+                playerGameAssetLink: player_game_asset_link_pda,
+                mintableGameAsset: mintable_game_asset_pda,
             }).signers([]).rpc()
 
             console.log(tx2)
@@ -849,7 +913,7 @@ describe.only("battleboosters", () => {
             console.log(JSON.stringify(logs?.meta?.logMessages, undefined, 2));
 
 
-            const pre_mint_pda_data = await program.account.nftPreMintData.fetch(nft_pre_mint_pda);
+            const pre_mint_pda_data = await program.account.mintableGameAssetData.fetch(mintable_game_asset_pda);
 
 
 

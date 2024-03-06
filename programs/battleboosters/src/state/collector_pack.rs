@@ -101,7 +101,7 @@ pub struct MintCollectorPack<'info> {
     mint::authority = mint_authority,
     mint::freeze_authority = mint_authority,
     payer = creator,
-    seeds = [MY_APP_PREFIX, MINT, program.pre_mint_nonce.to_le_bytes().as_ref()],
+    seeds = [MY_APP_PREFIX, MINT, program.mintable_game_asset_nonce.to_le_bytes().as_ref()],
     bump
     )]
     pub minter: Box<Account<'info, Mint>>,

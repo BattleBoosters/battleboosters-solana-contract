@@ -1,3 +1,5 @@
+use std::string::ToString;
+
 pub const MY_APP_PREFIX: &[u8] = b"BattleBoosters";
 pub const PROGRAM_STATE: &[u8] = b"program";
 pub const EVENT: &[u8] = b"event";
@@ -9,7 +11,8 @@ pub const MINT: &[u8] = b"mint";
 pub const INVENTORY: &[u8] = b"inventory";
 pub const PLAYER: &[u8] = b"player";
 pub const COLLECTOR: &[u8] = b"collector";
-pub const NFT_PRE_MINT: &[u8] = b"nftPreMint";
+pub const MINTABLE_GAME_ASSET: &[u8] = b"mintableGameAsset";
+pub const METADATA_OFF_CHAIN_URI: &str = "https://battlebooster.com/metadata";
 
 pub const STALENESS_THRESHOLD: i64 = 300;
 pub const SOL_USD_FEED_MAINNET: &str = "GvDMxPzN1sCj7L26YDK2HnMRXEQmQ2aemov8YBtPS7vR";

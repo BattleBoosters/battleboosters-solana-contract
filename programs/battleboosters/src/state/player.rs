@@ -42,6 +42,7 @@ pub struct InitializePlayer<'info> {
 // }
 
 #[derive(Accounts)]
+#[instruction(player_game_asset_link_nonce: u64)]
 pub struct GenerateRandomNftPreMint<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -68,31 +69,43 @@ pub struct GenerateRandomNftPreMint<'info> {
     #[account(
     init,
     payer = signer,
-    seeds = [MY_APP_PREFIX, NFT_PRE_MINT, program.pre_mint_nonce.to_le_bytes().as_ref()],
+    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, program.mintable_game_asset_nonce.to_le_bytes().as_ref()],
     space = 8 + 1 + 1 + 32 + (4 + 20) + (4 + 100) + (4 + 100) + (4 + 100) + (4 + 100) + (4 + 480),
     bump
     )]
-    pub nft_pre_mint: Box<Account<'info, NftPreMintData>>,
+    pub mintable_game_asset: Box<Account<'info, MintableGameAssetData>>,
 
     #[account(
-    init,
+    init_if_needed,
     payer = signer,
-    seeds = [MY_APP_PREFIX, NFT_PRE_MINT, signer.key().as_ref(), player_account.nft_pre_mint_player_nonce.to_le_bytes().as_ref()],
-    space = 8 + 8,
+    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, signer.key().as_ref(), player_game_asset_link_nonce.to_le_bytes().as_ref()],
+    space = 8 + 8 + 1,
     bump,
     )]
-    pub nft_pre_mint_player: Box<Account<'info, NftPreMintPlayerData>>,
+    pub player_game_asset_link: Box<Account<'info, PlayerGameAssetLinkData>>,
 
     pub system_program: Program<'info, System>,
 }
 
 #[account]
-pub struct NftPreMintPlayerData {
-    pub nft_pre_mint_nonce: u64,
+pub struct PlayerData {
+    /// Represent the nonce of the current amount orders the player have made
+    pub order_nonce: u64,
+    pub player_game_asset_link_nonce: u64,
+    pub is_initialized: bool,
 }
 
 #[account]
-pub struct NftPreMintData {
+pub struct PlayerGameAssetLinkData {
+    pub mintable_game_asset_nonce: u64,
+    /// Checks if a PDA is eligible to update its `mintable_game_asset_nonce`.
+    /// The PDA becomes eligible upon minting and withdrawing a `mintable_game_asset`,
+    /// which break the link with the last `mintable_game_asset_nonce`.
+    pub is_free: bool,
+}
+
+#[account]
+pub struct MintableGameAssetData {
     pub is_locked: bool,
     pub is_minted: bool,
     pub owner: Pubkey,
@@ -113,14 +126,6 @@ pub struct NftMetadata {
 pub struct Attribute {
     pub trait_type: String,
     pub value: String,
-}
-
-#[account]
-pub struct PlayerData {
-    /// Represent the nonce of the current amount orders the player have made
-    pub order_nonce: u64,
-    pub nft_pre_mint_player_nonce: u64,
-    pub is_initialized: bool,
 }
 
 // #[derive(Accounts)]

@@ -24,8 +24,8 @@ pub struct InitializeProgram<'info> {
 pub struct ProgramData {
     /// Represent the current amount of created event
     pub event_nonce: u64,
-    /// Represent the current amount of created collector pack
-    pub pre_mint_nonce: u64,
+    /// Represent the current amount of mintable game asset pack
+    pub mintable_game_asset_nonce: u64,
     /// The authority which are allowed to administrate the contract
     pub admin_pubkey: Pubkey,
     /// The price in USD of each NFT fighter pack

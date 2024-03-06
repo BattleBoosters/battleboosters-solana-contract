@@ -1,5 +1,7 @@
 use crate::errors::ErrorCode;
 use crate::state::fight_card::*;
+use crate::state::player::{Attribute, NftMetadata};
+use crate::state::rarity::Stats;
 use crate::types::*;
 use anchor_lang::prelude::*;
 use anchor_spl::token::{initialize_mint, InitializeMint};
@@ -42,6 +44,7 @@ pub fn xorshift64(seed: u64) -> u64 {
     new_seed ^= new_seed.clone() << 17;
     new_seed
 }
+
 pub fn find_rarity(rarity: Vec<u8>, random_number: u8) -> usize {
     let mut cumulative_probs = vec![];
     let mut sum = 0;
@@ -57,33 +60,57 @@ pub fn find_rarity(rarity: Vec<u8>, random_number: u8) -> usize {
         .unwrap_or(cumulative_probs.len() - 1)
 }
 
-pub fn check_unique_nft_types(purchase_requests: Option<Vec<PurchaseRequest>>) -> bool {
-    if let Some(requests) = purchase_requests {
-        let mut booster_found = false;
-        let mut fighter_pack_found = false;
-
-        for request in requests {
-            match request.nft_type {
-                NftType::Booster => {
-                    if booster_found {
-                        // A Booster type was already found before, so return false.
-                        return false;
-                    }
-                    booster_found = true;
-                }
-                NftType::FighterPack => {
-                    if fighter_pack_found {
-                        // A FighterPack type was already found before, so return false.
-                        return false;
-                    }
-                    fighter_pack_found = true;
-                }
-            }
-        }
-    }
-    // If we get here, it means there are at most one of each type.
-    true
+pub fn find_scaled_rarity(value: &Stats, rng_seed: u64) -> u32 {
+    let range = (&value.max - &value.min + 1) as u64;
+    let scaled_random_number = ((xorshift64(rng_seed) % range) + value.clone().min as u64) as u32;
+    scaled_random_number
 }
+
+pub fn create_nft_metadata(
+    name: String,
+    description: String,
+    image: String,
+    animation_url: Option<String>,
+    external_url: Option<String>,
+    attributes: Vec<Attribute>,
+) -> NftMetadata {
+    NftMetadata {
+        name,
+        description,
+        image,
+        animation_url,
+        external_url,
+        attributes,
+    }
+}
+
+// pub fn check_unique_nft_types(purchase_requests: Option<Vec<PurchaseRequest>>) -> bool {
+//     if let Some(requests) = purchase_requests {
+//         let mut booster_found = false;
+//         let mut fighter_pack_found = false;
+//
+//         for request in requests {
+//             match request.nft_type {
+//                 NftType::Booster => {
+//                     if booster_found {
+//                         // A Booster type was already found before, so return false.
+//                         return false;
+//                     }
+//                     booster_found = true;
+//                 }
+//                 NftType::FighterPack => {
+//                     if fighter_pack_found {
+//                         // A FighterPack type was already found before, so return false.
+//                         return false;
+//                     }
+//                     fighter_pack_found = true;
+//                 }
+//             }
+//         }
+//     }
+//     // If we get here, it means there are at most one of each type.
+//     true
+// }
 
 // pub fn create_game_token_mint(
 //     mint: AccountInfo,

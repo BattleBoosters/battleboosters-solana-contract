@@ -60,7 +60,7 @@ pub mod battleboosters {
         program.authority_bump = authority_bump;
         program.bank_bump = bank_bump;
         program.event_nonce = 0_u64;
-        program.pre_mint_nonce = 0_u64;
+        program.mintable_game_asset_nonce = 0_u64;
         program.admin_pubkey = admin_pubkey;
         program.fighter_pack_price = nft_fighter_pack_price;
         program.booster_price = booster_price;
@@ -75,7 +75,9 @@ pub mod battleboosters {
     pub fn initialize_rarity(
         ctx: Context<InitializeRarity>,
         fighter: Vec<RarityFighter>,
-        booster: Vec<RarityBooster>,
+        energy_booster: Vec<RarityBooster>,
+        shield_booster: Vec<RarityBooster>,
+        points_booster: Vec<RarityBooster>,
         fighter_probabilities: Vec<u8>,
         booster_probabilities: Vec<u8>,
     ) -> Result<()> {
@@ -83,7 +85,9 @@ pub mod battleboosters {
         require!(!rarity.is_initialized, ErrorCode::AlreadyInitialized);
 
         rarity.fighter = fighter;
-        rarity.booster = booster;
+        rarity.energy_booster = energy_booster;
+        rarity.shield_booster = shield_booster;
+        rarity.points_booster = points_booster;
         rarity.fighter_probabilities = fighter_probabilities;
         rarity.booster_probabilities = booster_probabilities;
         rarity.is_initialized = true;
@@ -109,7 +113,7 @@ pub mod battleboosters {
         // player_inventory.is_initialized = true;
 
         player_account.order_nonce = 0;
-        player_account.nft_pre_mint_player_nonce = 0;
+        player_account.player_game_asset_link_nonce = 0;
         player_account.is_initialized = true;
 
         msg!("Player Initialized");
@@ -340,6 +344,8 @@ pub mod battleboosters {
         Ok(())
     }
 
+    // TODO: REMOVE BEFORE MAINNET LAUNCH
+    /// ONLY FOR TEST PURPOSE
     pub fn test_gift_collector_pack(ctx: Context<TransactionTest>) -> Result<()> {
         let collector_pack = &mut ctx.accounts.collector_pack;
 
@@ -349,17 +355,31 @@ pub mod battleboosters {
         Ok(())
     }
 
-    pub fn generate_random_nft_pre_mint(
+    pub fn generate_random_mintable_game_asset(
         ctx: Context<GenerateRandomNftPreMint>,
+        player_game_asset_link_nonce: u64, // used on instruction
         request: OpenRequest,
     ) -> Result<()> {
         let program = &mut ctx.accounts.program;
         let collector_pack = &mut ctx.accounts.collector_pack;
         let rarity = &ctx.accounts.rarity;
-        let nft_pre_mint_player = &mut ctx.accounts.nft_pre_mint_player;
-        let nft_pre_mint = &mut ctx.accounts.nft_pre_mint;
+        let player_game_asset_link = &mut ctx.accounts.player_game_asset_link;
+        let mintable_game_asset = &mut ctx.accounts.mintable_game_asset;
         let player_account = &mut ctx.accounts.player_account;
+
         let signer = &ctx.accounts.signer;
+
+        require!(
+            player_game_asset_link_nonce <= player_account.player_game_asset_link_nonce,
+            ErrorCode::WrongPlayerGameAssetLinkNonce
+        );
+
+        if player_game_asset_link_nonce < player_account.player_game_asset_link_nonce {
+            require!(player_game_asset_link.is_free, ErrorCode::NotFreePDA);
+        } else {
+            // increase the player game asset link nonce for the next game asset generation
+            player_account.player_game_asset_link_nonce += 1;
+        }
 
         let randomness = collector_pack
             .randomness
@@ -380,10 +400,7 @@ pub mod battleboosters {
         ]);
         let random_number = ((xorshift64(rng_seed.clone()) % 100) + 1) as u8;
 
-        msg!("{}", random_number);
-
-        // TODO: Check the request
-        //      Ensure there is not twice the same type inside
+        msg!("Random number{}", random_number);
 
         match request.nft_type {
             NftType::Booster => {
@@ -392,29 +409,101 @@ pub mod battleboosters {
                     ErrorCode::Unauthorized
                 );
 
+                let random_booster_type = (xorshift64(rng_seed.clone()) % 3) as usize;
+                let booster_type = BoosterType::from_index(random_booster_type);
                 let rarity_index = find_rarity(rarity.booster_probabilities.clone(), random_number);
+                // Get the random booster type
+                let mut rarity_booster_found: Option<&RarityBooster> = None;
+                if let Some(booster) = booster_type.clone() {
+                    match booster {
+                        BoosterType::Points => {
+                            rarity_booster_found = rarity
+                                .points_booster
+                                .iter()
+                                .find(|r| r.matches_index(rarity_index));
+                        }
+                        BoosterType::Shield => {
+                            rarity_booster_found = rarity
+                                .shield_booster
+                                .iter()
+                                .find(|r| r.matches_index(rarity_index));
+                        }
+                        BoosterType::Energy => {
+                            rarity_booster_found = rarity
+                                .energy_booster
+                                .iter()
+                                .find(|r| r.matches_index(rarity_index));
+                        }
+                    }
+                }
 
                 msg!(" rarity index {:?}", rarity_index);
+                msg!(" rarity found {:?}", rarity_booster_found);
 
-                //let scaled_random_number = ((xorshift64(rng_seed) % range) + stats.min) as u32;
+                if let Some(rarity_booster) = rarity_booster_found.clone() {
+                    match rarity_booster {
+                        RarityBooster::Common { value } => {
+                            msg!(" Common value min: {} and max: {}  ", value.min, value.max);
+                        }
+                        RarityBooster::Uncommon { value } => {
+                            msg!(
+                                " Uncommon value min: {} and max: {}  ",
+                                value.min,
+                                value.max
+                            );
+                            let scaled_random_number = find_scaled_rarity(value, rng_seed);
 
-                nft_pre_mint.metadata = NftMetadata {
-                    name: "booster".to_string(),
-                    description: "test".to_string(),
-                    image: "x".to_string(),
-                    animation_url: None,
-                    external_url: None,
-                    attributes: vec![Attribute {
-                        trait_type: "randomness".to_string(),
-                        value: random_number.to_string(),
-                    }],
-                };
+                            let attributes = vec![
+                                Attribute {
+                                    trait_type: "Booster Type".to_string(),
+                                    value: booster_type.unwrap().to_string(),
+                                },
+                                Attribute {
+                                    trait_type: "Rarity".to_string(),
+                                    value: rarity_booster_found.unwrap().to_string(),
+                                },
+                                Attribute {
+                                    trait_type: "Value".to_string(),
+                                    value: scaled_random_number.to_string(),
+                                },
+                            ];
+
+                            mintable_game_asset.metadata = create_nft_metadata(
+                                "Booster".to_string(),
+                                "test".to_string(),
+                                format!(
+                                    "{}/{}",
+                                    METADATA_OFF_CHAIN_URI,
+                                    mintable_game_asset.key().to_string()
+                                ),
+                                None,
+                                None,
+                                attributes,
+                            );
+
+                            msg!("{:?}", mintable_game_asset.metadata);
+                            msg!("Scaled random number: {}", scaled_random_number);
+                        }
+                        RarityBooster::Rare { value } => {}
+                        RarityBooster::Epic { value } => {}
+                        RarityBooster::Legendary { value } => {
+                            println!("Min: {}, Max: {}", value.min, value.max);
+                            // Use value.min and value.max as needed
+                        }
+                    }
+                } else {
+                    // Handle case where no matching rarity was found
+                    return Err(ErrorCode::NoMatchingRarityFound.into());
+                }
 
                 collector_pack.booster_mint_allowance = collector_pack
                     .booster_mint_allowance
                     .checked_sub(1)
                     .unwrap();
-                program.pre_mint_nonce = program.pre_mint_nonce.checked_add(1).unwrap();
+
+                // Update global state for mintable game asset initialization
+                program.mintable_game_asset_nonce =
+                    program.mintable_game_asset_nonce.checked_add(1).unwrap();
 
                 msg!("GOOD");
             }
@@ -566,7 +655,8 @@ pub mod battleboosters {
         //     }
         // }
 
-        program.pre_mint_nonce = program.pre_mint_nonce.checked_add(1).unwrap();
+        program.mintable_game_asset_nonce =
+            program.mintable_game_asset_nonce.checked_add(1).unwrap();
         Ok(())
     }
 
