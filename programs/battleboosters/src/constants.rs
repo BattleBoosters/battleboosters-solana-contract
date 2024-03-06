@@ -12,7 +12,7 @@ pub const INVENTORY: &[u8] = b"inventory";
 pub const PLAYER: &[u8] = b"player";
 pub const COLLECTOR: &[u8] = b"collector";
 pub const MINTABLE_GAME_ASSET: &[u8] = b"mintableGameAsset";
-pub const METADATA_OFF_CHAIN_URI: &str = "https://battlebooster.com/metadata";
+pub const METADATA_OFF_CHAIN_URI: &str = "https://battleboosters.com/metadata";
 
 pub const STALENESS_THRESHOLD: i64 = 300;
 pub const SOL_USD_FEED_MAINNET: &str = "GvDMxPzN1sCj7L26YDK2HnMRXEQmQ2aemov8YBtPS7vR";
