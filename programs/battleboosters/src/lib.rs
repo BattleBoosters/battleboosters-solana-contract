@@ -81,20 +81,15 @@ pub mod battleboosters {
         fighter_probabilities: Vec<u8>,
         booster_probabilities: Vec<u8>,
     ) -> Result<()> {
-        let rarity = &mut ctx.accounts.rarity;
-        require!(!rarity.is_initialized, ErrorCode::AlreadyInitialized);
-
-        rarity.fighter = fighter;
-        rarity.energy_booster = energy_booster;
-        rarity.shield_booster = shield_booster;
-        rarity.points_booster = points_booster;
-        rarity.fighter_probabilities = fighter_probabilities;
-        rarity.booster_probabilities = booster_probabilities;
-        rarity.is_initialized = true;
-
-        msg!("Rarity Initialized");
-
-        Ok(())
+        processor::initialize_rarity(
+            ctx,
+            fighter,
+            energy_booster,
+            shield_booster,
+            points_booster,
+            fighter_probabilities,
+            booster_probabilities,
+        )
     }
 
     pub fn initialize_player(
@@ -440,60 +435,52 @@ pub mod battleboosters {
                 msg!(" rarity index {:?}", rarity_index);
                 msg!(" rarity found {:?}", rarity_booster_found);
 
-                let scaled_random_number;
                 if let Some(rarity_booster) = rarity_booster_found.clone() {
-                    match rarity_booster {
+                    let scaled_random_number = match rarity_booster {
                         RarityBooster::Common { value } => {
                             //msg!("Common value min: {} and max: {}  ", value.min, value.max);
-                            scaled_random_number = find_scaled_rarity(value, rng_seed);
+                            find_scaled_rarity(value, rng_seed)
                         }
-                        RarityBooster::Uncommon { value } => {
-                            scaled_random_number = find_scaled_rarity(value, rng_seed);
-                        }
-                        RarityBooster::Rare { value } => {
-                            scaled_random_number = find_scaled_rarity(value, rng_seed);
-                        }
-                        RarityBooster::Epic { value } => {
-                            scaled_random_number = find_scaled_rarity(value, rng_seed);
-                        }
-                        RarityBooster::Legendary { value } => {
-                            scaled_random_number = find_scaled_rarity(value, rng_seed);
-                        }
-                    }
+                        RarityBooster::Uncommon { value } => find_scaled_rarity(value, rng_seed),
+                        RarityBooster::Rare { value } => find_scaled_rarity(value, rng_seed),
+                        RarityBooster::Epic { value } => find_scaled_rarity(value, rng_seed),
+                        RarityBooster::Legendary { value } => find_scaled_rarity(value, rng_seed),
+                    };
+
+                    let attributes = vec![
+                        Attribute {
+                            trait_type: "Booster Type".to_string(),
+                            value: booster_type.unwrap().to_string(),
+                        },
+                        Attribute {
+                            trait_type: "Rarity".to_string(),
+                            value: rarity_booster_found.unwrap().to_string(),
+                        },
+                        Attribute {
+                            trait_type: "Value".to_string(),
+                            value: scaled_random_number.to_string(),
+                        },
+                    ];
+
+                    mintable_game_asset.metadata = create_nft_metadata(
+                        "Booster".to_string(),
+                        "test".to_string(),
+                        format!(
+                            "{}/{}",
+                            METADATA_OFF_CHAIN_URI,
+                            mintable_game_asset.key().to_string()
+                        ),
+                        None,
+                        None,
+                        attributes,
+                    );
+
+                    msg!("{:?}", mintable_game_asset.metadata);
+                    msg!("Scaled random number: {}", scaled_random_number);
                 } else {
                     // Handle case where no matching rarity was found
                     return Err(ErrorCode::NoMatchingRarityFound.into());
                 }
-
-                let attributes = vec![
-                    Attribute {
-                        trait_type: "Booster Type".to_string(),
-                        value: booster_type.unwrap().to_string(),
-                    },
-                    Attribute {
-                        trait_type: "Rarity".to_string(),
-                        value: rarity_booster_found.unwrap().to_string(),
-                    },
-                    Attribute {
-                        trait_type: "Value".to_string(),
-                        value: scaled_random_number.to_string(),
-                    },
-                ];
-
-                mintable_game_asset.metadata = create_nft_metadata(
-                    "Booster".to_string(),
-                    "test".to_string(),
-                    format!(
-                        "{}/{}",
-                        METADATA_OFF_CHAIN_URI,
-                        mintable_game_asset.key().to_string()
-                    ),
-                    None,
-                    None,
-                    attributes,
-                );
-                msg!("{:?}", mintable_game_asset.metadata);
-                msg!("Scaled random number: {}", scaled_random_number);
 
                 collector_pack.booster_mint_allowance = collector_pack
                     .booster_mint_allowance
