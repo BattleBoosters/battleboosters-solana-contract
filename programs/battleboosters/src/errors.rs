@@ -27,4 +27,6 @@ pub enum ErrorCode {
     WrongPlayerGameAssetLinkNonce,
     #[msg("This player game asset pda is not free")]
     NotFreePDA,
+    #[msg("Not enough allowance to generate mintable game asset")]
+    NotEnoughAllowance,
 }

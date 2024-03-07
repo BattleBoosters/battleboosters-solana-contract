@@ -344,9 +344,9 @@ pub mod battleboosters {
     pub fn test_gift_collector_pack(ctx: Context<TransactionTest>) -> Result<()> {
         let collector_pack = &mut ctx.accounts.collector_pack;
 
-        collector_pack.randomness = Some(vec![12, 23, 34, 34, 54, 34, 34, 23]);
+        collector_pack.randomness = Some(vec![12, 23, 34, 34, 54, 74, 94, 23]);
         collector_pack.booster_mint_allowance = 3;
-        collector_pack.fighter_mint_allowance = 1;
+        collector_pack.fighter_mint_allowance = 2;
         Ok(())
     }
 
@@ -381,28 +381,37 @@ pub mod battleboosters {
             .clone()
             .ok_or(ErrorCode::RandomnessUnavailable)?;
         let public_key_bytes = signer.key().to_bytes();
-        let nonce_byte = (collector_pack.booster_mint_allowance.clone() & 0xFF) as u8;
 
-        let rng_seed = u64::from_le_bytes([
-            randomness[0].clone(),
-            randomness[1].clone(),
-            randomness[2].clone(),
-            randomness[3].clone(),
-            public_key_bytes[0].clone(),
-            public_key_bytes[1].clone(),
-            public_key_bytes[2].clone(),
-            nonce_byte,
-        ]);
+        let booster_mint_allowance = &collector_pack.booster_mint_allowance;
+        let nonce_byte = (booster_mint_allowance
+            .checked_add(collector_pack.fighter_mint_allowance.clone())
+            .unwrap()
+            .clone()
+            & 0xFF) as u8;
+
+        let modulus_base_pubkey = public_key_bytes.len() - 3; // Ensures the slice won't go out of bounds
+        let start_index_pubkey = (nonce_byte.clone() as usize % modulus_base_pubkey) as usize;
+        let nonce_modulo_pubkey = &public_key_bytes[start_index_pubkey..(start_index_pubkey + 3)];
+        let modulus_base_randomness = randomness.len() - 4; // Ensures the slice won't go out of bounds
+        let start_index_randomness = (nonce_byte as usize % modulus_base_randomness) as usize;
+        let nonce_modulo_randomness =
+            &randomness[start_index_randomness..(start_index_randomness + 4)];
+        msg!("nonce modulo: {:?}", nonce_modulo_pubkey);
+        let rng_seed = create_rng_seed(&nonce_modulo_randomness, &nonce_modulo_pubkey, &nonce_byte);
         let random_number = ((xorshift64(rng_seed.clone()) % 100) + 1) as u8;
-
         msg!("Random number{}", random_number);
 
         match request.nft_type {
             NftType::Booster => {
                 require!(
                     collector_pack.booster_mint_allowance >= 1,
-                    ErrorCode::Unauthorized
+                    ErrorCode::NotEnoughAllowance
                 );
+
+                // Create sub randomness
+                let public_key_bytes_1 = &public_key_bytes[3..6];
+                let rng_seed_1 =
+                    create_rng_seed(&nonce_modulo_randomness, &public_key_bytes_1, &nonce_byte);
 
                 let random_booster_type = (xorshift64(rng_seed.clone()) % 3) as usize;
                 let booster_type = BoosterType::from_index(random_booster_type);
@@ -437,14 +446,11 @@ pub mod battleboosters {
 
                 if let Some(rarity_booster) = rarity_booster_found.clone() {
                     let scaled_random_number = match rarity_booster {
-                        RarityBooster::Common { value } => {
-                            //msg!("Common value min: {} and max: {}  ", value.min, value.max);
-                            find_scaled_rarity(value, rng_seed)
-                        }
-                        RarityBooster::Uncommon { value } => find_scaled_rarity(value, rng_seed),
-                        RarityBooster::Rare { value } => find_scaled_rarity(value, rng_seed),
-                        RarityBooster::Epic { value } => find_scaled_rarity(value, rng_seed),
-                        RarityBooster::Legendary { value } => find_scaled_rarity(value, rng_seed),
+                        RarityBooster::Common { value } => find_scaled_rarity(value, rng_seed_1),
+                        RarityBooster::Uncommon { value } => find_scaled_rarity(value, rng_seed_1),
+                        RarityBooster::Rare { value } => find_scaled_rarity(value, rng_seed_1),
+                        RarityBooster::Epic { value } => find_scaled_rarity(value, rng_seed_1),
+                        RarityBooster::Legendary { value } => find_scaled_rarity(value, rng_seed_1),
                     };
 
                     let attributes = vec![
@@ -491,8 +497,20 @@ pub mod battleboosters {
             NftType::FighterPack => {
                 require!(
                     collector_pack.fighter_mint_allowance >= 1,
-                    ErrorCode::Unauthorized
+                    ErrorCode::NotEnoughAllowance
                 );
+
+                let public_key_bytes_1 = &public_key_bytes[3..6];
+                let public_key_bytes_2 = &public_key_bytes[6..9];
+                let public_key_bytes_3 = &public_key_bytes[9..12];
+
+                let rng_seed_1 =
+                    create_rng_seed(&nonce_modulo_randomness, public_key_bytes_1, &nonce_byte);
+                let rng_seed_2 =
+                    create_rng_seed(&nonce_modulo_randomness, public_key_bytes_2, &nonce_byte);
+                let rng_seed_3 =
+                    create_rng_seed(&nonce_modulo_randomness, public_key_bytes_3, &nonce_byte);
+
                 let random_fighter_type = (xorshift64(rng_seed.clone()) % 8) as usize;
                 let fighter_type = FighterType::from_index(random_fighter_type);
                 let rarity_index = find_rarity(rarity.fighter_probabilities.clone(), random_number);
@@ -514,9 +532,9 @@ pub mod battleboosters {
                         } => {
                             //msg!("Common value min: {} and max: {}  ", value.min, value.max);
                             (
-                                find_scaled_rarity(energy, rng_seed.clone()),
-                                find_scaled_rarity(power, rng_seed.clone()),
-                                find_scaled_rarity(lifespan, rng_seed),
+                                find_scaled_rarity(energy, rng_seed_1),
+                                find_scaled_rarity(power, rng_seed_2),
+                                find_scaled_rarity(lifespan, rng_seed_3),
                             )
                         }
                         RarityFighter::Uncommon {
@@ -524,36 +542,36 @@ pub mod battleboosters {
                             power,
                             lifespan,
                         } => (
-                            find_scaled_rarity(energy, rng_seed.clone()),
-                            find_scaled_rarity(power, rng_seed.clone()),
-                            find_scaled_rarity(lifespan, rng_seed),
+                            find_scaled_rarity(energy, rng_seed_1),
+                            find_scaled_rarity(power, rng_seed_2),
+                            find_scaled_rarity(lifespan, rng_seed_3),
                         ),
                         RarityFighter::Rare {
                             energy,
                             power,
                             lifespan,
                         } => (
-                            find_scaled_rarity(energy, rng_seed.clone()),
-                            find_scaled_rarity(power, rng_seed.clone()),
-                            find_scaled_rarity(lifespan, rng_seed),
+                            find_scaled_rarity(energy, rng_seed_1),
+                            find_scaled_rarity(power, rng_seed_2),
+                            find_scaled_rarity(lifespan, rng_seed_3),
                         ),
                         RarityFighter::Epic {
                             energy,
                             power,
                             lifespan,
                         } => (
-                            find_scaled_rarity(energy, rng_seed.clone()),
-                            find_scaled_rarity(power, rng_seed.clone()),
-                            find_scaled_rarity(lifespan, rng_seed),
+                            find_scaled_rarity(energy, rng_seed_1),
+                            find_scaled_rarity(power, rng_seed_2),
+                            find_scaled_rarity(lifespan, rng_seed_3),
                         ),
                         RarityFighter::Legendary {
                             energy,
                             power,
                             lifespan,
                         } => (
-                            find_scaled_rarity(energy, rng_seed.clone()),
-                            find_scaled_rarity(power, rng_seed.clone()),
-                            find_scaled_rarity(lifespan, rng_seed),
+                            find_scaled_rarity(energy, rng_seed_1),
+                            find_scaled_rarity(power, rng_seed_2),
+                            find_scaled_rarity(lifespan, rng_seed_3),
                         ),
                     };
 
@@ -592,6 +610,10 @@ pub mod battleboosters {
                         None,
                         attributes,
                     );
+                    collector_pack.fighter_mint_allowance = collector_pack
+                        .fighter_mint_allowance
+                        .checked_sub(1)
+                        .unwrap();
 
                     msg!("{:?}", mintable_game_asset.metadata);
                 } else {
@@ -604,8 +626,7 @@ pub mod battleboosters {
         }
 
         // Update global state for mintable game asset initialization
-        program.mintable_game_asset_nonce =
-            program.mintable_game_asset_nonce.checked_add(1).unwrap();
+        program.mintable_game_asset_nonce += 1;
 
         Ok(())
     }

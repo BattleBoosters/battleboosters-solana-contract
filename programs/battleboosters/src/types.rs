@@ -131,7 +131,6 @@ impl FighterType {
             5 => Some(FighterType::Wrestling),
             6 => Some(FighterType::BrazilianJiuJitsu),
             7 => Some(FighterType::Sambo),
-
             _ => None, // Return None if the index is out of bounds
         }
     }

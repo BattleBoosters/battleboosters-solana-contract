@@ -45,6 +45,25 @@ pub fn xorshift64(seed: u64) -> u64 {
     new_seed
 }
 
+pub fn create_rng_seed(randomness: &[u8], public_key_bytes: &[u8], nonce_byte: &u8) -> u64 {
+    // if randomness.len() < 4 || public_key_bytes.len() < 3 {
+    //    return Err(ErrorCode::Unauthorized.into());
+    //     return 0;
+    // }
+    msg!("randomness modulo {:?}", randomness);
+    msg!("pubkey modulo {:?}", public_key_bytes);
+    u64::from_le_bytes([
+        randomness[0].clone(),
+        randomness[1].clone(),
+        randomness[2].clone(),
+        randomness[3].clone(),
+        public_key_bytes[0].clone(),
+        public_key_bytes[1].clone(),
+        public_key_bytes[2].clone(),
+        nonce_byte.clone(),
+    ])
+}
+
 pub fn find_rarity(rarity: Vec<u8>, random_number: u8) -> usize {
     let mut cumulative_probs = vec![];
     let mut sum = 0;

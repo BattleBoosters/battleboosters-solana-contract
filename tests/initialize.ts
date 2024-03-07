@@ -885,13 +885,13 @@ describe.only("battleboosters", () => {
 
         const collector_pack_pda_data = await program.account.collectorPack.fetch(collector_pack_pda);
         assert.isTrue(collector_pack_pda_data.boosterMintAllowance.eq(new BN(3)));
-        assert.isTrue(collector_pack_pda_data.fighterMintAllowance.eq(new BN(1)));
+        assert.isTrue(collector_pack_pda_data.fighterMintAllowance.eq(new BN(2)));
 
         try {
             const tx2 = await program.methods.generateRandomMintableGameAsset(
                 new BN(player_account_pda_data.playerGameAssetLinkNonce),
                 {
-                        nftType: { booster: {} }, // Use the variant name as key for enum
+                        nftType: { fighterPack: {} }, // Use the variant name as key for enum
                     }
             ).accounts({
                 signer: provider.wallet.publicKey,
@@ -915,6 +915,63 @@ describe.only("battleboosters", () => {
 
             const pre_mint_pda_data = await program.account.mintableGameAssetData.fetch(mintable_game_asset_pda);
 
+            const program_pda_data_2 = await program.account.programData.fetch(program_pda);
+            const [mintable_game_asset_pda_2, mintable_game_asset_bump_2]  = anchor.web3.PublicKey.findProgramAddressSync(
+                [
+                    Buffer.from("BattleBoosters"),
+                    Buffer.from("mintableGameAsset"),
+                    new BN(program_pda_data_2.mintableGameAssetNonce).toBuffer("le", 8)
+                ], program.programId);
+
+            const [player_account_pda_2, player_account_bump_2]  = anchor.web3.PublicKey.findProgramAddressSync(
+                [
+                    Buffer.from("BattleBoosters"),
+                    Buffer.from("player"),
+                    provider.wallet.publicKey.toBuffer()
+                ], program.programId);
+
+
+            const player_account_pda_data_2 = await program.account.playerData.fetch(player_account_pda);
+
+            const [player_game_asset_link_pda_2, player_game_asset_link_bump_2]  = anchor.web3.PublicKey.findProgramAddressSync(
+                [
+                    Buffer.from("BattleBoosters"),
+                    Buffer.from("mintableGameAsset"),
+                    provider.wallet.publicKey.toBuffer(),
+                    new BN(player_account_pda_data_2.playerGameAssetLinkNonce).toBuffer("le", 8)
+                ], program.programId);
+
+            const [collector_pack_pda_2, collector_pack_bump_2]  = anchor.web3.PublicKey.findProgramAddressSync(
+                [
+                    Buffer.from("BattleBoosters"),
+                    Buffer.from("collector"),
+                    provider.wallet.publicKey.toBuffer(),
+                    new BN(player_account_pda_data_2.orderNonce).toBuffer("le", 8)
+                ], program.programId);
+
+            const tx3 = await program.methods.generateRandomMintableGameAsset(
+                new BN(player_account_pda_data_2.playerGameAssetLinkNonce),
+                {
+                    nftType: { fighterPack: {} }, // Use the variant name as key for enum
+                }
+            ).accounts({
+                signer: provider.wallet.publicKey,
+                program: program_pda,
+                playerAccount: player_account_pda_2,
+                collectorPack: collector_pack_pda_2,
+                rarity: rarity_pda,
+                playerGameAssetLink: player_game_asset_link_pda_2,
+                mintableGameAsset: mintable_game_asset_pda_2,
+            }).signers([]).rpc()
+
+            console.log(tx3)
+            await sleep(2000);
+            const logs2 = await provider.connection.getParsedTransaction(
+                tx3,
+                "confirmed"
+            );
+
+            console.log(JSON.stringify(logs2?.meta?.logMessages, undefined, 2));
 
 
         }catch (e) {
