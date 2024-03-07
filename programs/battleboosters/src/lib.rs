@@ -559,21 +559,29 @@ pub mod battleboosters {
 
                     let attributes = vec![
                         Attribute {
-                            trait_type: "Booster Type".to_string(),
-                            value: booster_type.unwrap().to_string(),
+                            trait_type: "Fighter Type".to_string(),
+                            value: fighter_type.unwrap().to_string(),
                         },
                         Attribute {
                             trait_type: "Rarity".to_string(),
-                            value: rarity_booster_found.unwrap().to_string(),
+                            value: rarity_fighter_found.unwrap().to_string(),
                         },
                         Attribute {
-                            trait_type: "Value".to_string(),
-                            value: scaled_random_number.to_string(),
+                            trait_type: "Energy".to_string(),
+                            value: scaled_random_number_energy.to_string(),
+                        },
+                        Attribute {
+                            trait_type: "Power".to_string(),
+                            value: scaled_random_number_power.to_string(),
+                        },
+                        Attribute {
+                            trait_type: "Lifespan".to_string(),
+                            value: scaled_random_number_lifespan.to_string(),
                         },
                     ];
 
                     mintable_game_asset.metadata = create_nft_metadata(
-                        "Booster".to_string(),
+                        "Fighter".to_string(),
                         "test".to_string(),
                         format!(
                             "{}/{}",
@@ -586,7 +594,6 @@ pub mod battleboosters {
                     );
 
                     msg!("{:?}", mintable_game_asset.metadata);
-                    msg!("Scaled random number: {}", scaled_random_number);
                 } else {
                     // Handle case where no matching rarity was found
                     return Err(ErrorCode::NoMatchingRarityFound.into());

@@ -70,6 +70,39 @@ pub enum RarityFighter {
     },
 }
 
+impl fmt::Display for RarityFighter {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let variant_str = match self {
+            RarityFighter::Common {
+                energy,
+                power,
+                lifespan,
+            } => "Common",
+            RarityFighter::Uncommon {
+                energy,
+                power,
+                lifespan,
+            } => "Uncommon",
+            RarityFighter::Rare {
+                energy,
+                power,
+                lifespan,
+            } => "Rare",
+            RarityFighter::Epic {
+                energy,
+                power,
+                lifespan,
+            } => "Epic",
+            RarityFighter::Legendary {
+                energy,
+                power,
+                lifespan,
+            } => "Legendary",
+        };
+        write!(f, "{}", variant_str)
+    }
+}
+
 // #[derive(Clone, Debug, AnchorSerialize, AnchorDeserialize)]
 // pub enum Booster {
 //     Points { rarity: RarityBooster },
