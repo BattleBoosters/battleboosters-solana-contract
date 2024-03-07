@@ -133,3 +133,31 @@ impl RarityBooster {
         }
     }
 }
+
+impl RarityFighter {
+    // /// Maps a numerical index to a specific RarityBooster variant.
+    // /// This is a class method, not meant to be called on an instance.
+    // pub fn from_index(index: usize) -> Option<Self> {
+    //     match index {
+    //         0 => Some(RarityBooster::Common { value: Stats::default() }),
+    //         1 => Some(RarityBooster::Uncommon { value: Stats::default() }),
+    //         2 => Some(RarityBooster::Rare { value: Stats::default() }),
+    //         3 => Some(RarityBooster::Epic { value: Stats::default() }),
+    //         4 => Some(RarityBooster::Legendary { value: Stats::default() }),
+    //         _ => None,
+    //     }
+    // }
+
+    /// Checks if the current instance matches a given rarity index.
+    /// Useful for filtering/searching within a collection.
+    pub fn matches_index(&self, index: usize) -> bool {
+        match (self, index) {
+            (RarityFighter::Common { .. }, 0) => true,
+            (RarityFighter::Uncommon { .. }, 1) => true,
+            (RarityFighter::Rare { .. }, 2) => true,
+            (RarityFighter::Epic { .. }, 3) => true,
+            (RarityFighter::Legendary { .. }, 4) => true,
+            _ => false,
+        }
+    }
+}

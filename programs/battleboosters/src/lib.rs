@@ -486,11 +486,6 @@ pub mod battleboosters {
                     .booster_mint_allowance
                     .checked_sub(1)
                     .unwrap();
-
-                // Update global state for mintable game asset initialization
-                program.mintable_game_asset_nonce =
-                    program.mintable_game_asset_nonce.checked_add(1).unwrap();
-
                 msg!("GOOD");
             }
             NftType::FighterPack => {
@@ -498,16 +493,112 @@ pub mod battleboosters {
                     collector_pack.fighter_mint_allowance >= 1,
                     ErrorCode::Unauthorized
                 );
+                let random_fighter_type = (xorshift64(rng_seed.clone()) % 8) as usize;
+                let fighter_type = FighterType::from_index(random_fighter_type);
+                let rarity_index = find_rarity(rarity.fighter_probabilities.clone(), random_number);
+                let rarity_fighter_found = rarity
+                    .fighter
+                    .iter()
+                    .find(|r| r.matches_index(rarity_index));
+
+                if let Some(rarity_fighter) = rarity_fighter_found.clone() {
+                    let (
+                        scaled_random_number_energy,
+                        scaled_random_number_power,
+                        scaled_random_number_lifespan,
+                    ) = match rarity_fighter {
+                        RarityFighter::Common {
+                            energy,
+                            power,
+                            lifespan,
+                        } => {
+                            //msg!("Common value min: {} and max: {}  ", value.min, value.max);
+                            (
+                                find_scaled_rarity(energy, rng_seed.clone()),
+                                find_scaled_rarity(power, rng_seed.clone()),
+                                find_scaled_rarity(lifespan, rng_seed),
+                            )
+                        }
+                        RarityFighter::Uncommon {
+                            energy,
+                            power,
+                            lifespan,
+                        } => (
+                            find_scaled_rarity(energy, rng_seed.clone()),
+                            find_scaled_rarity(power, rng_seed.clone()),
+                            find_scaled_rarity(lifespan, rng_seed),
+                        ),
+                        RarityFighter::Rare {
+                            energy,
+                            power,
+                            lifespan,
+                        } => (
+                            find_scaled_rarity(energy, rng_seed.clone()),
+                            find_scaled_rarity(power, rng_seed.clone()),
+                            find_scaled_rarity(lifespan, rng_seed),
+                        ),
+                        RarityFighter::Epic {
+                            energy,
+                            power,
+                            lifespan,
+                        } => (
+                            find_scaled_rarity(energy, rng_seed.clone()),
+                            find_scaled_rarity(power, rng_seed.clone()),
+                            find_scaled_rarity(lifespan, rng_seed),
+                        ),
+                        RarityFighter::Legendary {
+                            energy,
+                            power,
+                            lifespan,
+                        } => (
+                            find_scaled_rarity(energy, rng_seed.clone()),
+                            find_scaled_rarity(power, rng_seed.clone()),
+                            find_scaled_rarity(lifespan, rng_seed),
+                        ),
+                    };
+
+                    let attributes = vec![
+                        Attribute {
+                            trait_type: "Booster Type".to_string(),
+                            value: booster_type.unwrap().to_string(),
+                        },
+                        Attribute {
+                            trait_type: "Rarity".to_string(),
+                            value: rarity_booster_found.unwrap().to_string(),
+                        },
+                        Attribute {
+                            trait_type: "Value".to_string(),
+                            value: scaled_random_number.to_string(),
+                        },
+                    ];
+
+                    mintable_game_asset.metadata = create_nft_metadata(
+                        "Booster".to_string(),
+                        "test".to_string(),
+                        format!(
+                            "{}/{}",
+                            METADATA_OFF_CHAIN_URI,
+                            mintable_game_asset.key().to_string()
+                        ),
+                        None,
+                        None,
+                        attributes,
+                    );
+
+                    msg!("{:?}", mintable_game_asset.metadata);
+                    msg!("Scaled random number: {}", scaled_random_number);
+                } else {
+                    // Handle case where no matching rarity was found
+                    return Err(ErrorCode::NoMatchingRarityFound.into());
+                }
+
                 msg!("GOOD");
             }
         }
 
-        // let mut x = 0;
-        // while x < collector_pack.booster_mint_allowance {
-        //     // Your loop body here
-        //
-        //     x += 1;
-        // }
+        // Update global state for mintable game asset initialization
+        program.mintable_game_asset_nonce =
+            program.mintable_game_asset_nonce.checked_add(1).unwrap();
 
         Ok(())
     }

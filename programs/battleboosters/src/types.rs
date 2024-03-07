@@ -66,8 +66,102 @@ impl BoosterType {
 }
 
 #[derive(Clone, Debug, AnchorSerialize, AnchorDeserialize)]
+pub enum FighterCategory {
+    Striker,
+    Grappler,
+}
+
+impl fmt::Display for FighterCategory {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let variant_str = match self {
+            FighterCategory::Striker => "Striker",
+            FighterCategory::Grappler => "Grappler",
+        };
+        write!(f, "{}", variant_str)
+    }
+}
+
+impl FighterCategory {
+    pub fn from_name(index: &str) -> Option<FighterCategory> {
+        match index {
+            "Striker" => Some(FighterCategory::Striker),
+            "Grappler" => Some(FighterCategory::Grappler),
+
+            _ => None, // Return None if the index is out of bounds
+        }
+    }
+}
+
+#[derive(Clone, Debug, AnchorSerialize, AnchorDeserialize)]
 pub enum FighterType {
     Boxer,
     MuayThai,
-    Energy,
+    Taekwondo,
+    Karate,
+    Judo,
+    Wrestling,
+    BrazilianJiuJitsu,
+    Sambo,
+}
+
+impl fmt::Display for FighterType {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let variant_str = match self {
+            FighterType::Boxer => "Boxer",
+            FighterType::MuayThai => "MuayThai",
+            FighterType::Taekwondo => "Taekwondo",
+            FighterType::Karate => "Karate",
+            FighterType::Judo => "Judo",
+            FighterType::Wrestling => "Wrestling",
+            FighterType::BrazilianJiuJitsu => "BrazilianJiuJitsu",
+            FighterType::Sambo => "Sambo",
+        };
+        write!(f, "{}", variant_str)
+    }
+}
+
+impl FighterType {
+    pub fn from_index(index: usize) -> Option<FighterType> {
+        match index {
+            0 => Some(FighterType::Boxer),
+            1 => Some(FighterType::MuayThai),
+            2 => Some(FighterType::Taekwondo),
+            3 => Some(FighterType::Karate),
+            4 => Some(FighterType::Judo),
+            5 => Some(FighterType::Wrestling),
+            6 => Some(FighterType::BrazilianJiuJitsu),
+            7 => Some(FighterType::Sambo),
+
+            _ => None, // Return None if the index is out of bounds
+        }
+    }
+
+    pub fn from_name(index: &str) -> Option<FighterType> {
+        match index {
+            "Boxer" => Some(FighterType::Boxer),
+            "MuayThai" => Some(FighterType::MuayThai),
+            "Taekwondo" => Some(FighterType::Taekwondo),
+            "Karate" => Some(FighterType::Karate),
+            "Judo" => Some(FighterType::Judo),
+            "Wrestling" => Some(FighterType::Wrestling),
+            "BrazilianJiuJitsu" => Some(FighterType::BrazilianJiuJitsu),
+            "Sambo" => Some(FighterType::Sambo),
+            _ => None, // Return None if the index is out of bounds
+        }
+    }
+
+    // Determine the category of the fighter
+    pub fn category(&self) -> FighterCategory {
+        match self {
+            FighterType::Boxer
+            | FighterType::MuayThai
+            | FighterType::Taekwondo
+            | FighterType::Karate => FighterCategory::Striker,
+
+            FighterType::Judo
+            | FighterType::Wrestling
+            | FighterType::BrazilianJiuJitsu
+            | FighterType::Sambo => FighterCategory::Grappler,
+        }
+    }
 }
