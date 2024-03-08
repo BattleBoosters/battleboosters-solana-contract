@@ -108,7 +108,7 @@ pub struct PlayerGameAssetLinkData {
 pub struct MintableGameAssetData {
     pub is_locked: bool,
     pub is_minted: bool,
-    pub owner: Pubkey,
+    pub owner: Option<Pubkey>,
     pub metadata: NftMetadata,
 }
 

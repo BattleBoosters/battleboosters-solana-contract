@@ -612,7 +612,8 @@ pub mod battleboosters {
 
         // Update global state for mintable game asset initialization
         program.mintable_game_asset_nonce += 1;
-
+        player_game_asset_link.mintable_game_asset_nonce += 1;
+        mintable_game_asset.owner = Some(signer.key());
         Ok(())
     }
 
