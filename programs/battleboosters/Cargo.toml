@@ -23,3 +23,4 @@ mpl-token-metadata = "4.1.1"
 switchboard-solana = "0.29.99"
 solana-randomness-service = { version = "1.0.2", features = ["cpi"] }
 solana-program = {version = "1.16.27"}
+sha2 = "0.10.8"

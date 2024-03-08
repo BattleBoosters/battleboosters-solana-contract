@@ -5,6 +5,7 @@ use crate::state::rarity::Stats;
 use crate::types::*;
 use anchor_lang::prelude::*;
 use anchor_spl::token::{initialize_mint, InitializeMint};
+use sha2::{Digest, Sha256};
 
 pub fn only_admin(creator: &Pubkey, admin: &Pubkey) -> Result<()> {
     require!(creator == admin, ErrorCode::Unauthorized);
@@ -37,31 +38,24 @@ pub fn set_fight_card_properties(fight_card: &mut FightCardData, params: &FightC
     }
 }
 
-pub fn xorshift64(seed: u64) -> u64 {
-    let mut new_seed = seed;
-    new_seed ^= new_seed.clone() << 13;
-    new_seed ^= new_seed.clone() >> 7; // Changed for better distribution with u64
-    new_seed ^= new_seed.clone() << 17;
-    new_seed
-}
-
-pub fn create_rng_seed(randomness: &[u8], public_key_bytes: &[u8], nonce_byte: &u8) -> u64 {
+pub fn create_rng_seed(
+    randomness: &[u8],
+    public_key_bytes: &[u8],
+    nonce_byte: &u8,
+    x: Option<u8>,
+) -> u64 {
     // if randomness.len() < 4 || public_key_bytes.len() < 3 {
     //    return Err(ErrorCode::Unauthorized.into());
-    //     return 0;
     // }
-    msg!("randomness modulo {:?}", randomness);
-    msg!("pubkey modulo {:?}", public_key_bytes);
-    u64::from_le_bytes([
-        randomness[0].clone(),
-        randomness[1].clone(),
-        randomness[2].clone(),
-        randomness[3].clone(),
-        public_key_bytes[0].clone(),
-        public_key_bytes[1].clone(),
-        public_key_bytes[2].clone(),
-        nonce_byte.clone(),
-    ])
+    let mut hasher = Sha256::new();
+    hasher.update(&randomness);
+    hasher.update(public_key_bytes.clone()); // Ensures each iteration has a unique input
+    hasher.update(nonce_byte.to_be_bytes());
+    if let Some(x) = x {
+        hasher.update(x.to_be_bytes());
+    }
+    let random_result = hasher.finalize();
+    u64::from_le_bytes(random_result[0..8].try_into().unwrap())
 }
 
 pub fn find_rarity(rarity: Vec<u8>, random_number: u8) -> usize {
@@ -81,7 +75,7 @@ pub fn find_rarity(rarity: Vec<u8>, random_number: u8) -> usize {
 
 pub fn find_scaled_rarity(value: &Stats, rng_seed: u64) -> u32 {
     let range = (&value.max - &value.min + 1) as u64;
-    let scaled_random_number = ((xorshift64(rng_seed) % range) + value.clone().min as u64) as u32;
+    let scaled_random_number = ((rng_seed % range) + value.clone().min as u64) as u32;
     scaled_random_number
 }
 

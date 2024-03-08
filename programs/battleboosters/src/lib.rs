@@ -389,16 +389,8 @@ pub mod battleboosters {
             .clone()
             & 0xFF) as u8;
 
-        let modulus_base_pubkey = public_key_bytes.len() - 3; // Ensures the slice won't go out of bounds
-        let start_index_pubkey = (nonce_byte.clone() as usize % modulus_base_pubkey) as usize;
-        let nonce_modulo_pubkey = &public_key_bytes[start_index_pubkey..(start_index_pubkey + 3)];
-        let modulus_base_randomness = randomness.len() - 4; // Ensures the slice won't go out of bounds
-        let start_index_randomness = (nonce_byte as usize % modulus_base_randomness) as usize;
-        let nonce_modulo_randomness =
-            &randomness[start_index_randomness..(start_index_randomness + 4)];
-        msg!("nonce modulo: {:?}", nonce_modulo_pubkey);
-        let rng_seed = create_rng_seed(&nonce_modulo_randomness, &nonce_modulo_pubkey, &nonce_byte);
-        let random_number = ((xorshift64(rng_seed.clone()) % 100) + 1) as u8;
+        let rng_seed = create_rng_seed(&randomness, &public_key_bytes, &nonce_byte, None);
+        let random_number = ((rng_seed % 100) + 1) as u8;
         msg!("Random number{}", random_number);
 
         match request.nft_type {
@@ -408,12 +400,9 @@ pub mod battleboosters {
                     ErrorCode::NotEnoughAllowance
                 );
 
-                // Create sub randomness
-                let public_key_bytes_1 = &public_key_bytes[3..6];
                 let rng_seed_1 =
-                    create_rng_seed(&nonce_modulo_randomness, &public_key_bytes_1, &nonce_byte);
-
-                let random_booster_type = (xorshift64(rng_seed.clone()) % 3) as usize;
+                    create_rng_seed(&randomness, &public_key_bytes, &nonce_byte, Some(1_u8));
+                let random_booster_type = (&rng_seed % 3) as usize;
                 let booster_type = BoosterType::from_index(random_booster_type);
                 let rarity_index = find_rarity(rarity.booster_probabilities.clone(), random_number);
                 // Get the random booster type
@@ -500,18 +489,17 @@ pub mod battleboosters {
                     ErrorCode::NotEnoughAllowance
                 );
 
-                let public_key_bytes_1 = &public_key_bytes[3..6];
-                let public_key_bytes_2 = &public_key_bytes[6..9];
-                let public_key_bytes_3 = &public_key_bytes[9..12];
-
                 let rng_seed_1 =
-                    create_rng_seed(&nonce_modulo_randomness, public_key_bytes_1, &nonce_byte);
+                    create_rng_seed(&randomness, &public_key_bytes, &nonce_byte, Some(1_u8));
                 let rng_seed_2 =
-                    create_rng_seed(&nonce_modulo_randomness, public_key_bytes_2, &nonce_byte);
+                    create_rng_seed(&randomness, &public_key_bytes, &nonce_byte, Some(2_u8));
                 let rng_seed_3 =
-                    create_rng_seed(&nonce_modulo_randomness, public_key_bytes_3, &nonce_byte);
+                    create_rng_seed(&randomness, &public_key_bytes, &nonce_byte, Some(3_u8));
+                msg!("seed 1 {}", rng_seed_1);
+                msg!("seed 2 {}", rng_seed_2);
+                msg!("seed 3 {}", rng_seed_3);
 
-                let random_fighter_type = (xorshift64(rng_seed.clone()) % 8) as usize;
+                let random_fighter_type = (rng_seed.clone() % 8) as usize;
                 let fighter_type = FighterType::from_index(random_fighter_type);
                 let rarity_index = find_rarity(rarity.fighter_probabilities.clone(), random_number);
                 let rarity_fighter_found = rarity
