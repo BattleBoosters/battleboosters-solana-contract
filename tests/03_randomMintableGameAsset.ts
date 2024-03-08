@@ -72,7 +72,12 @@ describe.only("Random Mintable Asset", () => {
     it("Open a fighter from collector pack randomly", async () => {
 
         try {
-            let {collector_pack_pda, mintable_game_asset_pda, player_game_asset_link_pda} =  await createRandomMintableGameAsset(
+            let {
+                collector_pack_pda,
+                mintable_game_asset_pda,
+                player_game_asset_link_pda,
+                player_account_pda
+            } =  await createRandomMintableGameAsset(
                 program,
                 provider,
                 program_pda,
@@ -115,8 +120,8 @@ describe.only("Random Mintable Asset", () => {
 
             const player_game_asset_link_pda_data = await program.account.playerGameAssetLinkData.fetch(player_game_asset_link_pda);
             assert.isFalse(player_game_asset_link_pda_data.isFree);
-            console.log(player_game_asset_link_pda_data.mintableGameAssetNonce)
-            assert.equal(player_game_asset_link_pda_data.mintableGameAssetNonce.eq(new BN(1)), true);
+            const player_pda_data = await program.account.playerData.fetch(player_account_pda);
+            assert.equal(player_pda_data.playerGameAssetLinkNonce.eq(new BN(1)), true);
 
         }catch (e) {
             console.log(e)
@@ -127,7 +132,12 @@ describe.only("Random Mintable Asset", () => {
     it("Open a second fighter from collector pack randomly", async () => {
 
         try {
-            let {collector_pack_pda, mintable_game_asset_pda, player_game_asset_link_pda} =  await createRandomMintableGameAsset(
+            let {
+                collector_pack_pda,
+                mintable_game_asset_pda,
+                player_game_asset_link_pda,
+                player_account_pda
+            } =  await createRandomMintableGameAsset(
                 program,
                 provider,
                 program_pda,
@@ -170,8 +180,8 @@ describe.only("Random Mintable Asset", () => {
 
             const player_game_asset_link_pda_data = await program.account.playerGameAssetLinkData.fetch(player_game_asset_link_pda);
             assert.isFalse(player_game_asset_link_pda_data.isFree);
-            console.log(player_game_asset_link_pda_data.mintableGameAssetNonce)
-            assert.equal(player_game_asset_link_pda_data.mintableGameAssetNonce.eq(new BN(2)), true);
+            const player_pda_data = await program.account.playerData.fetch(player_account_pda);
+            assert.equal(player_pda_data.playerGameAssetLinkNonce.eq(new BN(2)), true);
 
         }catch (e) {
             console.log(e)
@@ -200,7 +210,12 @@ describe.only("Random Mintable Asset", () => {
     it("Open a booster from collector pack randomly", async () => {
 
         try {
-            let {collector_pack_pda, mintable_game_asset_pda, player_game_asset_link_pda} =  await createRandomMintableGameAsset(
+            let {
+                collector_pack_pda,
+                mintable_game_asset_pda,
+                player_game_asset_link_pda,
+                player_account_pda
+            } =  await createRandomMintableGameAsset(
                 program,
                 provider,
                 program_pda,
@@ -231,10 +246,49 @@ describe.only("Random Mintable Asset", () => {
 
             const player_game_asset_link_pda_data = await program.account.playerGameAssetLinkData.fetch(player_game_asset_link_pda);
             assert.isFalse(player_game_asset_link_pda_data.isFree);
-            console.log(player_game_asset_link_pda_data.mintableGameAssetNonce)
-            assert.equal(player_game_asset_link_pda_data.mintableGameAssetNonce.eq(new BN(3)), true);
+
+            const player_pda_data = await program.account.playerData.fetch(player_account_pda);
+            assert.equal(player_pda_data.playerGameAssetLinkNonce.eq(new BN(3)), true);
         }catch (e) {
             console.log(e)
+        }
+    })
+
+    it("Fail trying to reuse a nonce which is not free", async () => {
+
+        try {
+            await createRandomMintableGameAsset(
+                program,
+                provider,
+                program_pda,
+                {
+                    nftType: { booster: {} },
+                },
+                rarity_pda,
+                1
+            );
+
+        }catch (e) {
+            assert.include(e.message, 'This player game asset pda is not free.')
+        }
+    })
+
+    it("Fail trying to create a nonce greater than the player game asset link nonce", async () => {
+
+        try {
+            await createRandomMintableGameAsset(
+                program,
+                provider,
+                program_pda,
+                {
+                    nftType: { booster: {} },
+                },
+                rarity_pda,
+                10
+            );
+
+        }catch (e) {
+            assert.include(e.message, 'The nonce must not exceed the last known nonce in the player\'s state.')
         }
     })
 })

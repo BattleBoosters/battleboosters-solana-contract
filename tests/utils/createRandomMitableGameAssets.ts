@@ -10,6 +10,7 @@ const generateRandomMintableGameAsset = async function(
     rarity_pda,
     custom_player_game_asset_link_nonce
 ) {
+
     const program_pda_data = await program.account.programData.fetch(program_pda);
     const [mintable_game_asset_pda, mintable_game_asset_bump]  = anchor.web3.PublicKey.findProgramAddressSync(
         [
@@ -27,13 +28,16 @@ const generateRandomMintableGameAsset = async function(
 
 
     const player_account_pda_data = await program.account.playerData.fetch(player_account_pda);
+    let player_game_asset_link_nonce = !custom_player_game_asset_link_nonce ?
+        player_account_pda_data.playerGameAssetLinkNonce :
+        custom_player_game_asset_link_nonce;
 
     const [player_game_asset_link_pda, player_game_asset_link_bump]  = anchor.web3.PublicKey.findProgramAddressSync(
         [
             Buffer.from("BattleBoosters"),
             Buffer.from("mintableGameAsset"),
             provider.wallet.publicKey.toBuffer(),
-            new BN(player_account_pda_data.playerGameAssetLinkNonce).toBuffer("le", 8)
+            new BN(player_game_asset_link_nonce).toBuffer("le", 8)
         ], program.programId);
 
     const [collector_pack_pda, collector_pack_bump]  = anchor.web3.PublicKey.findProgramAddressSync(
@@ -45,9 +49,7 @@ const generateRandomMintableGameAsset = async function(
         ], program.programId);
 
     const tx = await program.methods.generateRandomMintableGameAsset(
-        !custom_player_game_asset_link_nonce ?
-            new BN(player_account_pda_data.playerGameAssetLinkNonce) :
-            new BN(custom_player_game_asset_link_nonce),
+        new BN(player_game_asset_link_nonce),
         variant
     ).accounts({
         signer: provider.wallet.publicKey,
@@ -68,7 +70,7 @@ const generateRandomMintableGameAsset = async function(
     //
     // console.log(JSON.stringify(logs?.meta?.logMessages, undefined, 2));
 
-    return {collector_pack_pda, mintable_game_asset_pda, player_game_asset_link_pda}
+    return {collector_pack_pda, mintable_game_asset_pda, player_game_asset_link_pda, player_account_pda}
 }
 
 export default generateRandomMintableGameAsset
