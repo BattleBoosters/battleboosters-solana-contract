@@ -382,12 +382,9 @@ pub mod battleboosters {
             .ok_or(ErrorCode::RandomnessUnavailable)?;
         let public_key_bytes = signer.key().to_bytes();
 
-        let booster_mint_allowance = &collector_pack.booster_mint_allowance;
-        let nonce_byte = (booster_mint_allowance
-            .checked_add(collector_pack.fighter_mint_allowance.clone())
-            .unwrap()
-            .clone()
-            & 0xFF) as u8;
+        let combined_allowance =
+            &collector_pack.booster_mint_allowance + &collector_pack.fighter_mint_allowance;
+        let nonce_byte = (combined_allowance % 256) as u8;
 
         let rng_seed = create_rng_seed(&randomness, &public_key_bytes, &nonce_byte, None);
         let random_number = ((rng_seed % 100) + 1) as u8;

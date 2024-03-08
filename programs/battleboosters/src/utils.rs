@@ -42,16 +42,13 @@ pub fn create_rng_seed(
     randomness: &[u8],
     public_key_bytes: &[u8],
     nonce_byte: &u8,
-    x: Option<u8>,
+    extra_byte: Option<u8>,
 ) -> u64 {
-    // if randomness.len() < 4 || public_key_bytes.len() < 3 {
-    //    return Err(ErrorCode::Unauthorized.into());
-    // }
     let mut hasher = Sha256::new();
     hasher.update(&randomness);
     hasher.update(public_key_bytes.clone()); // Ensures each iteration has a unique input
     hasher.update(nonce_byte.to_be_bytes());
-    if let Some(x) = x {
+    if let Some(x) = extra_byte {
         hasher.update(x.to_be_bytes());
     }
     let random_result = hasher.finalize();
