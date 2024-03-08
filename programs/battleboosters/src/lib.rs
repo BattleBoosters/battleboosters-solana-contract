@@ -361,7 +361,6 @@ pub mod battleboosters {
         let player_game_asset_link = &mut ctx.accounts.player_game_asset_link;
         let mintable_game_asset = &mut ctx.accounts.mintable_game_asset;
         let player_account = &mut ctx.accounts.player_account;
-
         let signer = &ctx.accounts.signer;
 
         require!(
@@ -610,8 +609,15 @@ pub mod battleboosters {
             }
         }
 
-        // Update global state for mintable game asset initialization
+        // Establishes a linkage between the `player_game_asset_link` PDA
+        // and the nonce of the `mintable_game_asset`,
+        // facilitating indexed seed access.
+        player_game_asset_link.mintable_game_asset_nonce =
+            program.mintable_game_asset_nonce.clone();
+        // Updates the global state to track the current amount of created `mintable_game_asset` instances.
         program.mintable_game_asset_nonce += 1;
+        // Assigns the signer as the owner of the mintable asset,
+        // ensuring ownership until the user decides to mint it.
         mintable_game_asset.owner = Some(signer.key());
         Ok(())
     }

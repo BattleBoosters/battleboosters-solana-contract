@@ -110,6 +110,13 @@ describe.only('Random Mintable Asset', () => {
     });
     it('Open a fighter from collector pack randomly', async () => {
         try {
+            const program_pda_data_before =
+                await program.account.programData.fetch(program_pda);
+            assert.equal(
+                program_pda_data_before.mintableGameAssetNonce.eq(new BN(0)),
+                true
+            );
+
             let {
                 collector_pack_pda,
                 mintable_game_asset_pda,
@@ -125,6 +132,7 @@ describe.only('Random Mintable Asset', () => {
                 rarity_pda,
                 null
             );
+
             const collector_pack_pda_data =
                 await program.account.collectorPack.fetch(collector_pack_pda);
             assert.isTrue(
@@ -183,6 +191,20 @@ describe.only('Random Mintable Asset', () => {
                     player_game_asset_link_pda
                 );
             assert.isFalse(player_game_asset_link_pda_data.isFree);
+            assert.equal(
+                player_game_asset_link_pda_data.mintableGameAssetNonce.eq(
+                    new BN(0)
+                ),
+                true
+            );
+
+            const program_pda_data_after =
+                await program.account.programData.fetch(program_pda);
+            assert.equal(
+                program_pda_data_after.mintableGameAssetNonce.eq(new BN(1)),
+                true
+            );
+
             const player_pda_data = await program.account.playerData.fetch(
                 player_account_pda
             );
@@ -270,6 +292,20 @@ describe.only('Random Mintable Asset', () => {
                     player_game_asset_link_pda
                 );
             assert.isFalse(player_game_asset_link_pda_data.isFree);
+            assert.equal(
+                player_game_asset_link_pda_data.mintableGameAssetNonce.eq(
+                    new BN(1)
+                ),
+                true
+            );
+
+            const program_pda_data_after =
+                await program.account.programData.fetch(program_pda);
+            assert.equal(
+                program_pda_data_after.mintableGameAssetNonce.eq(new BN(2)),
+                true
+            );
+
             const player_pda_data = await program.account.playerData.fetch(
                 player_account_pda
             );
@@ -360,6 +396,19 @@ describe.only('Random Mintable Asset', () => {
                     player_game_asset_link_pda
                 );
             assert.isFalse(player_game_asset_link_pda_data.isFree);
+            assert.equal(
+                player_game_asset_link_pda_data.mintableGameAssetNonce.eq(
+                    new BN(2)
+                ),
+                true
+            );
+
+            const program_pda_data_after =
+                await program.account.programData.fetch(program_pda);
+            assert.equal(
+                program_pda_data_after.mintableGameAssetNonce.eq(new BN(3)),
+                true
+            );
 
             const player_pda_data = await program.account.playerData.fetch(
                 player_account_pda
@@ -412,4 +461,10 @@ describe.only('Random Mintable Asset', () => {
             );
         }
     });
+    /*
+        TODO Test: 
+            - Try Override a PDA which have been free and check the nonce haven't moved.
+            
+          
+     */
 });

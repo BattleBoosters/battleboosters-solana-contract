@@ -97,6 +97,9 @@ pub struct PlayerData {
 
 #[account]
 pub struct PlayerGameAssetLinkData {
+    // TODO: Probably save the `mintable_game_asset` Pubkey for convenience?
+    /// this is the link to the address of the pda
+    pub mintable_game_asset_nonce: u64,
     /// Checks if a PDA is eligible to update its `mintable_game_asset_nonce`.
     /// The PDA becomes eligible upon minting and withdrawing a `mintable_game_asset`,
     /// which break the link with the last `mintable_game_asset_nonce`.

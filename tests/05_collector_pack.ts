@@ -32,8 +32,9 @@ import InitializePlayerAccount from './utils/initialize_player_account';
 import { RandomnessService } from '@switchboard-xyz/solana-randomness-service';
 import * as buffer from 'buffer';
 import account_init from './utils/account_init';
+import createNftCollection from './utils/createNftCollection';
 
-describe('Create NFT Collection', () => {
+describe('Collector pack', () => {
     const provider = anchor.AnchorProvider.env();
 
     anchor.setProvider(provider);
@@ -52,92 +53,6 @@ describe('Create NFT Collection', () => {
         mint_authority_account,
         authority_bump,
     } = account_init(program);
-
-    it('Admin successfully create Energy NFT Collection', async () => {
-        const [minter] = anchor.web3.PublicKey.findProgramAddressSync(
-            [
-                Buffer.from('BattleBoosters'),
-                Buffer.from('mint'),
-                Buffer.from([0]),
-            ],
-            program.programId
-        );
-
-        const [metadata] = anchor.web3.PublicKey.findProgramAddressSync(
-            [
-                Buffer.from('metadata'),
-                metadata_pubkey.toBuffer(),
-                minter.toBuffer(),
-            ],
-            metadata_pubkey
-        );
-
-        const [master_edition] = anchor.web3.PublicKey.findProgramAddressSync(
-            [
-                Buffer.from('metadata'),
-                metadata_pubkey.toBuffer(),
-                minter.toBuffer(),
-                Buffer.from('edition'),
-            ],
-            metadata_pubkey
-        );
-
-        let token_account = anchor.utils.token.associatedAddress({
-            mint: minter,
-            owner: mint_authority_account,
-        });
-        const [token_record] = anchor.web3.PublicKey.findProgramAddressSync(
-            [
-                Buffer.from('metadata'),
-                metadata_pubkey.toBuffer(),
-                minter.toBuffer(),
-                Buffer.from('token_record'),
-                token_account.toBuffer(),
-            ],
-            metadata_pubkey
-        );
-
-        try {
-            // const update_cu_ix = anchor.web3.ComputeBudgetProgram.setComputeUnitLimit({units: 1000000});
-            //
-            // const tx_ = new anchor.web3.Transaction().add(update_cu_ix)
-            //    anchor.utils.
-
-            const tx = await program.methods
-                .createNftCollection(
-                    { energy: {} },
-                    'Energy Booster',
-                    'EB',
-                    'https://battleboosters.com/metadata',
-                    500 // 5% royalty
-                )
-                .accounts({
-                    creator: admin_account.publicKey,
-                    program: program_pda,
-                    mintAuthority: mint_authority_account,
-                    minter: minter,
-                    metadata: metadata,
-                    masterEdition: master_edition,
-                    tokenAccount: token_account,
-                    tokenRecord: token_record,
-                    associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-                    sysvarInstructions: anchor.web3.SYSVAR_INSTRUCTIONS_PUBKEY,
-                    rent: anchor.web3.SYSVAR_RENT_PUBKEY,
-                    systemProgram: anchor.web3.SystemProgram.programId,
-                    tokenProgram: TOKEN_PROGRAM_ID,
-                    metadataProgram: MPL_TOKEN_METADATA_PROGRAM_ID,
-                })
-                .preInstructions([
-                    anchor.web3.ComputeBudgetProgram.setComputeUnitLimit({
-                        units: 300000,
-                    }),
-                ])
-                .signers([admin_account]) // Include new_account as a signer
-                .rpc();
-        } catch (e) {
-            console.log(e);
-        }
-    });
 
     it('Mint an nft', async () => {
         const player = anchor.web3.Keypair.generate();
@@ -342,7 +257,7 @@ describe('Create NFT Collection', () => {
                 program_pda
             );
             assert.equal(
-                program_pda_data.mintableGameAssetNonce.eq(new BN(1)),
+                program_pda_data.mintableGameAssetNonce.eq(new BN(0)),
                 true
             );
         } catch (e) {
