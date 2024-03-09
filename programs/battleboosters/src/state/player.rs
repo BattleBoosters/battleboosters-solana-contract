@@ -152,9 +152,11 @@ pub struct PlayerGameAssetLinkData {
 
 #[account]
 pub struct MintableGameAssetData {
-    /// is Locked will mean the PDA have been used
+    /// is Locked will mean the PDA is in use and cannot be minted or re used
     pub is_locked: bool,
-    /// is minted mean the PDA have been minted
+    /// is Burned will mean the PDA have been used and cannot be minted or re used
+    pub is_burned: bool,
+    /// is Minted mean the PDA have been minted
     pub is_minted: bool,
     /// owner of the PDA can use it in-game,
     /// on mint the owner is set to None which mean it is not available in the game until re-deposited

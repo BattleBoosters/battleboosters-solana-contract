@@ -11,6 +11,12 @@ pub fn only_admin(creator: &Pubkey, admin: &Pubkey) -> Result<()> {
     require!(creator == admin, ErrorCode::Unauthorized);
     Ok(())
 }
+
+pub fn only_owner(mintable_game_asset: &Pubkey, owner: &Pubkey) -> Result<()> {
+    require!(mintable_game_asset == owner, ErrorCode::Unauthorized);
+    Ok(())
+}
+
 pub fn set_fight_card_properties(fight_card: &mut FightCardData, params: &FightCardData) {
     fight_card.id = params.id.clone();
     fight_card.event_pubkey = params.event_pubkey;

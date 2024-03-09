@@ -805,14 +805,32 @@ pub mod battleboosters {
         let clock = Clock::get().unwrap();
         let current_blockchain_timestamp = clock.unix_timestamp;
 
+        let signer = &ctx.accounts.signer.to_account_info();
         let event = &ctx.accounts.event;
         let fight_card = &ctx.accounts.fight_card;
+
+        // Game assets
         let fighter = &ctx.accounts.fighter_m_game_asset;
-        let signer = &ctx.accounts.signer.to_account_info();
+        if let Some(energy_booster) = &ctx.accounts.energy_booster_m_game_asset {
+            let energy_booster_owner = energy_booster.owner.ok_or(ErrorCode::Unauthorized)?;
+            only_owner(&energy_booster_owner, &signer.key())?;
+        }
+        if let Some(shield_booster) = &ctx.accounts.shield_booster_m_game_asset {
+            let shield_booster_owner = shield_booster.owner.ok_or(ErrorCode::Unauthorized)?;
+            only_owner(&shield_booster_owner, &signer.key())?;
+        }
+        if let Some(points_booster) = &ctx.accounts.points_booster_m_game_asset {
+            let points_booster_owner = points_booster.owner.ok_or(ErrorCode::Unauthorized)?;
+            only_owner(&points_booster_owner, &signer.key())?;
+        }
         // Check if the `mintable_game_asset` have an owner
         let fighter_owner = fighter.owner.ok_or(ErrorCode::Unauthorized)?;
         // Check if the signer have the right to use the `mintable_game_asset`
-        require!(fighter_owner == signer.key(), ErrorCode::Unauthorized);
+        only_owner(&fighter_owner, &signer.key())?;
+        /*
+           TODO: Check `!is_burned`, `!is_minted`, `!is_locked` and the owner is `Some()` signer owner
+              We will use utils.rs to create a method for checking this, for code re-usability.
+        */
 
         // Make sure the event have not started before joining the fight
         require!(
