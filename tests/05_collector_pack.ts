@@ -34,7 +34,7 @@ import * as buffer from 'buffer';
 import account_init from './utils/account_init';
 import createNftCollection from './utils/createNftCollection';
 
-describe('Collector pack', () => {
+describe.skip('Collector pack', () => {
     const provider = anchor.AnchorProvider.env();
 
     anchor.setProvider(provider);

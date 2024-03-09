@@ -35,7 +35,7 @@ import account_init from './utils/account_init';
 import createNftCollection from './utils/createNftCollection';
 const { Metadata } = require('@metaplex-foundation/mpl-token-metadata');
 
-describe.only('Create NFT Collection', () => {
+describe('Create NFT Collection', () => {
     const provider = anchor.AnchorProvider.env();
 
     anchor.setProvider(provider);

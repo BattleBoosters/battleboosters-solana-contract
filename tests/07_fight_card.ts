@@ -8,7 +8,7 @@ import {
     updateFightCard,
 } from './utils/createUpdateFightCard';
 import * as events from 'events';
-describe.only('Create fight card', () => {
+describe('Create fight card', () => {
     const provider = anchor.AnchorProvider.env();
 
     anchor.setProvider(provider);
@@ -59,10 +59,24 @@ describe.only('Create fight card', () => {
         assert.equal(fetchedEvent.fightCardIdCounter, 1);
     });
 
+    it('Should fail creating fight card unauthorized signer', async () => {
+        try {
+            await createFightCard(
+                provider,
+                program,
+                unauthorized_account,
+                program_pda,
+                0,
+                { mainCard: {} },
+                true,
+                112
+            );
+        } catch (e) {
+            assert.include(e.message, 'Unauthorized access attempt');
+        }
+    });
+
     it('Should update fight card', async () => {
-        /* TODO:
-                Test all the Fight Card data
-         */
         const { fight_card_account, event_account } = await updateFightCard(
             provider,
             program,
@@ -95,5 +109,23 @@ describe.only('Create fight card', () => {
 
         let fetchedEvent = await program.account.eventData.fetch(event_account);
         assert.equal(fetchedEvent.fightCardIdCounter, 1);
+    });
+
+    it('Should fail updating fight card unauthorized signer', async () => {
+        try {
+            await updateFightCard(
+                provider,
+                program,
+                unauthorized_account,
+                program_pda,
+                0,
+                { prelims: {} },
+                false,
+                112,
+                0
+            );
+        } catch (e) {
+            assert.include(e.message, 'Unauthorized access attempt');
+        }
     });
 });

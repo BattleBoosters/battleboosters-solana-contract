@@ -33,7 +33,7 @@ import { RandomnessService } from '@switchboard-xyz/solana-randomness-service';
 import * as buffer from 'buffer';
 import account_init from './utils/account_init';
 
-describe('Purchase', () => {
+describe.skip('Purchase', () => {
     const provider = anchor.AnchorProvider.env();
     anchor.setProvider(provider);
     const program = anchor.workspace.Battleboosters as Program<Battleboosters>;

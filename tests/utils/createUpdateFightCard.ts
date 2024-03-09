@@ -22,7 +22,7 @@ const createFightCard = async function (
             ],
             program.programId
         );
-    console.log(event_account);
+
     let eventAccountData = await program.account.eventData.fetch(event_account);
     const [fight_card_account, fight_card_bump] =
         anchor.web3.PublicKey.findProgramAddressSync(
@@ -40,28 +40,24 @@ const createFightCard = async function (
         eventNonce: new BN(event_id),
         tournament: variant,
         titleFight: is_title_fight,
-        fightStatsFighter1: null,
-        fightStatsFighter2: null,
+        fighterLeft: null,
+        fighterRight: null,
         fightDuration: null,
         result: null,
         winner: null,
     };
 
-    try {
-        const tx = await program.methods
-            .createNewFightCard(fightCardData)
-            .accounts({
-                creator: admin_account.publicKey,
-                program: program_pda,
-                event: event_account,
-                fightCard: fight_card_account,
-                systemProgram: anchor.web3.SystemProgram.programId,
-            })
-            .signers([admin_account])
-            .rpc();
-    } catch (e) {
-        console.log(e);
-    }
+    const tx = await program.methods
+        .createNewFightCard(fightCardData)
+        .accounts({
+            creator: admin_account.publicKey,
+            program: program_pda,
+            event: event_account,
+            fightCard: fight_card_account,
+            systemProgram: anchor.web3.SystemProgram.programId,
+        })
+        .signers([admin_account])
+        .rpc();
 
     // console.log(tx)
     // await sleep(2000);
@@ -114,28 +110,24 @@ const updateFightCard = async function (
         eventNonce: new BN(event_id),
         tournament: variant,
         titleFight: is_title_fight,
-        fightStatsFighter1: null,
-        fightStatsFighter2: null,
+        fighterLeft: null,
+        fighterRight: null,
         fightDuration: null,
         result: null,
         winner: null,
     };
 
-    try {
-        const tx = await program.methods
-            .updateFightCard(fight_card_id, fightCardData)
-            .accounts({
-                creator: admin_account.publicKey,
-                program: program_pda,
-                event: event_account,
-                fightCard: fight_card_account,
-                systemProgram: anchor.web3.SystemProgram.programId,
-            })
-            .signers([admin_account])
-            .rpc();
-    } catch (e) {
-        console.log(e);
-    }
+    const tx = await program.methods
+        .updateFightCard(fight_card_id, fightCardData)
+        .accounts({
+            creator: admin_account.publicKey,
+            program: program_pda,
+            event: event_account,
+            fightCard: fight_card_account,
+            systemProgram: anchor.web3.SystemProgram.programId,
+        })
+        .signers([admin_account])
+        .rpc();
 
     // console.log(tx)
     // await sleep(2000);

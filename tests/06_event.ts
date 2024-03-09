@@ -4,7 +4,7 @@ import { Battleboosters } from '../target/types/battleboosters';
 import { assert } from 'chai';
 import account_init from './utils/account_init';
 import { createEvent, updateEvent } from './utils/createUpdateEvent';
-describe.only('Create event', () => {
+describe('Create event', () => {
     const provider = anchor.AnchorProvider.env();
 
     anchor.setProvider(provider);

@@ -34,7 +34,7 @@ import * as buffer from 'buffer';
 import account_init from './utils/account_init';
 import createRandomMintableGameAsset from './utils/createRandomMitableGameAssets';
 
-describe.only('Random Mintable Asset', () => {
+describe('Random Mintable Asset', () => {
     const provider = anchor.AnchorProvider.env();
 
     anchor.setProvider(provider);
@@ -462,9 +462,9 @@ describe.only('Random Mintable Asset', () => {
         }
     });
     /*
-        TODO Test: 
+        TODO Test:
             - Try Override a PDA which have been free and check the nonce haven't moved.
-            
-          
+
+
      */
 });
