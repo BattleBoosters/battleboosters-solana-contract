@@ -4,6 +4,7 @@ use crate::constants::*;
 use crate::state::fight_card::FightCardData;
 use anchor_lang::prelude::*;
 
+use crate::state::event::EventData;
 use crate::state::rarity::RarityData;
 use anchor_lang::solana_program::sysvar;
 use solana_randomness_service::SimpleRandomnessV1Account;
@@ -84,6 +85,49 @@ pub struct GenerateRandomNftPreMint<'info> {
     )]
     pub player_game_asset_link: Box<Account<'info, PlayerGameAssetLinkData>>,
 
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+#[instruction(fight_card_id: u8, fighter_m_game_asset_id: u64, energy_booster_m_game_asset_id: u64, shield_booster_m_game_asset_id: u64, points_booster_m_game_asset_id: u64)]
+pub struct JoinFightCard<'info> {
+    #[account(mut)]
+    pub signer: Signer<'info>,
+    #[account(mut)]
+    pub program: Account<'info, ProgramData>,
+    #[account(mut)]
+    pub event: Account<'info, EventData>,
+    #[account(
+    mut,
+    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, fighter_m_game_asset_id.to_le_bytes().as_ref()],
+    bump
+    )]
+    pub fighter_m_game_asset: Box<Account<'info, MintableGameAssetData>>,
+    #[account(
+    mut,
+    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, energy_booster_m_game_asset_id.to_le_bytes().as_ref()],
+    bump
+    )]
+    pub energy_booster_m_game_asset: Option<Box<Account<'info, MintableGameAssetData>>>,
+    #[account(
+    mut,
+    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, shield_booster_m_game_asset_id.to_le_bytes().as_ref()],
+    bump
+    )]
+    pub shield_booster_m_game_asset: Option<Box<Account<'info, MintableGameAssetData>>>,
+    #[account(
+    mut,
+    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, points_booster_m_game_asset_id.to_le_bytes().as_ref()],
+    bump
+    )]
+    pub points_booster_m_game_asset: Option<Box<Account<'info, MintableGameAssetData>>>,
+
+    #[account(
+    mut,
+    seeds = [MY_APP_PREFIX, FIGHT_CARD, fight_card_id.to_le_bytes().as_ref()],
+    bump
+    )]
+    pub fight_card: Account<'info, FightCardData>,
     pub system_program: Program<'info, System>,
 }
 

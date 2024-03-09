@@ -25,6 +25,7 @@ pub struct OpenRequest {
 pub enum NftType {
     Booster,
     FighterPack,
+    ChampionsPass,
 }
 
 #[derive(Clone, Debug, AnchorSerialize, AnchorDeserialize)]

@@ -227,10 +227,9 @@ pub mod battleboosters {
                         .checked_mul(program.fighter_pack_price.clone())
                         .unwrap();
                 }
+                _ => return Err(error!(ErrorCode::UnsupportedNftType)),
             }
         }
-        // Increase order
-        player_account.order_nonce += 1;
 
         require!(total_usd > 0, ErrorCode::InsufficientAmount);
 
@@ -282,6 +281,11 @@ pub mod battleboosters {
                 compute_unit_price: Some(200),
             }),
         )?;
+
+        // Set the collector pack to default `champion_s_pass_mint_allowance`
+        collector_pack.champion_s_pass_mint_allowance = 0;
+        // Increase order
+        player_account.order_nonce += 1;
 
         Ok(())
     }
@@ -607,6 +611,11 @@ pub mod battleboosters {
 
                 msg!("GOOD");
             }
+            NftType::ChampionsPass => {
+                /*
+                   TODO: Create a mintable asset for champion's pass
+                */
+            }
         }
 
         // Establishes a linkage between the `player_game_asset_link` PDA
@@ -761,23 +770,7 @@ pub mod battleboosters {
         start_date: i64,
         end_date: i64,
     ) -> Result<()> {
-        let program = &mut ctx.accounts.program;
-        only_admin(&ctx.accounts.creator.key(), &program.admin_pubkey)?;
-
-        // Create event account and set data
-        let create_event = &mut ctx.accounts.event;
-        create_event.fight_card_id_counter = 0_u8;
-        create_event.start_date = start_date;
-        create_event.end_date = end_date;
-
-        emit!(EventCreated {
-            event_id: program.event_nonce
-        });
-
-        // Increment event counter
-        program.event_nonce += 1_u64;
-
-        Ok(())
+        processor::create_new_event(ctx, start_date, end_date)
     }
 
     pub fn update_event(
@@ -786,38 +779,14 @@ pub mod battleboosters {
         start_date: i64,
         end_date: i64,
     ) -> Result<()> {
-        let program = &ctx.accounts.program;
-        only_admin(&ctx.accounts.creator.key(), &program.admin_pubkey)?;
-
-        let update_event = &mut ctx.accounts.event;
-        update_event.start_date = start_date;
-        update_event.end_date = end_date;
-
-        emit!(EventUpdated {
-            event_id: program.event_nonce
-        });
-
-        Ok(())
+        processor::update_event(ctx, event_id, start_date, end_date)
     }
 
     pub fn create_new_fight_card(
         ctx: Context<CreateFightCard>,
         params: FightCardData,
     ) -> Result<()> {
-        let program = &ctx.accounts.program;
-        only_admin(&ctx.accounts.creator.key(), &program.admin_pubkey)?;
-
-        let fight_card = &mut ctx.accounts.fight_card;
-        set_fight_card_properties(fight_card, &params);
-
-        let event = &mut ctx.accounts.event;
-        event.fight_card_id_counter = event.fight_card_id_counter.checked_add(1_u8).unwrap();
-
-        emit!(FightCardCreated {
-            fight_card_id: fight_card.id
-        });
-
-        Ok(())
+        processor::create_new_fight_card(ctx, params)
     }
 
     pub fn update_fight_card(
@@ -825,15 +794,48 @@ pub mod battleboosters {
         fight_card_id: u8,
         params: FightCardData,
     ) -> Result<()> {
-        let program = &ctx.accounts.program;
-        only_admin(&ctx.accounts.creator.key(), &program.admin_pubkey)?;
+        processor::update_fight_card(ctx, fight_card_id, params)
+    }
 
-        let fight_card = &mut ctx.accounts.fight_card;
-        set_fight_card_properties(fight_card, &params);
+    pub fn join_fight_card(
+        ctx: Context<JoinFightCard>,
+        fight_card_id: u8,
+        params: FightCardData,
+    ) -> Result<()> {
+        let clock = Clock::get().unwrap();
+        let current_blockchain_timestamp = clock.unix_timestamp;
 
-        emit!(FightCardUpdated {
-            fight_card_id: fight_card.id
-        });
+        let event = &ctx.accounts.event;
+        let fight_card = &ctx.accounts.fight_card;
+        let fighter = &ctx.accounts.fighter_m_game_asset;
+        let signer = &ctx.accounts.signer.to_account_info();
+        // Check if the `mintable_game_asset` have an owner
+        let fighter_owner = fighter.owner.ok_or(ErrorCode::Unauthorized)?;
+        // Check if the signer have the right to use the `mintable_game_asset`
+        require!(fighter_owner == signer.key(), ErrorCode::Unauthorized);
+
+        // Make sure the event have not started before joining the fight
+        require!(
+            event.start_date < current_blockchain_timestamp,
+            ErrorCode::EventAlreadyStarted
+        );
+
+        match fight_card.tournament {
+            TournamentType::MainCard => {
+
+                /*
+                   TODO: Verify if it's a `mainCard`.
+                       If so, check the PDA created to receive the Champions Pass
+                       to ensure the NFT has been deposited, allowing the player to play.
+                       UPDATE:
+                       No need to check PDA since we can simply examine the
+                       current metadata PDA of the player who owns the mintable game asset.
+
+                */
+            }
+            TournamentType::Prelims => {}
+            TournamentType::EarlyPrelims => {}
+        }
 
         Ok(())
     }
@@ -846,11 +848,6 @@ pub mod battleboosters {
 
     /*
        TODO: Claim event reward
-    */
-
-    /*
-        TODO: Purchase NFT
-            - Integration with Pyth Oracle or Switchboard for price feeds Sol/Usd conversion
     */
 
     /*

@@ -33,6 +33,9 @@ import { RandomnessService } from '@switchboard-xyz/solana-randomness-service';
 import * as buffer from 'buffer';
 import account_init from './utils/account_init';
 
+/*
+    TODO: Test try to pass nft different type
+ */
 describe.skip('Purchase', () => {
     const provider = anchor.AnchorProvider.env();
     anchor.setProvider(provider);
