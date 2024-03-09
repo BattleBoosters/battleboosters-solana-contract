@@ -43,6 +43,7 @@ describe.only('Initialize', () => {
 
     const {
         admin_account,
+        unauthorized_account,
         metadata_pubkey,
         bank_pda,
         bank_bump,
@@ -91,9 +92,16 @@ describe.only('Initialize', () => {
         let admin_account_balance = await provider.connection.getBalance(
             admin_account.publicKey
         );
-        console.log(admin_account_balance);
+
         if (admin_account_balance < LAMPORTS_PER_SOL * 2) {
-            await airdrop_sol(provider, admin_account.publicKey, 10);
+            await airdrop_sol(provider, admin_account.publicKey, 1);
+        }
+        let unauthorized_account_balance = await provider.connection.getBalance(
+            unauthorized_account.publicKey
+        );
+
+        if (unauthorized_account_balance < LAMPORTS_PER_SOL * 2) {
+            await airdrop_sol(provider, unauthorized_account.publicKey, 1);
         }
 
         try {

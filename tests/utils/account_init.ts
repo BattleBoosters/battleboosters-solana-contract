@@ -15,6 +15,18 @@ const initAccounts = function (program) {
             206, 140, 5, 206, 107,
         ])
     );
+    // const new_key_pair = anchor.web3.Keypair.generate();
+    // console.log(new_key_pair.secretKey);
+    const unauthorized_account = anchor.web3.Keypair.fromSecretKey(
+        new Uint8Array([
+            205, 89, 43, 83, 166, 119, 66, 113, 217, 50, 136, 184, 126, 193, 29,
+            33, 233, 234, 127, 32, 226, 106, 3, 71, 133, 175, 115, 210, 241,
+            129, 252, 238, 111, 247, 128, 210, 51, 64, 49, 214, 67, 245, 47, 47,
+            166, 237, 241, 151, 38, 227, 83, 30, 187, 253, 2, 29, 131, 253, 151,
+            35, 196, 215, 141, 21,
+        ])
+    );
+
     const [bank_pda, bank_bump] = anchor.web3.PublicKey.findProgramAddressSync(
         [Buffer.from('BattleBoosters'), Buffer.from('bank')],
         program.programId
@@ -40,6 +52,7 @@ const initAccounts = function (program) {
 
     return {
         admin_account,
+        unauthorized_account,
         metadata_pubkey,
         bank_pda,
         bank_bump,

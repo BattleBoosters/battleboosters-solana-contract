@@ -2,237 +2,137 @@ import * as anchor from '@coral-xyz/anchor';
 import { BN, Program } from '@coral-xyz/anchor';
 import { Battleboosters } from '../target/types/battleboosters';
 import { assert } from 'chai';
-describe('Create event', () => {
-    let provider = anchor.AnchorProvider.env();
+import account_init from './utils/account_init';
+import { createEvent, updateEvent } from './utils/createUpdateEvent';
+describe.only('Create event', () => {
+    const provider = anchor.AnchorProvider.env();
+
     anchor.setProvider(provider);
-
     const program = anchor.workspace.Battleboosters as Program<Battleboosters>;
-    const admin_account = anchor.web3.Keypair.generate();
-    const program_account = anchor.web3.Keypair.generate();
-    const random_account = anchor.web3.Keypair.generate();
 
-    before('Initialize', async () => {
-        let rarity = {
-            common: {
-                powerMin: 10,
-                powerMax: 100,
-                lifespanMin: 10,
-                lifespanMax: 100,
-                energyMin: 10,
-                energyMax: 100,
-            },
-        };
-
-        await program.methods
-            .initialize(
-                admin_account.publicKey,
-                rarity,
-                Buffer.from([1, 2, 3, 4, 5]),
-                new BN(100 * anchor.web3.LAMPORTS_PER_SOL),
-                new BN(1 * anchor.web3.LAMPORTS_PER_SOL)
-            )
-            .accounts({
-                creator: provider.wallet.publicKey,
-                program: program_account.publicKey,
-                systemProgram: anchor.web3.SystemProgram.programId,
-            })
-            .signers([program_account])
-            .rpc();
-
-        // Airdrop random_account
-        const airdrop_random_account = await provider.connection.requestAirdrop(
-            random_account.publicKey,
-            100 * anchor.web3.LAMPORTS_PER_SOL
-        );
-        const latestBlockHash = await provider.connection.getLatestBlockhash();
-        await provider.connection.confirmTransaction({
-            blockhash: latestBlockHash.blockhash,
-            lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
-            signature: airdrop_random_account,
-        });
-        // Airdrop random_account
-        const airdrop_admin_account = await provider.connection.requestAirdrop(
-            admin_account.publicKey,
-            100 * anchor.web3.LAMPORTS_PER_SOL
-        );
-        const latestBlockHash2 = await provider.connection.getLatestBlockhash();
-        await provider.connection.confirmTransaction({
-            blockhash: latestBlockHash2.blockhash,
-            lastValidBlockHeight: latestBlockHash2.lastValidBlockHeight,
-            signature: airdrop_admin_account,
-        });
-    });
+    const {
+        admin_account,
+        unauthorized_account,
+        metadata_pubkey,
+        bank_pda,
+        bank_bump,
+        program_pda,
+        program_bump,
+        rarity_pda,
+        rarity_bump,
+        mint_authority_account,
+        authority_bump,
+    } = account_init(program);
 
     it('Should add a new event', async () => {
-        let senderAccount = await program.account.programData.fetch(
-            program_account.publicKey
-        );
-        assert.equal(senderAccount.eventCounter.eq(new BN(0)), true);
-
-        const [event_account_one, event_account_one_bump] =
-            anchor.web3.PublicKey.findProgramAddressSync(
-                [
-                    Buffer.from('BattleBoosters'),
-                    Buffer.from('event'),
-                    new BN(senderAccount.eventCounter).toBuffer('le', 8),
-                ],
-                program.programId
+        const time_start = 1713045216;
+        const time_end = 1711045216;
+        const { program_data_before, eventAccount, program_data_after } =
+            await createEvent(
+                provider,
+                program,
+                admin_account,
+                program_pda,
+                time_start,
+                time_end
             );
 
-        const tx = await program.methods
-            .createNewEvent(new BN(1713045216), new BN(1711045216))
-            .accounts({
-                creator: admin_account.publicKey,
-                program: program_account.publicKey,
-                event: event_account_one,
-                systemProgram: anchor.web3.SystemProgram.programId,
-            })
-            .signers([admin_account])
-            .rpc();
-
-        // Fetch the account details of the payment sender
-        senderAccount = await program.account.programData.fetch(
-            program_account.publicKey
-        );
-
-        const eventAccount = await program.account.eventData.fetch(
-            event_account_one
-        );
-
+        assert.equal(program_data_before.eventNonce.eq(new BN(0)), true);
         assert.equal(eventAccount.fightCardIdCounter, 0);
-        assert.equal(eventAccount.startDate.eq(new BN(1713045216)), true);
-        assert.equal(eventAccount.endDate.eq(new BN(1711045216)), true);
-        assert.equal(senderAccount.eventCounter.eq(new BN(1)), true);
+        assert.equal(eventAccount.startDate.eq(new BN(time_start)), true);
+        assert.equal(eventAccount.endDate.eq(new BN(time_end)), true);
+        assert.equal(program_data_after.eventNonce.eq(new BN(1)), true);
         //console.log("Transaction signature", tx);
     });
 
     it('Should add a second new event', async () => {
-        let senderAccount = await program.account.programData.fetch(
-            program_account.publicKey
-        );
-        assert.equal(senderAccount.eventCounter.eq(new BN(1)), true);
-
-        const [event_account_one, event_account_one_bump] =
-            anchor.web3.PublicKey.findProgramAddressSync(
-                [
-                    Buffer.from('BattleBoosters'),
-                    Buffer.from('event'),
-                    new BN(senderAccount.eventCounter).toBuffer('le', 8),
-                ],
-                program.programId
+        const time_start = 1713045216;
+        const time_end = 1711045216;
+        const { program_data_before, eventAccount, program_data_after } =
+            await createEvent(
+                provider,
+                program,
+                admin_account,
+                program_pda,
+                time_start,
+                time_end
             );
-
-        const tx = await program.methods
-            .createNewEvent(new BN(1713045216), new BN(1711045216))
-            .accounts({
-                creator: admin_account.publicKey,
-                program: program_account.publicKey,
-                event: event_account_one,
-                systemProgram: anchor.web3.SystemProgram.programId,
-            })
-            .signers([admin_account])
-            .rpc();
-
-        // Fetch the account details of the payment sender
-        senderAccount = await program.account.programData.fetch(
-            program_account.publicKey
-        );
-
-        const eventAccount = await program.account.eventData.fetch(
-            event_account_one
-        );
-
+        assert.equal(program_data_before.eventNonce.eq(new BN(1)), true);
         assert.equal(eventAccount.fightCardIdCounter, 0);
-        assert.equal(eventAccount.startDate.eq(new BN(1713045216)), true);
-        assert.equal(eventAccount.endDate.eq(new BN(1711045216)), true);
-        assert.equal(senderAccount.eventCounter.eq(new BN(2)), true);
+        assert.equal(eventAccount.startDate.eq(new BN(time_start)), true);
+        assert.equal(eventAccount.endDate.eq(new BN(time_end)), true);
+        assert.equal(program_data_after.eventNonce.eq(new BN(2)), true);
         //console.log("Transaction signature", tx);
     });
 
     it('Should fail adding a new event, unauthorized signer', async () => {
-        let senderAccount = await program.account.programData.fetch(
-            program_account.publicKey
-        );
-        const [event_account_one, event_account_one_bump] =
-            anchor.web3.PublicKey.findProgramAddressSync(
-                [
-                    Buffer.from('BattleBoosters'),
-                    Buffer.from('event'),
-                    new BN(senderAccount.eventCounter).toBuffer('le', 8),
-                ],
-                program.programId
-            );
-
         try {
-            await program.methods
-                .createNewEvent(new BN(1713045216), new BN(1711045216))
-                .accounts({
-                    creator: random_account.publicKey,
-                    program: program_account.publicKey,
-                    event: event_account_one,
-                    systemProgram: anchor.web3.SystemProgram.programId,
-                })
-                .signers([random_account])
-                .rpc();
+            const time_start = 1713045216;
+            const time_end = 1711045216;
+            await createEvent(
+                provider,
+                program,
+                unauthorized_account,
+                program_pda,
+                time_start,
+                time_end
+            );
+        } catch (e) {
+            assert.include(e.message, 'Unauthorized access attempt');
+        }
+    });
+
+    it('Should update an event', async () => {
+        const event_id = 0;
+        const new_time_start = 1713045316;
+        const new_time_end = 1711045516;
+        const { eventAccount } = await updateEvent(
+            provider,
+            program,
+            admin_account,
+            program_pda,
+            event_id,
+            new_time_start,
+            new_time_end
+        );
+        assert.equal(eventAccount.startDate.eq(new BN(new_time_start)), true);
+        assert.equal(eventAccount.endDate.eq(new BN(new_time_end)), true);
+        assert.equal(eventAccount.fightCardIdCounter, 0);
+    });
+
+    it('Should fail updating a new event, unauthorized signer', async () => {
+        try {
+            const event_id = 0;
+            const new_time_start = 1713045316;
+            const new_time_end = 1711045516;
+            await updateEvent(
+                provider,
+                program,
+                unauthorized_account,
+                program_pda,
+                event_id,
+                new_time_start,
+                new_time_end
+            );
         } catch (err) {
             assert.include(err.message, 'Unauthorized access attempt');
         }
     });
 
-    it('Should update an event', async () => {
-        const [event_account_one, event_account_one_bump] =
-            anchor.web3.PublicKey.findProgramAddressSync(
-                [
-                    Buffer.from('BattleBoosters'),
-                    Buffer.from('event'),
-                    new BN(0).toBuffer('le', 8),
-                ],
-                program.programId
-            );
-
-        const tx = await program.methods
-            .updateEvent(new BN(0), new BN(1713045316), new BN(1711045516))
-            .accounts({
-                creator: admin_account.publicKey,
-                program: program_account.publicKey,
-                event: event_account_one,
-                systemProgram: anchor.web3.SystemProgram.programId,
-            })
-            .signers([admin_account])
-            .rpc();
-
-        console.log('Transaction signature', tx);
-
-        const eventAccount = await program.account.eventData.fetch(
-            event_account_one
-        );
-        assert.equal(eventAccount.startDate.eq(new BN(1713045316)), true);
-        assert.equal(eventAccount.endDate.eq(new BN(1711045516)), true);
-        assert.equal(eventAccount.fightCardIdCounter, 0);
-    });
-
-    it('Should fail updating a new event, unauthorized signer', async () => {
-        const [event_account_one, event_account_one_bump] =
-            anchor.web3.PublicKey.findProgramAddressSync(
-                [
-                    Buffer.from('BattleBoosters'),
-                    Buffer.from('event'),
-                    new BN(0).toBuffer('le', 8),
-                ],
-                program.programId
-            );
-
+    it('Should fail updating a new event id not found', async () => {
         try {
-            await program.methods
-                .updateEvent(new BN(0), new BN(1713045316), new BN(1711045516))
-                .accounts({
-                    creator: random_account.publicKey,
-                    program: program_account.publicKey,
-                    event: event_account_one,
-                    systemProgram: anchor.web3.SystemProgram.programId,
-                })
-                .signers([random_account])
-                .rpc();
+            const event_id = 1;
+            const new_time_start = 1713045316;
+            const new_time_end = 1711045516;
+            await updateEvent(
+                provider,
+                program,
+                admin_account,
+                program_pda,
+                event_id,
+                new_time_start,
+                new_time_end
+            );
         } catch (err) {
             assert.include(err.message, 'Unauthorized access attempt');
         }

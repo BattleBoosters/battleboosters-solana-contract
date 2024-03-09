@@ -14,6 +14,7 @@ pub fn only_admin(creator: &Pubkey, admin: &Pubkey) -> Result<()> {
 pub fn set_fight_card_properties(fight_card: &mut FightCardData, params: &FightCardData) {
     fight_card.id = params.id.clone();
     fight_card.event_pubkey = params.event_pubkey;
+    fight_card.event_nonce = params.event_nonce.clone();
     fight_card.title_fight = params.title_fight.clone();
     fight_card.result = None;
     fight_card.winner = None;

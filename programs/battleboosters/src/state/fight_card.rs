@@ -16,7 +16,7 @@ pub struct CreateFightCard<'info> {
     payer = creator,
     seeds = [MY_APP_PREFIX, FIGHT_CARD, event.fight_card_id_counter.to_le_bytes().as_ref()],
     bump,
-    space = 8 + 8 + 32 + 1 + 1 + 4 + 4 + 8 + 1 + 1
+    space = 8 + 8 + 32 + 8 + 1 + 1 + 4 + 4 + 8 + 1 + 1
     )]
     pub fight_card: Account<'info, FightCardData>,
     pub system_program: Program<'info, System>,
@@ -46,6 +46,8 @@ pub struct FightCardData {
     pub id: u64,
     /// Public key of the event account this fight card is part of
     pub event_pubkey: Pubkey,
+    /// Nonce of the event PDA this fight card is part of
+    pub event_nonce: u64,
     /// The type of tournament MainCard, Prelims or Early Prelims
     pub tournament: TournamentType,
     /// Indicates whether this fight is a title fight
