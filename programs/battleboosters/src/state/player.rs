@@ -152,9 +152,14 @@ pub struct PlayerGameAssetLinkData {
 
 #[account]
 pub struct MintableGameAssetData {
+    /// is Locked will mean the PDA have been used
     pub is_locked: bool,
+    /// is minted mean the PDA have been minted
     pub is_minted: bool,
+    /// owner of the PDA can use it in-game,
+    /// on mint the owner is set to None which mean it is not available in the game until re-deposited
     pub owner: Option<Pubkey>,
+    /// The metadata on-chain, which allow dynamic use on our game
     pub metadata: NftMetadata,
 }
 
