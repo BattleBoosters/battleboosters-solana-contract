@@ -80,7 +80,7 @@ pub struct GenerateRandomNftPreMint<'info> {
     init_if_needed,
     payer = signer,
     seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, signer.key().as_ref(), player_game_asset_link_nonce.to_le_bytes().as_ref()],
-    space = 8 + 8 + 1,
+    space = 8 + 32 + 8 + 1,
     bump,
     )]
     pub player_game_asset_link: Box<Account<'info, PlayerGameAssetLinkData>>,
@@ -89,7 +89,17 @@ pub struct GenerateRandomNftPreMint<'info> {
 }
 
 #[derive(Accounts)]
-#[instruction(fight_card_id: u8, fighter_m_game_asset_id: u64, energy_booster_m_game_asset_id: u64, shield_booster_m_game_asset_id: u64, points_booster_m_game_asset_id: u64)]
+#[instruction(
+    fight_card_id: u8,
+    fighter_asset_id: u64,
+    energy_booster_asset_id: u64,
+    shield_booster_asset_id: u64,
+    points_booster_asset_id: u64,
+    fighter_link_id: u64,
+    energy_booster_link_id: u64,
+    shield_booster_link_id: u64,
+    points_booster_link_id: u64
+)]
 pub struct JoinFightCard<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -99,28 +109,53 @@ pub struct JoinFightCard<'info> {
     pub event: Account<'info, EventData>,
     #[account(
     mut,
-    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, fighter_m_game_asset_id.to_le_bytes().as_ref()],
+    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, fighter_asset_id.to_le_bytes().as_ref()],
     bump
     )]
-    pub fighter_m_game_asset: Box<Account<'info, MintableGameAssetData>>,
+    pub fighter_asset: Box<Account<'info, MintableGameAssetData>>,
     #[account(
     mut,
-    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, energy_booster_m_game_asset_id.to_le_bytes().as_ref()],
+    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, energy_booster_asset_id.to_le_bytes().as_ref()],
     bump
     )]
-    pub energy_booster_m_game_asset: Option<Box<Account<'info, MintableGameAssetData>>>,
+    pub energy_booster_asset: Option<Box<Account<'info, MintableGameAssetData>>>,
     #[account(
     mut,
-    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, shield_booster_m_game_asset_id.to_le_bytes().as_ref()],
+    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, shield_booster_asset_id.to_le_bytes().as_ref()],
     bump
     )]
-    pub shield_booster_m_game_asset: Option<Box<Account<'info, MintableGameAssetData>>>,
+    pub shield_booster_asset: Option<Box<Account<'info, MintableGameAssetData>>>,
     #[account(
     mut,
-    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, points_booster_m_game_asset_id.to_le_bytes().as_ref()],
+    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, points_booster_asset_id.to_le_bytes().as_ref()],
     bump
     )]
-    pub points_booster_m_game_asset: Option<Box<Account<'info, MintableGameAssetData>>>,
+    pub points_booster_asset: Option<Box<Account<'info, MintableGameAssetData>>>,
+
+    #[account(
+    mut,
+    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, signer.key().as_ref(), fighter_link_id.to_le_bytes().as_ref()],
+    bump
+    )]
+    pub fighter_link: Box<Account<'info, PlayerGameAssetLinkData>>,
+    #[account(
+    mut,
+    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, signer.key().as_ref(), energy_booster_link_id.to_le_bytes().as_ref()],
+    bump
+    )]
+    pub energy_booster_link: Option<Box<Account<'info, PlayerGameAssetLinkData>>>,
+    #[account(
+    mut,
+    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, signer.key().as_ref(), shield_booster_link_id.to_le_bytes().as_ref()],
+    bump
+    )]
+    pub shield_booster_link: Option<Box<Account<'info, PlayerGameAssetLinkData>>>,
+    #[account(
+    mut,
+    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, signer.key().as_ref(), points_booster_link_id.to_le_bytes().as_ref()],
+    bump
+    )]
+    pub points_booster_link: Option<Box<Account<'info, PlayerGameAssetLinkData>>>,
 
     #[account(
     mut,
@@ -141,7 +176,8 @@ pub struct PlayerData {
 
 #[account]
 pub struct PlayerGameAssetLinkData {
-    // TODO: Probably save the `mintable_game_asset` Pubkey for convenience?
+    /// `Pubkey` of the mintable_game_asset
+    pub mintable_game_asset_pda: Pubkey,
     /// this is the link to the address of the pda
     pub mintable_game_asset_nonce: u64,
     /// Checks if a PDA is eligible to update its `mintable_game_asset_nonce`.

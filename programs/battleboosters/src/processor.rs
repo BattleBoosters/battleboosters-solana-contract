@@ -3,7 +3,7 @@ use crate::events::*;
 use crate::state::event::{CreateEvent, UpdateEvent};
 use crate::state::fight_card::{CreateFightCard, FightCardData, UpdateFightCard};
 use crate::state::rarity::{InitializeRarity, RarityBooster, RarityFighter};
-use crate::utils::{only_admin, set_fight_card_properties};
+use crate::utils::{set_fight_card_properties, verify_equality};
 use anchor_lang::prelude::*;
 
 pub fn initialize_rarity(
@@ -33,7 +33,7 @@ pub fn initialize_rarity(
 
 pub fn create_new_event(ctx: Context<CreateEvent>, start_date: i64, end_date: i64) -> Result<()> {
     let program = &mut ctx.accounts.program;
-    only_admin(&ctx.accounts.creator.key(), &program.admin_pubkey)?;
+    verify_equality(&ctx.accounts.creator.key(), &program.admin_pubkey)?;
 
     // Create event account and set data
     let create_event = &mut ctx.accounts.event;
@@ -58,7 +58,7 @@ pub fn update_event(
     end_date: i64,
 ) -> Result<()> {
     let program = &ctx.accounts.program;
-    only_admin(&ctx.accounts.creator.key(), &program.admin_pubkey)?;
+    verify_equality(&ctx.accounts.creator.key(), &program.admin_pubkey)?;
 
     let update_event = &mut ctx.accounts.event;
     update_event.start_date = start_date;
@@ -73,7 +73,7 @@ pub fn update_event(
 
 pub fn create_new_fight_card(ctx: Context<CreateFightCard>, params: FightCardData) -> Result<()> {
     let program = &ctx.accounts.program;
-    only_admin(&ctx.accounts.creator.key(), &program.admin_pubkey)?;
+    verify_equality(&ctx.accounts.creator.key(), &program.admin_pubkey)?;
 
     let fight_card = &mut ctx.accounts.fight_card;
     set_fight_card_properties(fight_card, &params);
@@ -94,7 +94,7 @@ pub fn update_fight_card(
     params: FightCardData,
 ) -> Result<()> {
     let program = &ctx.accounts.program;
-    only_admin(&ctx.accounts.creator.key(), &program.admin_pubkey)?;
+    verify_equality(&ctx.accounts.creator.key(), &program.admin_pubkey)?;
 
     let fight_card = &mut ctx.accounts.fight_card;
     set_fight_card_properties(fight_card, &params);

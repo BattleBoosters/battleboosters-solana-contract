@@ -1,19 +1,53 @@
 use crate::errors::ErrorCode;
 use crate::state::fight_card::*;
-use crate::state::player::{Attribute, NftMetadata};
+use crate::state::player::{
+    Attribute, MintableGameAssetData, NftMetadata, PlayerGameAssetLinkData,
+};
 use crate::state::rarity::Stats;
 use crate::types::*;
 use anchor_lang::prelude::*;
 use anchor_spl::token::{initialize_mint, InitializeMint};
 use sha2::{Digest, Sha256};
 
-pub fn only_admin(creator: &Pubkey, admin: &Pubkey) -> Result<()> {
-    require!(creator == admin, ErrorCode::Unauthorized);
+pub fn verify_equality(a: &Pubkey, b: &Pubkey) -> Result<()> {
+    require!(a == b, ErrorCode::Unauthorized);
     Ok(())
 }
+/*
+   TODO: Improve error msg's
+*/
+pub fn process_game_asset_for_action(
+    mintable_game_asset: Option<&mut Box<Account<MintableGameAssetData>>>,
+    mintable_game_asset_link: Option<&mut Box<Account<PlayerGameAssetLinkData>>>,
+    signer: &Pubkey,
+    burn: bool,
+) -> Result<()> {
+    if let Some(mintable_asset) = mintable_game_asset {
+        // Ensure the owner of the mintable asset is the signer
+        let mintable_asset_owner = mintable_asset.owner.ok_or(ErrorCode::Unauthorized)?;
+        verify_equality(&mintable_asset_owner, &signer)?;
 
-pub fn only_owner(mintable_game_asset: &Pubkey, owner: &Pubkey) -> Result<()> {
-    require!(mintable_game_asset == owner, ErrorCode::Unauthorized);
+        require!(mintable_asset.is_burned == false, ErrorCode::Unauthorized);
+        require!(mintable_asset.is_locked == false, ErrorCode::Unauthorized);
+        require!(mintable_asset.is_minted == false, ErrorCode::Unauthorized);
+
+        if let Some(mintable_asset_link) = mintable_game_asset_link {
+            verify_equality(
+                &mintable_asset.to_account_info().key(),
+                &mintable_asset_link.mintable_game_asset_pda,
+            )?;
+            if burn {
+                // We set the mintabable game asset to burn true
+                // TODO: Check if we can close the account to send back the rent to the creator.
+                mintable_asset.is_burned = true;
+                // We free the PDA for re-usability
+                mintable_asset_link.is_free = true;
+            }
+        } else {
+            return Err(error!(ErrorCode::Unauthorized));
+        }
+    }
+
     Ok(())
 }
 

@@ -125,7 +125,7 @@ pub mod battleboosters {
         fees: u16,
     ) -> Result<()> {
         let program = &ctx.accounts.program;
-        only_admin(&ctx.accounts.creator.key(), &program.admin_pubkey)?;
+        verify_equality(&ctx.accounts.creator.key(), &program.admin_pubkey)?;
 
         let metadata_program = ctx.accounts.metadata_program.to_account_info();
         let authority = ctx.accounts.mint_authority.to_account_info();
@@ -623,11 +623,15 @@ pub mod battleboosters {
         // facilitating indexed seed access.
         player_game_asset_link.mintable_game_asset_nonce =
             program.mintable_game_asset_nonce.clone();
+        // Save the Public key of the `mintable_game_asset` PDA for direct linkage
+        player_game_asset_link.mintable_game_asset_pda =
+            mintable_game_asset.to_account_info().key();
         // Updates the global state to track the current amount of created `mintable_game_asset` instances.
         program.mintable_game_asset_nonce += 1;
         // Assigns the signer as the owner of the mintable asset,
         // ensuring ownership until the user decides to mint it.
         mintable_game_asset.owner = Some(signer.key());
+
         Ok(())
     }
 
@@ -810,23 +814,31 @@ pub mod battleboosters {
         let fight_card = &ctx.accounts.fight_card;
 
         // Game assets
-        let fighter = &ctx.accounts.fighter_m_game_asset;
-        if let Some(energy_booster) = &ctx.accounts.energy_booster_m_game_asset {
-            let energy_booster_owner = energy_booster.owner.ok_or(ErrorCode::Unauthorized)?;
-            only_owner(&energy_booster_owner, &signer.key())?;
-        }
-        if let Some(shield_booster) = &ctx.accounts.shield_booster_m_game_asset {
-            let shield_booster_owner = shield_booster.owner.ok_or(ErrorCode::Unauthorized)?;
-            only_owner(&shield_booster_owner, &signer.key())?;
-        }
-        if let Some(points_booster) = &ctx.accounts.points_booster_m_game_asset {
-            let points_booster_owner = points_booster.owner.ok_or(ErrorCode::Unauthorized)?;
-            only_owner(&points_booster_owner, &signer.key())?;
-        }
-        // Check if the `mintable_game_asset` have an owner
-        let fighter_owner = fighter.owner.ok_or(ErrorCode::Unauthorized)?;
-        // Check if the signer have the right to use the `mintable_game_asset`
-        only_owner(&fighter_owner, &signer.key())?;
+        process_game_asset_for_action(
+            Some(&mut ctx.accounts.fighter_asset),
+            Some(&mut ctx.accounts.fighter_link),
+            &signer.key(),
+            false,
+        )?;
+        process_game_asset_for_action(
+            ctx.accounts.energy_booster_asset.as_mut(),
+            ctx.accounts.energy_booster_link.as_mut(),
+            &signer.key(),
+            true,
+        )?;
+        process_game_asset_for_action(
+            ctx.accounts.shield_booster_asset.as_mut(),
+            ctx.accounts.shield_booster_link.as_mut(),
+            &signer.key(),
+            true,
+        )?;
+        process_game_asset_for_action(
+            ctx.accounts.points_booster_asset.as_mut(),
+            ctx.accounts.points_booster_link.as_mut(),
+            &signer.key(),
+            true,
+        )?;
+
         /*
            TODO: Check `!is_burned`, `!is_minted`, `!is_locked` and the owner is `Some()` signer owner
               We will use utils.rs to create a method for checking this, for code re-usability.

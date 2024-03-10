@@ -197,6 +197,10 @@ describe('Random Mintable Asset', () => {
                 ),
                 true
             );
+            assert.deepEqual(
+                player_game_asset_link_pda_data.mintableGameAssetPda,
+                mintable_game_asset_pda
+            );
 
             const program_pda_data_after =
                 await program.account.programData.fetch(program_pda);
@@ -297,6 +301,10 @@ describe('Random Mintable Asset', () => {
                     new BN(1)
                 ),
                 true
+            );
+            assert.deepEqual(
+                player_game_asset_link_pda_data.mintableGameAssetPda,
+                mintable_game_asset_pda
             );
 
             const program_pda_data_after =
@@ -401,6 +409,10 @@ describe('Random Mintable Asset', () => {
                     new BN(2)
                 ),
                 true
+            );
+            assert.deepEqual(
+                player_game_asset_link_pda_data.mintableGameAssetPda,
+                mintable_game_asset_pda
             );
 
             const program_pda_data_after =
