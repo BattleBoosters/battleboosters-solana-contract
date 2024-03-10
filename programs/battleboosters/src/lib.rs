@@ -813,6 +813,12 @@ pub mod battleboosters {
         let event = &ctx.accounts.event;
         let fight_card = &ctx.accounts.fight_card;
 
+        // Make sure the event have not started before joining the fight
+        require!(
+            event.start_date < current_blockchain_timestamp,
+            ErrorCode::EventAlreadyStarted
+        );
+
         // Game assets
         process_game_asset_for_action(
             Some(&mut ctx.accounts.fighter_asset),
@@ -838,17 +844,6 @@ pub mod battleboosters {
             &signer.key(),
             true,
         )?;
-
-        /*
-           TODO: Check `!is_burned`, `!is_minted`, `!is_locked` and the owner is `Some()` signer owner
-              We will use utils.rs to create a method for checking this, for code re-usability.
-        */
-
-        // Make sure the event have not started before joining the fight
-        require!(
-            event.start_date < current_blockchain_timestamp,
-            ErrorCode::EventAlreadyStarted
-        );
 
         match fight_card.tournament {
             TournamentType::MainCard => {

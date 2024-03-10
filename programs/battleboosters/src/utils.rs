@@ -32,6 +32,12 @@ pub fn process_game_asset_for_action(
         require!(mintable_asset.is_minted == false, ErrorCode::Unauthorized);
 
         if let Some(mintable_asset_link) = mintable_game_asset_link {
+            // Double check also the `mintable_asset_lint` is not set to free
+            // TODO: We probably doesn't need to do this check since it is unlikely to happen within
+            //      a `mintable_game_asset` with `is_burned`, `is_locked` and `is_minted` is false
+            require!(!mintable_asset_link.is_free, ErrorCode::Unauthorized);
+
+            // Check the PDA `mintable_asset_link` is linked to the PDA `mintable_asset`
             verify_equality(
                 &mintable_asset.to_account_info().key(),
                 &mintable_asset_link.mintable_game_asset_pda,
