@@ -9,8 +9,8 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::{initialize_mint, InitializeMint};
 use sha2::{Digest, Sha256};
 
-pub fn verify_equality(a: &Pubkey, b: &Pubkey) -> Result<()> {
-    require!(a == b, ErrorCode::Unauthorized);
+pub fn verify_equality(expected_owner: &Pubkey, actual_owner: &Pubkey) -> Result<()> {
+    require!(expected_owner == actual_owner, ErrorCode::Unauthorized);
     Ok(())
 }
 /*
