@@ -9,8 +9,8 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::{initialize_mint, InitializeMint};
 use sha2::{Digest, Sha256};
 
-pub fn verify_equality(expected_owner: &Pubkey, actual_owner: &Pubkey) -> Result<()> {
-    require!(expected_owner == actual_owner, ErrorCode::Unauthorized);
+pub fn verify_equality(expected: &Pubkey, actual: &Pubkey) -> Result<()> {
+    require!(expected == actual, ErrorCode::Unauthorized);
     Ok(())
 }
 /*
@@ -43,6 +43,10 @@ pub fn process_game_asset_for_action(
                 // We free the PDA for re-usability
                 mintable_asset_link.is_free = true;
             }
+            // In both case even if burn is true we lock the asset
+            // because it is being used into the fight card
+            // Lock the asset
+            mintable_asset.is_locked = true
         } else {
             return Err(error!(ErrorCode::Unauthorized));
         }
