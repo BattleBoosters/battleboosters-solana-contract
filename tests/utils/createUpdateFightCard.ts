@@ -29,6 +29,7 @@ const createFightCard = async function (
             [
                 Buffer.from('BattleBoosters'),
                 Buffer.from('fightCard'),
+                event_account.toBuffer(),
                 new BN(eventAccountData.fightCardIdCounter).toBuffer(),
             ],
             program.programId
@@ -37,11 +38,11 @@ const createFightCard = async function (
     const fightCardData = {
         id: new BN(id_reference_off_chain),
         eventPubkey: event_account,
-        eventNonce: new BN(event_id),
+        eventNonceTracker: new BN(event_id),
         tournament: variant,
         titleFight: is_title_fight,
-        fighterLeft: null,
-        fighterRight: null,
+        fighterBlue: null,
+        fighterRed: null,
         fightDuration: null,
         result: null,
         winner: null,
@@ -100,6 +101,7 @@ const updateFightCard = async function (
             [
                 Buffer.from('BattleBoosters'),
                 Buffer.from('fightCard'),
+                event_account.toBuffer(),
                 new BN(fight_card_id).toBuffer(),
             ],
             program.programId
@@ -107,11 +109,11 @@ const updateFightCard = async function (
     const fightCardData = {
         id: new BN(id_reference_off_chain),
         eventPubkey: event_account,
-        eventNonce: new BN(event_id),
+        eventNonceTracker: new BN(event_id),
         tournament: variant,
         titleFight: is_title_fight,
-        fighterLeft: null,
-        fighterRight: null,
+        fighterBlue: null,
+        fighterRed: null,
         fightDuration: null,
         result: null,
         winner: null,

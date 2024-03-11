@@ -43,11 +43,14 @@ describe('Create fight card', () => {
             fight_card_account
         );
         assert.equal(fightCardAccountData.id.eq(new BN(112)), true);
-        assert.equal(fightCardAccountData.eventNonce.eq(new BN(0)), true);
+        assert.equal(
+            fightCardAccountData.eventNonceTracker.eq(new BN(0)),
+            true
+        );
         assert.equal(fightCardAccountData.fightDuration, null);
         assert.equal(fightCardAccountData.titleFight, true);
-        assert.equal(fightCardAccountData.fighterLeft, null);
-        assert.equal(fightCardAccountData.fighterRight, null);
+        assert.equal(fightCardAccountData.fighterBlue, null);
+        assert.equal(fightCardAccountData.fighterRed, null);
         assert.deepEqual(
             fightCardAccountData.eventPubkey.equals(event_account),
             true
@@ -98,8 +101,8 @@ describe('Create fight card', () => {
         assert.equal(fetchedFightCard.id.eq(new BN(112)), true);
         assert.equal(fetchedFightCard.fightDuration, null);
         assert.equal(fetchedFightCard.titleFight, false);
-        assert.equal(fetchedFightCard.fighterLeft, null);
-        assert.equal(fetchedFightCard.fighterRight, null);
+        assert.equal(fetchedFightCard.fighterBlue, null);
+        assert.equal(fetchedFightCard.fighterRed, null);
         assert.deepEqual(
             fetchedFightCard.eventPubkey.equals(event_account),
             true

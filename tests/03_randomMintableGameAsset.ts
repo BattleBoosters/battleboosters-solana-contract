@@ -192,13 +192,13 @@ describe('Random Mintable Asset', () => {
                 );
             assert.isFalse(player_game_asset_link_pda_data.isFree);
             assert.equal(
-                player_game_asset_link_pda_data.mintableGameAssetNonce.eq(
+                player_game_asset_link_pda_data.mintableGameAssetNonceTracker.eq(
                     new BN(0)
                 ),
                 true
             );
             assert.deepEqual(
-                player_game_asset_link_pda_data.mintableGameAssetPda,
+                player_game_asset_link_pda_data.mintableGameAssetPubkey,
                 mintable_game_asset_pda
             );
 
@@ -297,13 +297,13 @@ describe('Random Mintable Asset', () => {
                 );
             assert.isFalse(player_game_asset_link_pda_data.isFree);
             assert.equal(
-                player_game_asset_link_pda_data.mintableGameAssetNonce.eq(
+                player_game_asset_link_pda_data.mintableGameAssetNonceTracker.eq(
                     new BN(1)
                 ),
                 true
             );
             assert.deepEqual(
-                player_game_asset_link_pda_data.mintableGameAssetPda,
+                player_game_asset_link_pda_data.mintableGameAssetPubkey,
                 mintable_game_asset_pda
             );
 
@@ -405,13 +405,13 @@ describe('Random Mintable Asset', () => {
                 );
             assert.isFalse(player_game_asset_link_pda_data.isFree);
             assert.equal(
-                player_game_asset_link_pda_data.mintableGameAssetNonce.eq(
+                player_game_asset_link_pda_data.mintableGameAssetNonceTracker.eq(
                     new BN(2)
                 ),
                 true
             );
             assert.deepEqual(
-                player_game_asset_link_pda_data.mintableGameAssetPda,
+                player_game_asset_link_pda_data.mintableGameAssetPubkey,
                 mintable_game_asset_pda
             );
 
