@@ -31,6 +31,29 @@ pub fn process_game_asset_for_action(
         require!(mintable_asset.is_locked == false, ErrorCode::Unauthorized);
         require!(mintable_asset.is_minted == false, ErrorCode::Unauthorized);
 
+        let is_ok = mintable_asset.metadata.attributes.iter().any(|attr| {
+            if attr.trait_type == "Fighter Type" {
+                // Use the from_name method to check if the trait_value is a valid FighterType
+                FighterType::from_name(&attr.value).is_some()
+            } else if attr.trait_type == "Booster Type" {
+                match BoosterType::from_name(&attr.value).unwrap() {
+                    BoosterType::Points => {
+                        /*
+                          TODO: Update the `fight_card_link` PDA
+                        */
+                        true
+                    }
+                    BoosterType::Shield => true,
+                    BoosterType::Energy => true,
+                }
+            } else if attr.trait_type == "Champions Pass Type" {
+                true
+            } else {
+                false
+            }
+        });
+        require!(is_ok, ErrorCode::Unauthorized);
+
         if let Some(mintable_asset_link) = mintable_game_asset_link {
             // TODO: We probably doesn't need to do this check since it is unlikely to happen within
             //      a `mintable_game_asset` with `is_burned`, `is_locked` and `is_minted` is false

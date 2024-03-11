@@ -845,21 +845,22 @@ pub mod battleboosters {
 
         */
         // Game assets
-        let is_fighter_type = &ctx
-            .accounts
-            .fighter_asset
-            .metadata
-            .attributes
-            .iter()
-            .any(|attr| {
-                if attr.trait_type == "Fighter Type" {
-                    // Use the from_name method to check if the trait_value is a valid FighterType
-                    FighterType::from_name(&attr.value).is_some()
-                } else {
-                    false
-                }
-            });
-        require!(is_fighter_type, ErrorCode::Unauthorized);
+
+        // let is_fighter_type = &ctx
+        //     .accounts
+        //     .fighter_asset
+        //     .metadata
+        //     .attributes
+        //     .iter()
+        //     .any(|attr| {
+        //         if attr.trait_type == "Fighter Type" {
+        //             // Use the from_name method to check if the trait_value is a valid FighterType
+        //             FighterType::from_name(&attr.value).is_some()
+        //         } else {
+        //             false
+        //         }
+        //     });
+        // require!(is_fighter_type, ErrorCode::Unauthorized);
 
         // let is_energy_type = &ctx
         //     .accounts
