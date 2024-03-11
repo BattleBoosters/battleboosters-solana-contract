@@ -181,7 +181,7 @@ pub struct JoinFightCard<'info> {
     init,
     payer = signer,
     space = 8 + 32 + 32 + 8 + 2 + 1 + 1,
-    seeds = [MY_APP_PREFIX, FIGHT_CARD, event.key().as_ref(), fight_card_id.to_le_bytes().as_ref()],
+    seeds = [MY_APP_PREFIX, FIGHT_CARD, event.key().as_ref(), fight_card_id.to_le_bytes().as_ref(), signer.key().as_ref()],
     bump
     )]
     pub fight_card_link: Account<'info, FightCardLinkData>,
