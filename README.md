@@ -1,4 +1,4 @@
-**Battleboosters Solana Smart Contract**
+# Battleboosters Solana Smart Contract
 
 This repository contains the Solana smart contract code powering the Battleboosters platform.
 
