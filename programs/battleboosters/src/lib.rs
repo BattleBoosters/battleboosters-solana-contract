@@ -863,8 +863,9 @@ pub mod battleboosters {
 
                 */
             }
-            TournamentType::Prelims => {}
-            TournamentType::EarlyPrelims => {}
+            // No need to check there
+            _ => {} // TournamentType::Prelims => {}
+                    // TournamentType::EarlyPrelims => {}
         }
 
         fight_card_link.creator = signer.key();

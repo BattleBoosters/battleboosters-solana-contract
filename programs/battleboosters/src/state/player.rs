@@ -186,6 +186,15 @@ pub struct JoinFightCard<'info> {
     )]
     pub fight_card_link: Account<'info, FightCardLinkData>,
 
+    #[account(
+    init_if_needed,
+    payer = signer,
+    space = 8 + 32 + 32 + 1 + 1,
+    seeds = [MY_APP_PREFIX, FIGHT_CARD, event.key().as_ref(), signer.key().as_ref()],
+    bump
+    )]
+    pub event_link: Account<'info, EventLinkData>,
+
     pub system_program: Program<'info, System>,
 }
 
@@ -197,6 +206,18 @@ pub struct PlayerData {
     pub player_game_asset_link_nonce: u64,
     /// Prevent accidental multiple initializations of a PDA
     pub is_initialized: bool,
+}
+
+#[account]
+pub struct EventLinkData {
+    /// Signer of the tx
+    pub creator: Pubkey,
+    /// `Event` PDA public key for direct ref
+    pub event_pubkey: Pubkey,
+    /// Tracker to link the `FightCardLink` PDA to the `Event` PDA
+    pub event_nonce_tracker: u8,
+    /// Ensure a champions pass have been used for `MainCard` access
+    pub is_champion_pass_used: bool,
 }
 
 #[account]
