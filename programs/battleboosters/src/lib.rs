@@ -813,6 +813,8 @@ pub mod battleboosters {
         let event = &ctx.accounts.event;
         let fight_card = &ctx.accounts.fight_card;
         let fight_card_link = &mut ctx.accounts.fight_card_link;
+        let event_link = &mut ctx.accounts.event_link;
+
         require!(
             !fight_card_link.is_initialized,
             ErrorCode::AlreadyInitialized
@@ -852,6 +854,17 @@ pub mod battleboosters {
 
         match fight_card.tournament {
             TournamentType::MainCard => {
+                /*
+                   TODO: Check `event_link.is_champion_pass_used`
+                       if `yes` the `event_link.is_champion_pass_used != true`
+                       if `false` burn the metadata of champion's pass
+                */
+                if !event_link.is_champion_pass_used.clone() {
+                    event_link.is_champion_pass_used = true;
+                    /*
+                       TODO: Unwrap (Optional) metadata champions pass and burn it to prevent future use
+                    */
+                }
 
                 /*
                    TODO: Verify if it's a `mainCard`.
