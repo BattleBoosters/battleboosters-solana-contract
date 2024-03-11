@@ -803,7 +803,17 @@ pub mod battleboosters {
 
     pub fn join_fight_card(
         ctx: Context<JoinFightCard>,
-        fight_card_id: u8,
+        fight_card_id: u8,            // Used in instruction
+        fighter_asset_id: u64,        // Used in instruction
+        energy_booster_asset_id: u64, // Used in instruction
+        shield_booster_asset_id: u64, // Used in instruction
+        points_booster_asset_id: u64, // Used in instruction
+        champions_pass_asset_id: u64, // Used in instruction
+        fighter_link_id: u64,         // Used in instruction
+        energy_booster_link_id: u64,  // Used in instruction
+        shield_booster_link_id: u64,  // Used in instruction
+        points_booster_link_id: u64,  // Used in instruction
+        champions_pass_link_id: u64,  // Used in instruction
         fighter_color_side: FighterColorSide,
     ) -> Result<()> {
         let clock = Clock::get().unwrap();
@@ -814,6 +824,7 @@ pub mod battleboosters {
         let fight_card = &ctx.accounts.fight_card;
         let fight_card_link = &mut ctx.accounts.fight_card_link;
         let event_link = &mut ctx.accounts.event_link;
+        let champions_pass_asset = &ctx.accounts.champions_pass_asset;
 
         require!(
             !fight_card_link.is_initialized,
@@ -826,7 +837,47 @@ pub mod battleboosters {
             ErrorCode::EventAlreadyStarted
         );
 
+        /*
+           TODO: Check the game assets are what they pretend to be
+            (Fighter, Energy, Shield, Points and Champion's pass)
+
+            TODO: - Move it to utils `process_game_asset_for_action` method and check save it and check it is None before saving.
+
+        */
         // Game assets
+        let is_fighter_type = &ctx
+            .accounts
+            .fighter_asset
+            .metadata
+            .attributes
+            .iter()
+            .any(|attr| {
+                if attr.trait_type == "Fighter Type" {
+                    // Use the from_name method to check if the trait_value is a valid FighterType
+                    FighterType::from_name(&attr.value).is_some()
+                } else {
+                    false
+                }
+            });
+        require!(is_fighter_type, ErrorCode::Unauthorized);
+
+        // let is_energy_type = &ctx
+        //     .accounts
+        //     .energy_booster_asset
+        //     .as_ref()
+        //     .unwrap()
+        //     .metadata
+        //     .attributes
+        //     .iter()
+        //     .any(|attr| {
+        //         if attr.trait_type == "Booster Type" {
+        //             // Use the from_name method to check if the trait_value is a valid FighterType
+        //             BoosterType::from_name(&attr.value).is_some()
+        //         } else {
+        //             false
+        //         }
+        //     });
+
         process_game_asset_for_action(
             Some(&mut ctx.accounts.fighter_asset),
             Some(&mut ctx.accounts.fighter_link),
@@ -852,6 +903,13 @@ pub mod battleboosters {
             true,
         )?;
 
+        process_game_asset_for_action(
+            champions_pass_asset.clone().as_mut(),
+            ctx.accounts.champions_pass_link.as_mut(),
+            &signer.key(),
+            true,
+        )?;
+
         match fight_card.tournament {
             TournamentType::MainCard => {
                 /*
@@ -859,11 +917,11 @@ pub mod battleboosters {
                        if `yes` the `event_link.is_champion_pass_used != true`
                        if `false` burn the metadata of champion's pass
                 */
-                if !event_link.is_champion_pass_used.clone() {
-                    event_link.is_champion_pass_used = true;
-                    /*
-                       TODO: Unwrap (Optional) metadata champions pass and burn it to prevent future use
-                    */
+                if let Some(champions_pass) = champions_pass_asset.as_ref() {
+                    event_link.champions_pass_pubkey = Some(champions_pass.to_account_info().key());
+                    event_link.champions_pass_nonce_tracker = Some(champions_pass_asset_id)
+
+                    // TODO: Implement the logic to burn the champions_pass_metadata to prevent further use
                 }
             }
             // No need to check there

@@ -96,10 +96,12 @@ pub struct GenerateRandomNftPreMint<'info> {
     energy_booster_asset_id: u64,
     shield_booster_asset_id: u64,
     points_booster_asset_id: u64,
+    champions_pass_asset_id: u64,
     fighter_link_id: u64,
     energy_booster_link_id: u64,
     shield_booster_link_id: u64,
-    points_booster_link_id: u64
+    points_booster_link_id: u64,
+    champions_pass_link_id: u64,
 )]
 pub struct JoinFightCard<'info> {
     #[account(mut)]
@@ -123,27 +125,35 @@ pub struct JoinFightCard<'info> {
     #[account(
     mut,
     seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, energy_booster_asset_id.to_le_bytes().as_ref()],
-    constraint = energy_booster_asset.as_ref().is_burned == true,
-    close = signer,
+    // constraint = energy_booster_asset.as_ref().is_burned == true,
+    // close = signer,
     bump
     )]
     pub energy_booster_asset: Option<Box<Account<'info, MintableGameAssetData>>>,
     #[account(
     mut,
     seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, shield_booster_asset_id.to_le_bytes().as_ref()],
-    constraint = shield_booster_asset.as_ref().is_burned == true,
-    close = signer,
+    // constraint = shield_booster_asset.as_ref().is_burned == true,
+    // close = signer,
     bump
     )]
     pub shield_booster_asset: Option<Box<Account<'info, MintableGameAssetData>>>,
     #[account(
     mut,
     seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, points_booster_asset_id.to_le_bytes().as_ref()],
-    constraint = points_booster_asset.as_ref().is_burned == true,
-    close = signer,
+    // constraint = points_booster_asset.as_ref().is_burned == true,
+    // close = signer,
     bump
     )]
     pub points_booster_asset: Option<Box<Account<'info, MintableGameAssetData>>>,
+    #[account(
+    mut,
+    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, champions_pass_asset_id.to_le_bytes().as_ref()],
+    // constraint = points_booster_asset.as_ref().is_burned == true,
+    // close = signer,
+    bump
+    )]
+    pub champions_pass_asset: Option<Box<Account<'info, MintableGameAssetData>>>,
 
     #[account(
     mut,
@@ -169,6 +179,12 @@ pub struct JoinFightCard<'info> {
     bump
     )]
     pub points_booster_link: Option<Box<Account<'info, PlayerGameAssetLinkData>>>,
+    #[account(
+    mut,
+    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, signer.key().as_ref(), champions_pass_link_id.to_le_bytes().as_ref()],
+    bump
+    )]
+    pub champions_pass_link: Option<Box<Account<'info, PlayerGameAssetLinkData>>>,
 
     #[account(
     mut,
@@ -217,9 +233,18 @@ pub struct EventLinkData {
     /// Tracker to link the `FightCardLink` PDA to the `Event` PDA
     pub event_nonce_tracker: u8,
     /// Ensure a champions pass have been used for `MainCard` access
-    pub is_champion_pass_used: bool,
+    /// `champions_pass_asset` PDA public key for direct ref
+    pub champions_pass_pubkey: Option<Pubkey>,
+    /// Tracker to link the `champions_pass` PDA
+    pub champions_pass_nonce_tracker: Option<u64>,
+    /*
+       TODO: Probably store the Pubkey of the metadata Champion's pass
+             + the nonce tracker ?
+    */
 }
-
+/*
+   TODO: Store the PDA used to get back the Metadata when resolving the event
+*/
 #[account]
 pub struct FightCardLinkData {
     /// Signer of the tx
@@ -228,10 +253,26 @@ pub struct FightCardLinkData {
     // pub event_pubkey: Pubkey,
     // /// Tracker to link the `FightCardLink` PDA to the `Event` PDA
     // pub event_nonce_tracker: u8,
-    /// `FightCard` PDA public key for direct ref
+    /// `fight_card` PDA public key for direct ref
     pub fight_card_pubkey: Pubkey,
     /// Tracker to link the `FightCardLink` PDA to the `FightCard` PDA
     pub fight_card_nonce_tracker: u8,
+    /// The `Pubkey` of the booster used
+    pub fighter_used: Option<Pubkey>,
+    /// Tracker to link the `Fighter` PDA to the `FightCardLink` PDA
+    pub fighter_nonce_tracker: Option<u64>,
+    /// The `Pubkey` of the booster used
+    pub energy_booster_used: Option<Pubkey>,
+    /// Tracker to link the `Booster` PDA to the `FightCardLink` PDA
+    pub energy_booster_nonce_tracker: Option<u64>,
+    /// The `Pubkey` of the booster used
+    pub shield_booster_used: Option<Pubkey>,
+    /// Tracker to link the `Booster` PDA to the `FightCardLink` PDA
+    pub shield_booster_nonce_tracker: Option<u64>,
+    /// The `Pubkey` of the booster used
+    pub points_booster_used: Option<Pubkey>,
+    /// Tracker to link the `Booster` PDA to the `FightCardLink` PDA
+    pub points_booster_nonce_tracker: Option<u64>,
     /// The fighter side chosen by the player `Red Gloves` or `Blue Gloves`
     pub fighter_color_side: FighterColorSide,
     /// Prevents the calculation of points for the same fightCard multiple times
