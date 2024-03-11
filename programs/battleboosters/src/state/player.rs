@@ -244,6 +244,8 @@ pub struct EventLinkData {
 }
 /*
    TODO: Store the PDA used to get back the Metadata when resolving the event
+
+   TODO: UPDATE THE SPAAAAAAAAAAAAACEEEEEEEEEEEE!!!
 */
 #[account]
 pub struct FightCardLinkData {
