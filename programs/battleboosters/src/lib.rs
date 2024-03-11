@@ -865,16 +865,6 @@ pub mod battleboosters {
                        TODO: Unwrap (Optional) metadata champions pass and burn it to prevent future use
                     */
                 }
-
-                /*
-                   TODO: Verify if it's a `mainCard`.
-                       If so, check the PDA created to receive the Champions Pass
-                       to ensure the NFT has been deposited, allowing the player to play.
-                       UPDATE:
-                       No need to check PDA since we can simply examine the
-                       current metadata PDA of the player who owns the mintable game asset.
-
-                */
             }
             // No need to check there
             _ => {} // TournamentType::Prelims => {}
