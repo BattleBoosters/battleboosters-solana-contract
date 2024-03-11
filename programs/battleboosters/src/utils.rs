@@ -32,15 +32,15 @@ pub fn process_game_asset_for_action(
         require!(mintable_asset.is_minted == false, ErrorCode::Unauthorized);
 
         if let Some(mintable_asset_link) = mintable_game_asset_link {
-            // Double check also the `mintable_asset_lint` is not set to free
             // TODO: We probably doesn't need to do this check since it is unlikely to happen within
             //      a `mintable_game_asset` with `is_burned`, `is_locked` and `is_minted` is false
-            require!(!mintable_asset_link.is_free, ErrorCode::Unauthorized);
+            // Double check also the `mintable_asset_lint` is not set to free
+            // require!(!mintable_asset_link.is_free, ErrorCode::Unauthorized);
 
             // Check the PDA `mintable_asset_link` is linked to the PDA `mintable_asset`
             verify_equality(
                 &mintable_asset.to_account_info().key(),
-                &mintable_asset_link.mintable_game_asset_pda,
+                &mintable_asset_link.mintable_game_asset_pubkey,
             )?;
             if burn {
                 // We set the mintabable game asset to burn true
@@ -64,7 +64,7 @@ pub fn process_game_asset_for_action(
 pub fn set_fight_card_properties(fight_card: &mut FightCardData, params: &FightCardData) {
     fight_card.id = params.id.clone();
     fight_card.event_pubkey = params.event_pubkey;
-    fight_card.event_nonce = params.event_nonce.clone();
+    fight_card.event_nonce_tracker = params.event_nonce_tracker.clone();
     fight_card.title_fight = params.title_fight.clone();
     fight_card.result = None;
     fight_card.winner = None;
@@ -76,16 +76,16 @@ pub fn set_fight_card_properties(fight_card: &mut FightCardData, params: &FightC
         fight_card.fight_duration = None
     }
 
-    if let Some(fight_stats_fighter_1) = params.fighter_left.clone() {
-        fight_card.fighter_left = Some(fight_stats_fighter_1);
+    if let Some(fight_stats_fighter_1) = params.fighter_blue.clone() {
+        fight_card.fighter_blue = Some(fight_stats_fighter_1);
     } else {
-        fight_card.fighter_left = None
+        fight_card.fighter_blue = None
     }
 
-    if let Some(fight_stats_fighter_2) = params.fighter_right.clone() {
-        fight_card.fighter_right = Some(fight_stats_fighter_2);
+    if let Some(fight_stats_fighter_2) = params.fighter_red.clone() {
+        fight_card.fighter_red = Some(fight_stats_fighter_2);
     } else {
-        fight_card.fighter_right = None
+        fight_card.fighter_red = None
     }
 }
 

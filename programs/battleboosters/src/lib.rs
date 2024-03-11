@@ -621,10 +621,10 @@ pub mod battleboosters {
         // Establishes a linkage between the `player_game_asset_link` PDA
         // and the nonce of the `mintable_game_asset`,
         // facilitating indexed seed access.
-        player_game_asset_link.mintable_game_asset_nonce =
+        player_game_asset_link.mintable_game_asset_nonce_tracker =
             program.mintable_game_asset_nonce.clone();
         // Save the Public key of the `mintable_game_asset` PDA for direct linkage
-        player_game_asset_link.mintable_game_asset_pda =
+        player_game_asset_link.mintable_game_asset_pubkey =
             mintable_game_asset.to_account_info().key();
         // Updates the global state to track the current amount of created `mintable_game_asset` instances.
         program.mintable_game_asset_nonce += 1;
@@ -804,7 +804,7 @@ pub mod battleboosters {
     pub fn join_fight_card(
         ctx: Context<JoinFightCard>,
         fight_card_id: u8,
-        params: FightCardData,
+        fighter_color_side: FighterColorSide,
     ) -> Result<()> {
         let clock = Clock::get().unwrap();
         let current_blockchain_timestamp = clock.unix_timestamp;
@@ -812,6 +812,11 @@ pub mod battleboosters {
         let signer = &ctx.accounts.signer.to_account_info();
         let event = &ctx.accounts.event;
         let fight_card = &ctx.accounts.fight_card;
+        let fight_card_link = &mut ctx.accounts.fight_card_link;
+        require!(
+            !fight_card_link.is_initialized,
+            ErrorCode::AlreadyInitialized
+        );
 
         // Make sure the event have not started before joining the fight
         require!(
@@ -861,6 +866,13 @@ pub mod battleboosters {
             TournamentType::Prelims => {}
             TournamentType::EarlyPrelims => {}
         }
+
+        fight_card_link.creator = signer.key();
+        fight_card_link.fight_card_pubkey = fight_card.to_account_info().key();
+        fight_card_link.fight_card_nonce_tracker = fight_card_id;
+        fight_card_link.fighter_color_side = fighter_color_side;
+        fight_card_link.is_consumed = false;
+        fight_card_link.is_initialized = true;
 
         Ok(())
     }

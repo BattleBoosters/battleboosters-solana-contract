@@ -6,6 +6,7 @@ use anchor_lang::prelude::*;
 
 use crate::state::event::EventData;
 use crate::state::rarity::RarityData;
+use crate::types::FighterColorSide;
 use anchor_lang::solana_program::sysvar;
 use solana_randomness_service::SimpleRandomnessV1Account;
 use solana_randomness_service::{
@@ -105,8 +106,14 @@ pub struct JoinFightCard<'info> {
     pub signer: Signer<'info>,
     #[account(mut)]
     pub program: Account<'info, ProgramData>,
-    #[account(mut)]
+
+    #[account(
+    mut,
+    seeds = [MY_APP_PREFIX, EVENT, program.event_nonce.to_le_bytes().as_ref()],
+    bump
+    )]
     pub event: Account<'info, EventData>,
+
     #[account(
     mut,
     seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, fighter_asset_id.to_le_bytes().as_ref()],
@@ -116,18 +123,24 @@ pub struct JoinFightCard<'info> {
     #[account(
     mut,
     seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, energy_booster_asset_id.to_le_bytes().as_ref()],
+    constraint = energy_booster_asset.as_ref().is_burned == true,
+    close = signer,
     bump
     )]
     pub energy_booster_asset: Option<Box<Account<'info, MintableGameAssetData>>>,
     #[account(
     mut,
     seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, shield_booster_asset_id.to_le_bytes().as_ref()],
+    constraint = shield_booster_asset.as_ref().is_burned == true,
+    close = signer,
     bump
     )]
     pub shield_booster_asset: Option<Box<Account<'info, MintableGameAssetData>>>,
     #[account(
     mut,
     seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, points_booster_asset_id.to_le_bytes().as_ref()],
+    constraint = points_booster_asset.as_ref().is_burned == true,
+    close = signer,
     bump
     )]
     pub points_booster_asset: Option<Box<Account<'info, MintableGameAssetData>>>,
@@ -159,27 +172,60 @@ pub struct JoinFightCard<'info> {
 
     #[account(
     mut,
-    seeds = [MY_APP_PREFIX, FIGHT_CARD, fight_card_id.to_le_bytes().as_ref()],
+    seeds = [MY_APP_PREFIX, FIGHT_CARD, event.key().as_ref(), fight_card_id.to_le_bytes().as_ref()],
     bump
     )]
     pub fight_card: Account<'info, FightCardData>,
+
+    #[account(
+    init,
+    payer = signer,
+    space = 8 + 32 + 32 + 8 + 2 + 1 + 1,
+    seeds = [MY_APP_PREFIX, FIGHT_CARD, event.key().as_ref(), fight_card_id.to_le_bytes().as_ref()],
+    bump
+    )]
+    pub fight_card_link: Account<'info, FightCardLinkData>,
+
     pub system_program: Program<'info, System>,
 }
 
 #[account]
 pub struct PlayerData {
-    /// Represent the nonce of the current amount orders the player have made
+    /// Represent the nonce of the current amount orders the player have created
     pub order_nonce: u64,
+    /// Represent the nonce of the current player game asset link the player have created
     pub player_game_asset_link_nonce: u64,
+    /// Prevent accidental multiple initializations of a PDA
+    pub is_initialized: bool,
+}
+
+#[account]
+pub struct FightCardLinkData {
+    /// Signer of the tx
+    pub creator: Pubkey,
+    // /// `Event` PDA public key for direct ref
+    // pub event_pubkey: Pubkey,
+    // /// Tracker to link the `FightCardLink` PDA to the `Event` PDA
+    // pub event_nonce_tracker: u8,
+    /// `FightCard` PDA public key for direct ref
+    pub fight_card_pubkey: Pubkey,
+    /// Tracker to link the `FightCardLink` PDA to the `FightCard` PDA
+    pub fight_card_nonce_tracker: u8,
+    /// The fighter side chosen by the player `Red Gloves` or `Blue Gloves`
+    pub fighter_color_side: FighterColorSide,
+    /// Prevents the calculation of points for the same fightCard multiple times
+    /// If this occurs, it should close and refund the creator of the fighCardLink PDA
+    pub is_consumed: bool,
+    /// Prevent accidental multiple initializations of a PDA
     pub is_initialized: bool,
 }
 
 #[account]
 pub struct PlayerGameAssetLinkData {
     /// `Pubkey` of the mintable_game_asset
-    pub mintable_game_asset_pda: Pubkey,
+    pub mintable_game_asset_pubkey: Pubkey,
     /// this is the link to the address of the pda
-    pub mintable_game_asset_nonce: u64,
+    pub mintable_game_asset_nonce_tracker: u64,
     /// Checks if a PDA is eligible to update its `mintable_game_asset_nonce`.
     /// The PDA becomes eligible upon minting and withdrawing a `mintable_game_asset`,
     /// which break the link with the last `mintable_game_asset_nonce`.
@@ -201,6 +247,7 @@ pub struct MintableGameAssetData {
     pub metadata: NftMetadata,
 }
 
+/// Metatada Standards copy on-chain
 #[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]
 pub struct NftMetadata {
     pub name: String,

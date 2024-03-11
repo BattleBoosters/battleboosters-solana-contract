@@ -105,6 +105,12 @@ pub enum FighterType {
     Sambo,
 }
 
+#[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]
+pub enum FighterColorSide {
+    FighterBlue,
+    FighterRed,
+}
+
 impl fmt::Display for FighterType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let variant_str = match self {

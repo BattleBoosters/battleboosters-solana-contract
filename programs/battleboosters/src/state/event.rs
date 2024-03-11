@@ -39,6 +39,8 @@ pub struct UpdateEvent<'info> {
 #[derive(Default)]
 pub struct EventData {
     /// Represent the current amount of created fight card
+    /// On average, a UFC event typically features around 12 to 15 fights
+    /// We set it as `u8` because there will be never more than `255` per events in an MMA fight week
     pub fight_card_id_counter: u8,
     /// Start date in seconds
     pub start_date: i64,
