@@ -219,7 +219,7 @@ pub mod battleboosters {
                         .checked_mul(program.booster_price.clone())
                         .unwrap();
                 }
-                NftType::FighterPack => {
+                NftType::Fighter => {
                     // update the quantity of fighter mint allowance
                     collector_pack.booster_mint_allowance += request.quantity.clone();
                     total_usd += request
@@ -521,7 +521,7 @@ pub mod battleboosters {
                     .unwrap();
                 msg!("GOOD");
             }
-            NftType::FighterPack => {
+            NftType::Fighter => {
                 require!(
                     collector_pack.fighter_mint_allowance >= 1,
                     ErrorCode::NotEnoughAllowance
@@ -923,11 +923,24 @@ pub mod battleboosters {
             &signer.key(),
             false,
         )?;
+        process_and_verify_game_asset_type(
+            Some(&ctx.accounts.fighter_asset),
+            fight_card_link,
+            fighter_asset_id,
+            NftType::Fighter,
+        )?;
+
         process_game_asset_for_action(
             ctx.accounts.energy_booster_asset.as_mut(),
             ctx.accounts.energy_booster_link.as_mut(),
             &signer.key(),
             true,
+        )?;
+        process_and_verify_game_asset_type(
+            ctx.accounts.energy_booster_asset.as_ref(),
+            fight_card_link,
+            energy_booster_asset_id,
+            NftType::Booster,
         )?;
         process_game_asset_for_action(
             ctx.accounts.shield_booster_asset.as_mut(),
@@ -935,11 +948,23 @@ pub mod battleboosters {
             &signer.key(),
             true,
         )?;
+        process_and_verify_game_asset_type(
+            ctx.accounts.shield_booster_asset.as_ref(),
+            fight_card_link,
+            shield_booster_asset_id,
+            NftType::Booster,
+        )?;
         process_game_asset_for_action(
             ctx.accounts.points_booster_asset.as_mut(),
             ctx.accounts.points_booster_link.as_mut(),
             &signer.key(),
             true,
+        )?;
+        process_and_verify_game_asset_type(
+            ctx.accounts.points_booster_asset.as_ref(),
+            fight_card_link,
+            points_booster_asset_id,
+            NftType::Booster,
         )?;
 
         process_game_asset_for_action(
@@ -947,6 +972,12 @@ pub mod battleboosters {
             ctx.accounts.champions_pass_link.as_mut(),
             &signer.key(),
             true,
+        )?;
+        process_and_verify_game_asset_type(
+            champions_pass_asset.as_ref(),
+            fight_card_link,
+            champions_pass_asset_id.clone(),
+            NftType::Booster,
         )?;
 
         match fight_card.tournament {

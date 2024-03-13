@@ -1,13 +1,14 @@
 use crate::errors::ErrorCode;
 use crate::state::fight_card::*;
 use crate::state::player::{
-    Attribute, MintableGameAssetData, NftMetadata, PlayerGameAssetLinkData,
+    Attribute, FightCardLinkData, MintableGameAssetData, NftMetadata, PlayerGameAssetLinkData,
 };
 use crate::state::rarity::Stats;
 use crate::types::*;
 use anchor_lang::prelude::*;
 use anchor_spl::token::{initialize_mint, InitializeMint};
 use sha2::{Digest, Sha256};
+use std::ops::Deref;
 
 pub fn verify_equality(expected: &Pubkey, actual: &Pubkey) -> Result<()> {
     require!(expected == actual, ErrorCode::Unauthorized);
@@ -30,33 +31,6 @@ pub fn process_game_asset_for_action(
         require!(mintable_asset.is_burned == false, ErrorCode::Unauthorized);
         require!(mintable_asset.is_locked == false, ErrorCode::Unauthorized);
         require!(mintable_asset.is_minted == false, ErrorCode::Unauthorized);
-
-        /*
-           TODO: Move this method to an individual utils method because we will
-            probably need to check this again when resolving the `fight_card_link`
-        */
-        let is_ok = mintable_asset.metadata.attributes.iter().any(|attr| {
-            if attr.trait_type == "Fighter Type" {
-                // Use the from_name method to check if the trait_value is a valid FighterType
-                FighterType::from_name(&attr.value).is_some()
-            } else if attr.trait_type == "Booster Type" {
-                match BoosterType::from_name(&attr.value).unwrap() {
-                    BoosterType::Points => {
-                        /*
-                          TODO: Update the `fight_card_link` PDA
-                        */
-                        true
-                    }
-                    BoosterType::Shield => true,
-                    BoosterType::Energy => true,
-                }
-            } else if attr.trait_type == "Champions Pass Type" {
-                true
-            } else {
-                false
-            }
-        });
-        require!(is_ok, ErrorCode::Unauthorized);
 
         if let Some(mintable_asset_link) = mintable_game_asset_link {
             // TODO: We probably doesn't need to do this check since it is unlikely to happen within
@@ -83,6 +57,85 @@ pub fn process_game_asset_for_action(
         } else {
             return Err(error!(ErrorCode::Unauthorized));
         }
+    }
+
+    Ok(())
+}
+
+pub fn process_and_verify_game_asset_type(
+    mintable_game_asset: Option<&Box<Account<MintableGameAssetData>>>,
+    fight_card_link: &mut Account<FightCardLinkData>,
+    game_asset_id: u64,
+    game_asset_type: NftType,
+) -> Result<()> {
+    if let Some(mintable_asset) = mintable_game_asset {
+        let is_ok = mintable_asset
+            .metadata
+            .attributes
+            .iter()
+            .any(|attr| match game_asset_type {
+                NftType::Booster => {
+                    return match BoosterType::from_name(&attr.value).unwrap() {
+                        BoosterType::Points => {
+                            if attr.trait_type == "Booster Type"
+                                && BoosterType::from_name(&attr.value).is_some()
+                                && fight_card_link.points_booster_used.is_none()
+                                && fight_card_link.points_booster_nonce_tracker.is_none()
+                            {
+                                fight_card_link.points_booster_used =
+                                    Some(mintable_asset.to_account_info().key());
+                                fight_card_link.points_booster_nonce_tracker = Some(game_asset_id);
+                                true
+                            } else {
+                                false
+                            }
+                        }
+                        BoosterType::Shield => {
+                            if attr.trait_type == "Booster Type"
+                                && BoosterType::from_name(&attr.value).is_some()
+                                && fight_card_link.shield_booster_used.is_none()
+                                && fight_card_link.shield_booster_nonce_tracker.is_none()
+                            {
+                                fight_card_link.shield_booster_used =
+                                    Some(mintable_asset.to_account_info().key());
+                                fight_card_link.shield_booster_nonce_tracker = Some(game_asset_id);
+                                true
+                            } else {
+                                false
+                            }
+                        }
+                        BoosterType::Energy => {
+                            if attr.trait_type == "Booster Type"
+                                && BoosterType::from_name(&attr.value).is_some()
+                                && fight_card_link.energy_booster_used.is_none()
+                                && fight_card_link.energy_booster_nonce_tracker.is_none()
+                            {
+                                fight_card_link.energy_booster_used =
+                                    Some(mintable_asset.to_account_info().key());
+                                fight_card_link.energy_booster_nonce_tracker = Some(game_asset_id);
+                                true
+                            } else {
+                                false
+                            }
+                        }
+                    }
+                }
+                NftType::Fighter => {
+                    return if attr.trait_type == "Fighter Type"
+                        && FighterType::from_name(&attr.value).is_some()
+                        && fight_card_link.fighter_used.is_none()
+                        && fight_card_link.fighter_nonce_tracker.is_none()
+                    {
+                        fight_card_link.fighter_used = Some(mintable_asset.to_account_info().key());
+                        fight_card_link.fighter_nonce_tracker = Some(game_asset_id);
+                        true
+                    } else {
+                        false
+                    };
+                }
+                NftType::ChampionsPass => attr.trait_type == "Champions Pass Type",
+            });
+        require!(is_ok, ErrorCode::Unauthorized);
     }
 
     Ok(())
