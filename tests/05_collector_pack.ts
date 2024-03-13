@@ -2,7 +2,7 @@ import * as anchor from '@coral-xyz/anchor';
 import { BN, Program, web3 } from '@coral-xyz/anchor';
 import { Battleboosters } from '../target/types/battleboosters';
 import { assert } from 'chai';
-import airdropSol from './utils/airdrop_sol';
+import airdropSol from './utils/airdropSol';
 import {
     TOKEN_PROGRAM_ID,
     AccountLayout,
@@ -22,16 +22,16 @@ import {
     Transaction,
 } from '@solana/web3.js';
 import { before } from 'mocha';
-import airdrop_sol from './utils/airdrop_sol';
+import airdrop_sol from './utils/airdropSol';
 import { sleep } from '@switchboard-xyz/common';
 import {
     AggregatorAccount,
     SwitchboardProgram,
 } from '@switchboard-xyz/solana.js';
-import InitializePlayerAccount from './utils/initialize_player_account';
+import InitializePlayerAccount from './utils/initializePlayerAccount';
 import { RandomnessService } from '@switchboard-xyz/solana-randomness-service';
 import * as buffer from 'buffer';
-import account_init from './utils/account_init';
+import account_init from './utils/initAccounts';
 import createNftCollection from './utils/createNftCollection';
 
 describe.skip('Collector pack', () => {
@@ -55,15 +55,9 @@ describe.skip('Collector pack', () => {
     } = account_init(program);
 
     it('Mint an nft', async () => {
-        const player = anchor.web3.Keypair.generate();
-
-        if (
-            provider.connection.rpcEndpoint.includes('localhost') ||
-            provider.connection.rpcEndpoint.includes('http://127.0.0.1:8899') ||
-            provider.connection.rpcEndpoint.includes('http://0.0.0.0:8899')
-        ) {
-            await airdrop_sol(provider, player.publicKey, 10);
-        }
+        //const player = anchor.web3.Keypair.generate();
+        //console.log(player.secretKey)
+        //await airdrop_sol(provider, player.publicKey, 1);
 
         let programPDA = await program.account.programData.fetch(program_pda);
 

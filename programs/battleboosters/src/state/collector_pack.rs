@@ -169,7 +169,7 @@ pub struct MintCollectorPack<'info> {
 pub struct CollectorPack {
     pub fighter_mint_allowance: u64,
     pub booster_mint_allowance: u64,
-    pub champion_s_pass_mint_allowance: u64,
+    pub champions_pass_mint_allowance: u64,
     pub randomness: Option<Vec<u8>>,
 }
 // {

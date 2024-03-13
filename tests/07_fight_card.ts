@@ -2,7 +2,7 @@ import * as anchor from '@coral-xyz/anchor';
 import { BN, Program } from '@coral-xyz/anchor';
 import { Battleboosters } from '../target/types/battleboosters';
 import { assert } from 'chai';
-import account_init from './utils/account_init';
+import account_init from './utils/initAccounts';
 import {
     createFightCard,
     updateFightCard,

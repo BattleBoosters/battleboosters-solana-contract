@@ -7,3 +7,4 @@ pub mod program;
 pub mod rarity;
 pub mod switchboard_callback;
 pub mod transaction_escrow;
+pub mod transaction_escrow_v2;

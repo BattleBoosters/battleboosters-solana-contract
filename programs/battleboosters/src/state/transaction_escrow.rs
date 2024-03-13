@@ -35,7 +35,7 @@ pub struct TransactionEscrow<'info> {
         payer = signer,
         seeds = [MY_APP_PREFIX, COLLECTOR, recipient.key().as_ref(), player_account.order_nonce.to_le_bytes().as_ref()],
         bump,
-        space = 8 + 8 + 8 + 1 + 8
+        space = 8 + 8 + 8 + 8 + 1 + 4 + 8
     )]
     pub collector_pack: Account<'info, CollectorPack>,
     /// CHECK: This is a PDA used as the bank
@@ -112,7 +112,7 @@ pub struct TransactionTest<'info> {
     payer = signer,
     seeds = [MY_APP_PREFIX, COLLECTOR, recipient.key().as_ref(), player_account.order_nonce.to_le_bytes().as_ref()],
     bump,
-    space = 8 + 8 + 8 + 8 + 1 + 8 + 8
+    space = 45
     )]
     pub collector_pack: Account<'info, CollectorPack>,
 

@@ -31,6 +31,10 @@ pub fn process_game_asset_for_action(
         require!(mintable_asset.is_locked == false, ErrorCode::Unauthorized);
         require!(mintable_asset.is_minted == false, ErrorCode::Unauthorized);
 
+        /*
+           TODO: Move this method to an individual utils method because we will
+            probably need to check this again when resolving the `fight_card_link`
+        */
         let is_ok = mintable_asset.metadata.attributes.iter().any(|attr| {
             if attr.trait_type == "Fighter Type" {
                 // Use the from_name method to check if the trait_value is a valid FighterType

@@ -2,7 +2,7 @@ import * as anchor from '@coral-xyz/anchor';
 import { BN, Program, web3 } from '@coral-xyz/anchor';
 import { Battleboosters } from '../target/types/battleboosters';
 import { assert } from 'chai';
-import airdropSol from './utils/airdrop_sol';
+import airdropSol from './utils/airdropSol';
 import {
     TOKEN_PROGRAM_ID,
     AccountLayout,
@@ -22,21 +22,21 @@ import {
     Transaction,
 } from '@solana/web3.js';
 import { before } from 'mocha';
-import airdrop_sol from './utils/airdrop_sol';
+import airdrop_sol from './utils/airdropSol';
 import { sleep } from '@switchboard-xyz/common';
 import {
     AggregatorAccount,
     SwitchboardProgram,
 } from '@switchboard-xyz/solana.js';
-import InitializePlayerAccount from './utils/initialize_player_account';
+import InitializePlayerAccount from './utils/initializePlayerAccount';
 import { RandomnessService } from '@switchboard-xyz/solana-randomness-service';
 import * as buffer from 'buffer';
-import account_init from './utils/account_init';
+import account_init from './utils/initAccounts';
 
 /*
     TODO: Test try to pass nft different type
  */
-describe.skip('Purchase', () => {
+describe.only('Purchase', () => {
     const provider = anchor.AnchorProvider.env();
     anchor.setProvider(provider);
     const program = anchor.workspace.Battleboosters as Program<Battleboosters>;
@@ -58,13 +58,13 @@ describe.skip('Purchase', () => {
     let randomnessService;
     let lastPriceSolUsd;
     before(async () => {
-        // try {
-        //     randomnessService = await RandomnessService.fromProvider(provider);
-        // }catch (e) {
-        //     console.log(e)
-        // }
-        // console.log(randomnessService)
-        // console.log("Randomness Service OK")
+        try {
+            randomnessService = await RandomnessService.fromProvider(provider);
+        }catch (e) {
+            console.log(e)
+        }
+        console.log(randomnessService)
+        console.log("Randomness Service OK")
 
         switchboardProgram = await SwitchboardProgram.load(
             new Connection('https://api.mainnet-beta.solana.com')
@@ -79,11 +79,8 @@ describe.skip('Purchase', () => {
         );
         lastPriceSolUsd = await aggregatorAccount.fetchLatestValue();
     });
-    /**
-     Player Purchase in game NFT assets
-     **/
 
-    it('Purchase successfully in-game assets for signer', async () => {
+    it.only('Purchase successfully in-game assets for signer', async () => {
         // Start watching for the settled event before triggering the request
         const requestKeypair = anchor.web3.Keypair.generate();
 
@@ -136,12 +133,12 @@ describe.skip('Purchase', () => {
         const playerAccountData = await program.account.playerData.fetch(
             player_account_pda
         );
-        // MY_APP_PREFIX, COLLECTOR, recipient.key().as_ref(), player_account.order_nonce.to_le_bytes().as_ref()
+
         const [collector_pack_pda, collector_pack_bump] =
             anchor.web3.PublicKey.findProgramAddressSync(
                 [
                     Buffer.from('BattleBoosters'),
-                    Buffer.from('collector'),
+                    Buffer.from('collector_v2'),
                     provider.wallet.publicKey.toBuffer(),
                     new BN(playerAccountData.orderNonce).toBuffer('le', 8),
                 ],
@@ -199,6 +196,15 @@ describe.skip('Purchase', () => {
             console.log('tx start');
             console.log(randomnessService.accounts.state);
 
+
+            console.log("collector_pack_pda");
+            console.log(collector_pack_pda);
+            console.log("player_account_pda");
+            console.log(player_account_pda);
+            console.log("user_bank_pda");
+            console.log(user_bank_pda);
+            console.log("bank_pda");
+            console.log(bank_pda);
             const tx = await program.methods
                 .purchaseNfts(user_bank_bump, [
                     {
@@ -294,15 +300,22 @@ describe.skip('Purchase', () => {
 
             console.log(JSON.stringify(logs?.meta?.logMessages, undefined, 2));
 
-            const playerInventoryAccountAfter =
-                await program.account.inventoryData.fetch(player_inventory_pda);
+            const collectorPackPdaAfter =
+                await program.account.collectorPack.fetch(collector_pack_pda);
+            console.log("randomness saved")
+            console.log(Array.from(collectorPackPdaAfter.randomness));
+            console.log("champions pass");
+            console.log(collectorPackPdaAfter.championsPassMintAllowance);
+            // assert.isTrue(
+            //     playerInventoryAccountAfter.randomness.eq(boosterQty)
+            // );
             assert.isTrue(
-                playerInventoryAccountAfter.boosterMintAllowance.eq(boosterQty)
+                collectorPackPdaAfter.boosterMintAllowance.eq(boosterQty)
             );
             assert.isTrue(
-                playerInventoryAccountAfter.fighterMintAllowance.eq(fighterQty)
+                collectorPackPdaAfter.fighterMintAllowance.eq(fighterQty)
             );
-            assert.isTrue(playerInventoryAccountAfter.isInitialized);
+            assert.isTrue(collectorPackPdaAfter.championsPassMintAllowance.eq(new BN(0)));
 
             // Test if bank PDA received the correct SOL amount
             const bankPdaBalance = await provider.connection.getBalance(
@@ -425,14 +438,14 @@ describe.skip('Purchase', () => {
             console.log(JSON.stringify(logs?.meta?.logMessages, undefined, 2));
 
             const playerInventoryAccountAfter =
-                await program.account.inventoryData.fetch(player_inventory_pda);
+                await program.account.collectorPack.fetch(player_inventory_pda);
             assert.isTrue(
                 playerInventoryAccountAfter.boosterMintAllowance.eq(boosterQty)
             );
             assert.isTrue(
                 playerInventoryAccountAfter.fighterMintAllowance.eq(fighterQty)
             );
-            assert.isTrue(playerInventoryAccountAfter.isInitialized);
+            assert.isTrue(playerInventoryAccountAfter.championsPassMintAllowance.eq(new BN(0)));
         } catch (e) {
             console.log(e);
         }
@@ -482,7 +495,7 @@ describe.skip('Purchase', () => {
             .mul(boosterPrice)
             .add(fighterQty.mul(fighterPrice));
         const safeAmount =
-            total.add(new BN(1)).toNumber() * (1 / lastPriceSolUsd.toNumber());
+            total.add(new BN(0.1)).toNumber() * (1 / lastPriceSolUsd.toNumber());
 
         const amountToSend = new anchor.BN(
             anchor.web3.LAMPORTS_PER_SOL * safeAmount
@@ -583,7 +596,7 @@ describe.skip('Purchase', () => {
             .mul(boosterPrice)
             .add(fighterQty.mul(fighterPrice));
         const safeAmount =
-            total.sub(new BN(10)).toNumber() * (1 / lastPriceSolUsd.toNumber());
+            total.sub(new BN(1)).toNumber() * (1 / lastPriceSolUsd.toNumber());
 
         const amountToSend = new anchor.BN(
             anchor.web3.LAMPORTS_PER_SOL * safeAmount
