@@ -32,9 +32,9 @@ import InitializePlayerAccount from './utils/initializePlayerAccount';
 import { RandomnessService } from '@switchboard-xyz/solana-randomness-service';
 import * as buffer from 'buffer';
 import account_init from './utils/initAccounts';
-import createRandomMintableGameAsset from './utils/createRandomMitableGameAssets';
+import createMintableGameAsset from './utils/createMintableGameAsset';
 
-describe('Random Mintable Asset', () => {
+describe('Mintable Game Asset', () => {
     const provider = anchor.AnchorProvider.env();
 
     anchor.setProvider(provider);
@@ -122,12 +122,12 @@ describe('Random Mintable Asset', () => {
                 mintable_game_asset_pda,
                 player_game_asset_link_pda,
                 player_account_pda,
-            } = await createRandomMintableGameAsset(
+            } = await createMintableGameAsset(
                 program,
                 provider,
                 program_pda,
                 {
-                    nftType: { fighterPack: {} },
+                    nftType: { fighter: {} },
                 },
                 rarity_pda,
                 null
@@ -153,19 +153,19 @@ describe('Random Mintable Asset', () => {
                 },
                 {
                     traitType: 'Rarity',
-                    value: 'Common',
+                    value: 'Epic',
                 },
                 {
                     traitType: 'Energy',
-                    value: '104',
+                    value: '269',
                 },
                 {
                     traitType: 'Power',
-                    value: '110',
+                    value: '256',
                 },
                 {
                     traitType: 'Lifespan',
-                    value: '134',
+                    value: '288',
                 },
             ];
             assert.isFalse(mintable_game_asset_pda_data.isLocked);
@@ -228,12 +228,12 @@ describe('Random Mintable Asset', () => {
                 mintable_game_asset_pda,
                 player_game_asset_link_pda,
                 player_account_pda,
-            } = await createRandomMintableGameAsset(
+            } = await createMintableGameAsset(
                 program,
                 provider,
                 program_pda,
                 {
-                    nftType: { fighterPack: {} },
+                    nftType: { fighter: {} },
                 },
                 rarity_pda,
                 null
@@ -243,6 +243,7 @@ describe('Random Mintable Asset', () => {
             assert.isTrue(
                 collector_pack_pda_data.boosterMintAllowance.eq(new BN(3))
             );
+
             assert.isTrue(
                 collector_pack_pda_data.fighterMintAllowance.eq(new BN(0))
             );
@@ -328,12 +329,12 @@ describe('Random Mintable Asset', () => {
 
     it('Fail minting allowance too low trying to mint fighter from collector pack', async () => {
         try {
-            await createRandomMintableGameAsset(
+            await createMintableGameAsset(
                 program,
                 provider,
                 program_pda,
                 {
-                    nftType: { fighterPack: {} },
+                    nftType: { fighter: {} },
                 },
                 rarity_pda,
                 null
@@ -341,7 +342,7 @@ describe('Random Mintable Asset', () => {
         } catch (e) {
             assert.include(
                 e.message,
-                'Not enough allowance to generate mintable game asset.'
+                'Not enough allowance to generate mintable game asset'
             );
         }
     });
@@ -353,7 +354,7 @@ describe('Random Mintable Asset', () => {
                 mintable_game_asset_pda,
                 player_game_asset_link_pda,
                 player_account_pda,
-            } = await createRandomMintableGameAsset(
+            } = await createMintableGameAsset(
                 program,
                 provider,
                 program_pda,
@@ -368,6 +369,7 @@ describe('Random Mintable Asset', () => {
             assert.isTrue(
                 collector_pack_pda_data.boosterMintAllowance.eq(new BN(2))
             );
+
             assert.isTrue(
                 collector_pack_pda_data.fighterMintAllowance.eq(new BN(0))
             );
@@ -378,8 +380,8 @@ describe('Random Mintable Asset', () => {
                 );
             const attribute = [
                 { traitType: 'Booster Type', value: 'Points' },
-                { traitType: 'Rarity', value: 'Common' },
-                { traitType: 'Value', value: '135' },
+                { traitType: 'Rarity', value: 'Uncommon' },
+                { traitType: 'Value', value: '175' },
             ];
             assert.isFalse(mintable_game_asset_pda_data.isLocked);
             assert.isFalse(mintable_game_asset_pda_data.isMinted);
@@ -436,7 +438,7 @@ describe('Random Mintable Asset', () => {
 
     it('Fail trying to reuse a nonce which is not free', async () => {
         try {
-            await createRandomMintableGameAsset(
+            await createMintableGameAsset(
                 program,
                 provider,
                 program_pda,
@@ -456,7 +458,7 @@ describe('Random Mintable Asset', () => {
 
     it('Fail trying to create a nonce greater than the player game asset link nonce', async () => {
         try {
-            await createRandomMintableGameAsset(
+            await createMintableGameAsset(
                 program,
                 provider,
                 program_pda,

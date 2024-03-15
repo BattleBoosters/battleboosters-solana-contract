@@ -31,4 +31,6 @@ pub enum ErrorCode {
     NotEnoughAllowance,
     #[msg("The event has already started")]
     EventAlreadyStarted,
+    #[msg("Attach rarity account to this transaction")]
+    RarityAccountRequired,
 }

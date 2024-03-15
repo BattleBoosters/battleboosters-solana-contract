@@ -54,22 +54,15 @@ pub mod battleboosters {
         booster_price: u64,
         fighter_pack_amount: u8,
     ) -> Result<()> {
-        let program = &mut ctx.accounts.program;
-        require!(!program.is_initialized, ErrorCode::AlreadyInitialized);
-
-        program.authority_bump = authority_bump;
-        program.bank_bump = bank_bump;
-        program.event_nonce = 0_u64;
-        program.mintable_game_asset_nonce = 0_u64;
-        program.admin_pubkey = admin_pubkey;
-        program.fighter_pack_price = nft_fighter_pack_price;
-        program.booster_price = booster_price;
-        program.fighter_pack_amount = fighter_pack_amount;
-        program.is_initialized = true;
-
-        msg!("Program Initialized");
-
-        Ok(())
+        processor::initialize(
+            ctx,
+            authority_bump,
+            bank_bump,
+            admin_pubkey,
+            nft_fighter_pack_price,
+            booster_price,
+            fighter_pack_amount,
+        )
     }
 
     pub fn initialize_rarity(
@@ -221,7 +214,11 @@ pub mod battleboosters {
                 }
                 NftType::Fighter => {
                     // update the quantity of fighter mint allowance
-                    collector_pack.booster_mint_allowance += request.quantity.clone();
+                    collector_pack.booster_mint_allowance += request
+                        .quantity
+                        .checked_mul(program.fighter_pack_amount.clone() as u64)
+                        .unwrap();
+
                     total_usd += request
                         .quantity
                         .checked_mul(program.fighter_pack_price.clone())
@@ -389,17 +386,17 @@ pub mod battleboosters {
         collector_pack.randomness = Some(vec![12, 23, 34, 34, 54, 74, 94, 23]);
         collector_pack.booster_mint_allowance = 3;
         collector_pack.fighter_mint_allowance = 2;
+        collector_pack.champions_pass_mint_allowance = 1;
         Ok(())
     }
 
-    pub fn generate_random_mintable_game_asset(
-        ctx: Context<GenerateRandomNftPreMint>,
+    pub fn generate_mintable_game_asset(
+        ctx: Context<GenerateNftPreMint>,
         player_game_asset_link_nonce: u64, // used on instruction
         request: OpenRequest,
     ) -> Result<()> {
         let program = &mut ctx.accounts.program;
         let collector_pack = &mut ctx.accounts.collector_pack;
-        let rarity = &ctx.accounts.rarity;
         let player_game_asset_link = &mut ctx.accounts.player_game_asset_link;
         let mintable_game_asset = &mut ctx.accounts.mintable_game_asset;
         let player_account = &mut ctx.accounts.player_account;
@@ -417,26 +414,31 @@ pub mod battleboosters {
             player_account.player_game_asset_link_nonce += 1;
         }
 
-        let randomness = collector_pack
-            .randomness
-            .clone()
-            .ok_or(ErrorCode::RandomnessUnavailable)?;
-        let public_key_bytes = signer.key().to_bytes();
-
-        let combined_allowance =
-            &collector_pack.booster_mint_allowance + &collector_pack.fighter_mint_allowance;
-        let nonce_byte = (combined_allowance % 256) as u8;
-
-        let rng_seed = create_rng_seed(&randomness, &public_key_bytes, &nonce_byte, None);
-        let random_number = ((rng_seed % 100) + 1) as u8;
-        msg!("Random number{}", random_number);
-
         match request.nft_type {
             NftType::Booster => {
                 require!(
                     collector_pack.booster_mint_allowance >= 1,
                     ErrorCode::NotEnoughAllowance
                 );
+                let rarity = &ctx
+                    .accounts
+                    .rarity
+                    .clone()
+                    .ok_or(ErrorCode::RarityAccountRequired)?;
+                let randomness = collector_pack
+                    .randomness
+                    .clone()
+                    .ok_or(ErrorCode::RandomnessUnavailable)?;
+                let public_key_bytes = signer.key().to_bytes();
+
+                let combined_allowance = &collector_pack.booster_mint_allowance
+                    + &collector_pack.fighter_mint_allowance
+                    + &collector_pack.champions_pass_mint_allowance;
+                let nonce_byte = (combined_allowance % 256) as u8;
+
+                let rng_seed = create_rng_seed(&randomness, &public_key_bytes, &nonce_byte, None);
+                let random_number = ((rng_seed % 100) + 1) as u8;
+                msg!("Random number{}", random_number);
 
                 let rng_seed_1 =
                     create_rng_seed(&randomness, &public_key_bytes, &nonce_byte, Some(1_u8));
@@ -480,6 +482,10 @@ pub mod battleboosters {
                         RarityBooster::Legendary { value } => find_scaled_rarity(value, rng_seed_1),
                     };
 
+                    /*
+                       TODO: Probably add `Uses` and `Used` to allows multiple use before burn?
+                       TODO: Should we add the creation date time?
+                    */
                     let attributes = vec![
                         Attribute {
                             trait_type: "Booster Type".to_string(),
@@ -526,6 +532,25 @@ pub mod battleboosters {
                     collector_pack.fighter_mint_allowance >= 1,
                     ErrorCode::NotEnoughAllowance
                 );
+                let rarity = &ctx
+                    .accounts
+                    .rarity
+                    .clone()
+                    .ok_or(ErrorCode::RarityAccountRequired)?;
+                let randomness = collector_pack
+                    .randomness
+                    .clone()
+                    .ok_or(ErrorCode::RandomnessUnavailable)?;
+                let public_key_bytes = signer.key().to_bytes();
+
+                let combined_allowance = &collector_pack.booster_mint_allowance
+                    + &collector_pack.fighter_mint_allowance
+                    + &collector_pack.champions_pass_mint_allowance;
+                let nonce_byte = (combined_allowance % 256) as u8;
+
+                let rng_seed = create_rng_seed(&randomness, &public_key_bytes, &nonce_byte, None);
+                let random_number = ((rng_seed % 100) + 1) as u8;
+                msg!("Random number{}", random_number);
 
                 let rng_seed_1 =
                     create_rng_seed(&randomness, &public_key_bytes, &nonce_byte, Some(1_u8));
@@ -601,6 +626,10 @@ pub mod battleboosters {
                         ),
                     };
 
+                    /*
+                       TODO: Probably add `Used` to track usage?
+                       TODO: Should we add the creation date time?
+                    */
                     let attributes = vec![
                         Attribute {
                             trait_type: "Fighter Type".to_string(),
@@ -650,9 +679,41 @@ pub mod battleboosters {
                 msg!("GOOD");
             }
             NftType::ChampionsPass => {
+                require!(
+                    collector_pack.champions_pass_mint_allowance >= 1,
+                    ErrorCode::NotEnoughAllowance
+                );
                 /*
                    TODO: Create a mintable asset for champion's pass
+                   TODO: Should we add the creation date time?
                 */
+                let attributes = vec![
+                    Attribute {
+                        trait_type: "Uses".to_string(),
+                        value: "1".to_string(),
+                    },
+                    Attribute {
+                        trait_type: "Used".to_string(),
+                        value: "0".to_string(),
+                    },
+                ];
+
+                mintable_game_asset.metadata = create_nft_metadata(
+                    "Champion's Pass".to_string(),
+                    "test".to_string(),
+                    format!(
+                        "{}/{}",
+                        METADATA_OFF_CHAIN_URI,
+                        mintable_game_asset.key().to_string()
+                    ),
+                    None,
+                    None,
+                    attributes,
+                );
+                collector_pack.champions_pass_mint_allowance = collector_pack
+                    .champions_pass_mint_allowance
+                    .checked_sub(1)
+                    .unwrap();
             }
         }
 
@@ -926,8 +987,9 @@ pub mod battleboosters {
         process_and_verify_game_asset_type(
             Some(&ctx.accounts.fighter_asset),
             fight_card_link,
+            event_link,
+            None,
             fighter_asset_id,
-            NftType::Fighter,
         )?;
 
         process_game_asset_for_action(
@@ -939,8 +1001,9 @@ pub mod battleboosters {
         process_and_verify_game_asset_type(
             ctx.accounts.energy_booster_asset.as_ref(),
             fight_card_link,
+            event_link,
+            None,
             energy_booster_asset_id,
-            NftType::Booster,
         )?;
         process_game_asset_for_action(
             ctx.accounts.shield_booster_asset.as_mut(),
@@ -951,8 +1014,9 @@ pub mod battleboosters {
         process_and_verify_game_asset_type(
             ctx.accounts.shield_booster_asset.as_ref(),
             fight_card_link,
+            event_link,
+            None,
             shield_booster_asset_id,
-            NftType::Booster,
         )?;
         process_game_asset_for_action(
             ctx.accounts.points_booster_asset.as_mut(),
@@ -963,8 +1027,9 @@ pub mod battleboosters {
         process_and_verify_game_asset_type(
             ctx.accounts.points_booster_asset.as_ref(),
             fight_card_link,
+            event_link,
+            None,
             points_booster_asset_id,
-            NftType::Booster,
         )?;
 
         process_game_asset_for_action(
@@ -976,27 +1041,25 @@ pub mod battleboosters {
         process_and_verify_game_asset_type(
             champions_pass_asset.as_ref(),
             fight_card_link,
+            event_link,
+            Some(&fight_card.tournament),
             champions_pass_asset_id.clone(),
-            NftType::Booster,
         )?;
 
+        require!(
+            fight_card_link.fighter_used.is_some()
+                && fight_card_link.fighter_nonce_tracker.is_some(),
+            ErrorCode::Unauthorized
+        );
         match fight_card.tournament {
             TournamentType::MainCard => {
-                /*
-                   TODO: Check `event_link.is_champion_pass_used`
-                       if `yes` the `event_link.is_champion_pass_used != true`
-                       if `false` burn the metadata of champion's pass
-                */
-                if let Some(champions_pass) = champions_pass_asset.as_ref() {
-                    event_link.champions_pass_pubkey = Some(champions_pass.to_account_info().key());
-                    event_link.champions_pass_nonce_tracker = Some(champions_pass_asset_id)
-
-                    // TODO: Implement the logic to burn the champions_pass_metadata to prevent further use
-                }
+                require!(
+                    fight_card_link.champions_pass_used.is_some()
+                        && fight_card_link.champions_pass_nonce_tracker.is_some(),
+                    ErrorCode::Unauthorized
+                );
             }
-            // No need to check there
-            _ => {} // TournamentType::Prelims => {}
-                    // TournamentType::EarlyPrelims => {}
+            _ => {}
         }
 
         fight_card_link.creator = signer.key();
@@ -1010,9 +1073,7 @@ pub mod battleboosters {
     }
 
     /*
-       @params: Tournament id, Card type (Main card, prelims, early prelims),
-       TODO: Register to tournament
-
+       TODO: Admin resolve ranking
     */
 
     /*

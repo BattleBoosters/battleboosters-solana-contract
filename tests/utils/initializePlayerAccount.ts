@@ -40,7 +40,7 @@ const InitializePlayerAccount = async function (
             .signers([]) // Include new_account as a signer
             .rpc();
     }
-    return {player_account_pda};
-}
+    return { player_account_pda };
+};
 
 export default InitializePlayerAccount;

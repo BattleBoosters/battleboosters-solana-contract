@@ -2,9 +2,37 @@ use crate::errors::ErrorCode;
 use crate::events::*;
 use crate::state::event::{CreateEvent, UpdateEvent};
 use crate::state::fight_card::{CreateFightCard, FightCardData, UpdateFightCard};
+use crate::state::program::InitializeProgram;
 use crate::state::rarity::{InitializeRarity, RarityBooster, RarityFighter};
 use crate::utils::{set_fight_card_properties, verify_equality};
 use anchor_lang::prelude::*;
+
+pub fn initialize(
+    ctx: Context<InitializeProgram>,
+    authority_bump: u8,
+    bank_bump: u8,
+    admin_pubkey: Pubkey,
+    nft_fighter_pack_price: u64,
+    booster_price: u64,
+    fighter_pack_amount: u8,
+) -> Result<()> {
+    let program = &mut ctx.accounts.program;
+    require!(!program.is_initialized, ErrorCode::AlreadyInitialized);
+
+    program.authority_bump = authority_bump;
+    program.bank_bump = bank_bump;
+    program.event_nonce = 0_u64;
+    program.mintable_game_asset_nonce = 0_u64;
+    program.admin_pubkey = admin_pubkey;
+    program.fighter_pack_price = nft_fighter_pack_price;
+    program.booster_price = booster_price;
+    program.fighter_pack_amount = fighter_pack_amount;
+    program.is_initialized = true;
+
+    msg!("Program Initialized");
+
+    Ok(())
+}
 
 pub fn initialize_rarity(
     ctx: Context<InitializeRarity>,

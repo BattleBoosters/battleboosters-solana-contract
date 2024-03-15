@@ -1,7 +1,8 @@
 use crate::errors::ErrorCode;
 use crate::state::fight_card::*;
 use crate::state::player::{
-    Attribute, FightCardLinkData, MintableGameAssetData, NftMetadata, PlayerGameAssetLinkData,
+    Attribute, EventLinkData, FightCardLinkData, MintableGameAssetData, NftMetadata,
+    PlayerGameAssetLinkData,
 };
 use crate::state::rarity::Stats;
 use crate::types::*;
@@ -65,79 +66,77 @@ pub fn process_game_asset_for_action(
 pub fn process_and_verify_game_asset_type(
     mintable_game_asset: Option<&Box<Account<MintableGameAssetData>>>,
     fight_card_link: &mut Account<FightCardLinkData>,
+    event_link: &mut Account<EventLinkData>,
+    require_tournament_type: Option<&TournamentType>,
     game_asset_id: u64,
-    game_asset_type: NftType,
 ) -> Result<()> {
     if let Some(mintable_asset) = mintable_game_asset {
-        let is_ok = mintable_asset
-            .metadata
-            .attributes
-            .iter()
-            .any(|attr| match game_asset_type {
-                NftType::Booster => {
-                    return match BoosterType::from_name(&attr.value).unwrap() {
-                        BoosterType::Points => {
-                            if attr.trait_type == "Booster Type"
-                                && BoosterType::from_name(&attr.value).is_some()
-                                && fight_card_link.points_booster_used.is_none()
-                                && fight_card_link.points_booster_nonce_tracker.is_none()
-                            {
-                                fight_card_link.points_booster_used =
-                                    Some(mintable_asset.to_account_info().key());
-                                fight_card_link.points_booster_nonce_tracker = Some(game_asset_id);
-                                true
-                            } else {
-                                false
-                            }
-                        }
-                        BoosterType::Shield => {
-                            if attr.trait_type == "Booster Type"
-                                && BoosterType::from_name(&attr.value).is_some()
-                                && fight_card_link.shield_booster_used.is_none()
-                                && fight_card_link.shield_booster_nonce_tracker.is_none()
-                            {
-                                fight_card_link.shield_booster_used =
-                                    Some(mintable_asset.to_account_info().key());
-                                fight_card_link.shield_booster_nonce_tracker = Some(game_asset_id);
-                                true
-                            } else {
-                                false
-                            }
-                        }
-                        BoosterType::Energy => {
-                            if attr.trait_type == "Booster Type"
-                                && BoosterType::from_name(&attr.value).is_some()
-                                && fight_card_link.energy_booster_used.is_none()
-                                && fight_card_link.energy_booster_nonce_tracker.is_none()
-                            {
-                                fight_card_link.energy_booster_used =
-                                    Some(mintable_asset.to_account_info().key());
-                                fight_card_link.energy_booster_nonce_tracker = Some(game_asset_id);
-                                true
-                            } else {
-                                false
-                            }
-                        }
-                    }
-                }
-                NftType::Fighter => {
-                    return if attr.trait_type == "Fighter Type"
-                        && FighterType::from_name(&attr.value).is_some()
-                        && fight_card_link.fighter_used.is_none()
-                        && fight_card_link.fighter_nonce_tracker.is_none()
-                    {
-                        fight_card_link.fighter_used = Some(mintable_asset.to_account_info().key());
-                        fight_card_link.fighter_nonce_tracker = Some(game_asset_id);
-                        true
-                    } else {
-                        false
-                    };
-                }
-                NftType::ChampionsPass => attr.trait_type == "Champions Pass Type",
-            });
-        require!(is_ok, ErrorCode::Unauthorized);
-    }
+        for attr in mintable_asset.metadata.attributes.iter() {
+            match attr.trait_type.as_str() {
+                "Fighter Type" => {
+                    require!(
+                        FighterType::from_name(&attr.value).is_some()
+                            && fight_card_link.fighter_used.is_none()
+                            && fight_card_link.fighter_nonce_tracker.is_none(),
+                        ErrorCode::Unauthorized
+                    );
 
+                    fight_card_link.fighter_used = Some(mintable_asset.to_account_info().key());
+                    fight_card_link.fighter_nonce_tracker = Some(game_asset_id.clone());
+                }
+                "Booster Type" => match BoosterType::from_name(&attr.value) {
+                    Some(BoosterType::Points) => {
+                        require!(
+                            fight_card_link.points_booster_used.is_none()
+                                && fight_card_link.points_booster_nonce_tracker.is_none(),
+                            ErrorCode::Unauthorized
+                        );
+
+                        fight_card_link.points_booster_used =
+                            Some(mintable_asset.to_account_info().key());
+                        fight_card_link.points_booster_nonce_tracker = Some(game_asset_id.clone());
+                    }
+                    Some(BoosterType::Shield) => {
+                        require!(
+                            fight_card_link.shield_booster_used.is_none()
+                                && fight_card_link.shield_booster_nonce_tracker.is_none(),
+                            ErrorCode::Unauthorized
+                        );
+
+                        fight_card_link.shield_booster_used =
+                            Some(mintable_asset.to_account_info().key());
+                        fight_card_link.shield_booster_nonce_tracker = Some(game_asset_id.clone());
+                    }
+                    Some(BoosterType::Energy) => {
+                        require!(
+                            fight_card_link.energy_booster_used.is_none()
+                                && fight_card_link.energy_booster_nonce_tracker.is_none(),
+                            ErrorCode::Unauthorized
+                        );
+                        fight_card_link.energy_booster_used =
+                            Some(mintable_asset.to_account_info().key());
+                        fight_card_link.energy_booster_nonce_tracker = Some(game_asset_id.clone());
+                    }
+                    _ => return Err(ErrorCode::Unauthorized.into()),
+                },
+                "Champions Pass Type" => match require_tournament_type {
+                    Some(TournamentType::MainCard) => {
+                        require!(
+                            fight_card_link.champions_pass_used.is_none()
+                                && fight_card_link.champions_pass_nonce_tracker.is_none(),
+                            ErrorCode::Unauthorized
+                        );
+
+                        event_link.champions_pass_pubkey =
+                            Some(mintable_asset.to_account_info().key());
+                        event_link.champions_pass_nonce_tracker = Some(game_asset_id.clone())
+                    }
+                    _ => return Err(ErrorCode::Unauthorized.into()),
+                },
+                _ => {}
+            }
+        }
+    }
     Ok(())
 }
 

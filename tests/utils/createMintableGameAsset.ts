@@ -2,7 +2,7 @@ import * as anchor from '@coral-xyz/anchor';
 import { BN } from '@coral-xyz/anchor';
 import { sleep } from '@switchboard-xyz/common';
 
-const generateRandomMintableGameAsset = async function (
+const createMintableGameAsset = async function (
     program,
     provider,
     program_pda,
@@ -66,7 +66,7 @@ const generateRandomMintableGameAsset = async function (
         );
 
     const tx = await program.methods
-        .generateRandomMintableGameAsset(
+        .generateMintableGameAsset(
             new BN(player_game_asset_link_nonce),
             variant
         )
@@ -99,4 +99,4 @@ const generateRandomMintableGameAsset = async function (
     };
 };
 
-export default generateRandomMintableGameAsset;
+export default createMintableGameAsset;

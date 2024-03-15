@@ -45,7 +45,7 @@ pub struct InitializePlayer<'info> {
 
 #[derive(Accounts)]
 #[instruction(player_game_asset_link_nonce: u64)]
-pub struct GenerateRandomNftPreMint<'info> {
+pub struct GenerateNftPreMint<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
     #[account(mut, seeds = [MY_APP_PREFIX, PROGRAM_STATE], bump)]
@@ -67,7 +67,7 @@ pub struct GenerateRandomNftPreMint<'info> {
     seeds = [MY_APP_PREFIX, RARITY],
     bump,
     )]
-    pub rarity: Box<Account<'info, RarityData>>,
+    pub rarity: Option<Box<Account<'info, RarityData>>>,
     #[account(
     init,
     payer = signer,
@@ -243,9 +243,11 @@ pub struct EventLinkData {
     */
 }
 /*
+
    TODO: Store the PDA used to get back the Metadata when resolving the event
 
    TODO: UPDATE THE SPAAAAAAAAAAAAACEEEEEEEEEEEE!!!
+
 */
 #[account]
 pub struct FightCardLinkData {
@@ -275,6 +277,10 @@ pub struct FightCardLinkData {
     pub points_booster_used: Option<Pubkey>,
     /// Tracker to link the `Booster` PDA to the `FightCardLink` PDA
     pub points_booster_nonce_tracker: Option<u64>,
+    /// The `Pubkey` of the champions pass used
+    pub champions_pass_used: Option<Pubkey>,
+    /// Tracker to link the `Champions pass` PDA to the `FightCardLink` PDA
+    pub champions_pass_nonce_tracker: Option<u64>,
     /// The fighter side chosen by the player `Red Gloves` or `Blue Gloves`
     pub fighter_color_side: FighterColorSide,
     /// Prevents the calculation of points for the same fightCard multiple times

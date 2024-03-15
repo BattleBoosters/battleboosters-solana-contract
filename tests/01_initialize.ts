@@ -33,13 +33,12 @@ import { RandomnessService } from '@switchboard-xyz/solana-randomness-service';
 import * as buffer from 'buffer';
 import account_init from './utils/initAccounts';
 
-describe.only('Initialize', () => {
+describe('Initialize', () => {
     const provider = anchor.AnchorProvider.env();
 
     anchor.setProvider(provider);
 
     const program = anchor.workspace.Battleboosters as Program<Battleboosters>;
-
 
     const {
         admin_account,
@@ -66,10 +65,8 @@ describe.only('Initialize', () => {
             throw new Error('Program is not executable');
         }
 
-
         await airdrop_sol(provider, admin_account.publicKey, 1);
         await airdrop_sol(provider, unauthorized_account.publicKey, 1);
-
 
         try {
             await program.account.programData.fetch(program_pda);
@@ -111,7 +108,7 @@ describe.only('Initialize', () => {
         }
     });
 
-    it ("initialize rarity", async () => {
+    it('initialize rarity', async () => {
         try {
             await program.account.rarityData.fetch(rarity_pda);
         } catch (e) {
@@ -121,118 +118,118 @@ describe.only('Initialize', () => {
                         [
                             {
                                 common: {
-                                    energy: {min: 100, max: 150},
-                                    power: {min: 100, max: 150},
-                                    lifespan: {min: 100, max: 150},
+                                    energy: { min: 100, max: 150 },
+                                    power: { min: 100, max: 150 },
+                                    lifespan: { min: 100, max: 150 },
                                 },
                             },
                             {
                                 uncommon: {
-                                    energy: {min: 150, max: 200},
-                                    power: {min: 150, max: 200},
-                                    lifespan: {min: 150, max: 200},
+                                    energy: { min: 150, max: 200 },
+                                    power: { min: 150, max: 200 },
+                                    lifespan: { min: 150, max: 200 },
                                 },
                             },
                             {
                                 rare: {
-                                    energy: {min: 200, max: 250},
-                                    power: {min: 200, max: 250},
-                                    lifespan: {min: 200, max: 250},
+                                    energy: { min: 200, max: 250 },
+                                    power: { min: 200, max: 250 },
+                                    lifespan: { min: 200, max: 250 },
                                 },
                             },
                             {
                                 epic: {
-                                    energy: {min: 250, max: 300},
-                                    power: {min: 250, max: 300},
-                                    lifespan: {min: 250, max: 300},
+                                    energy: { min: 250, max: 300 },
+                                    power: { min: 250, max: 300 },
+                                    lifespan: { min: 250, max: 300 },
                                 },
                             },
                             {
                                 legendary: {
-                                    energy: {min: 300, max: 350},
-                                    power: {min: 300, max: 350},
-                                    lifespan: {min: 300, max: 350},
+                                    energy: { min: 300, max: 350 },
+                                    power: { min: 300, max: 350 },
+                                    lifespan: { min: 300, max: 350 },
                                 },
                             },
                         ],
                         [
                             {
                                 common: {
-                                    value: {min: 100, max: 150},
+                                    value: { min: 100, max: 150 },
                                 },
                             },
                             {
                                 uncommon: {
-                                    value: {min: 150, max: 200},
+                                    value: { min: 150, max: 200 },
                                 },
                             },
                             {
                                 rare: {
-                                    value: {min: 200, max: 250},
+                                    value: { min: 200, max: 250 },
                                 },
                             },
                             {
                                 epic: {
-                                    value: {min: 250, max: 300},
+                                    value: { min: 250, max: 300 },
                                 },
                             },
                             {
                                 legendary: {
-                                    value: {min: 300, max: 350},
+                                    value: { min: 300, max: 350 },
                                 },
                             },
                         ],
                         [
                             {
                                 common: {
-                                    value: {min: 100, max: 150},
+                                    value: { min: 100, max: 150 },
                                 },
                             },
                             {
                                 uncommon: {
-                                    value: {min: 150, max: 200},
+                                    value: { min: 150, max: 200 },
                                 },
                             },
                             {
                                 rare: {
-                                    value: {min: 200, max: 250},
+                                    value: { min: 200, max: 250 },
                                 },
                             },
                             {
                                 epic: {
-                                    value: {min: 250, max: 300},
+                                    value: { min: 250, max: 300 },
                                 },
                             },
                             {
                                 legendary: {
-                                    value: {min: 300, max: 350},
+                                    value: { min: 300, max: 350 },
                                 },
                             },
                         ],
                         [
                             {
                                 common: {
-                                    value: {min: 100, max: 150},
+                                    value: { min: 100, max: 150 },
                                 },
                             },
                             {
                                 uncommon: {
-                                    value: {min: 150, max: 200},
+                                    value: { min: 150, max: 200 },
                                 },
                             },
                             {
                                 rare: {
-                                    value: {min: 200, max: 250},
+                                    value: { min: 200, max: 250 },
                                 },
                             },
                             {
                                 epic: {
-                                    value: {min: 250, max: 300},
+                                    value: { min: 250, max: 300 },
                                 },
                             },
                             {
                                 legendary: {
-                                    value: {min: 300, max: 350},
+                                    value: { min: 300, max: 350 },
                                 },
                             },
                         ],
@@ -266,64 +263,64 @@ describe.only('Initialize', () => {
                 assert.deepEqual(rarityData.energyBooster, [
                     {
                         common: {
-                            value: {min: 100, max: 150},
+                            value: { min: 100, max: 150 },
                         },
                     },
                     {
                         uncommon: {
-                            value: {min: 150, max: 200},
+                            value: { min: 150, max: 200 },
                         },
                     },
                     {
                         rare: {
-                            value: {min: 200, max: 250},
+                            value: { min: 200, max: 250 },
                         },
                     },
                     {
                         epic: {
-                            value: {min: 250, max: 300},
+                            value: { min: 250, max: 300 },
                         },
                     },
                     {
                         legendary: {
-                            value: {min: 300, max: 350},
+                            value: { min: 300, max: 350 },
                         },
                     },
                 ]);
                 assert.deepEqual(rarityData.fighter, [
                     {
                         common: {
-                            energy: {min: 100, max: 150},
-                            power: {min: 100, max: 150},
-                            lifespan: {min: 100, max: 150},
+                            energy: { min: 100, max: 150 },
+                            power: { min: 100, max: 150 },
+                            lifespan: { min: 100, max: 150 },
                         },
                     },
                     {
                         uncommon: {
-                            energy: {min: 150, max: 200},
-                            power: {min: 150, max: 200},
-                            lifespan: {min: 150, max: 200},
+                            energy: { min: 150, max: 200 },
+                            power: { min: 150, max: 200 },
+                            lifespan: { min: 150, max: 200 },
                         },
                     },
                     {
                         rare: {
-                            energy: {min: 200, max: 250},
-                            power: {min: 200, max: 250},
-                            lifespan: {min: 200, max: 250},
+                            energy: { min: 200, max: 250 },
+                            power: { min: 200, max: 250 },
+                            lifespan: { min: 200, max: 250 },
                         },
                     },
                     {
                         epic: {
-                            energy: {min: 250, max: 300},
-                            power: {min: 250, max: 300},
-                            lifespan: {min: 250, max: 300},
+                            energy: { min: 250, max: 300 },
+                            power: { min: 250, max: 300 },
+                            lifespan: { min: 250, max: 300 },
                         },
                     },
                     {
                         legendary: {
-                            energy: {min: 300, max: 350},
-                            power: {min: 300, max: 350},
-                            lifespan: {min: 300, max: 350},
+                            energy: { min: 300, max: 350 },
+                            power: { min: 300, max: 350 },
+                            lifespan: { min: 300, max: 350 },
                         },
                     },
                 ]);
@@ -331,19 +328,18 @@ describe.only('Initialize', () => {
                 console.log(e);
             }
         }
-    })
+    });
 
     it('Initialize player account', async () => {
         const customOwner = anchor.web3.Keypair.generate();
 
         // Initialize the player account first
-        const {player_account_pda} =
-            await InitializePlayerAccount(
-                provider,
-                customOwner.publicKey,
-                program,
-                program_pda
-            );
+        const { player_account_pda } = await InitializePlayerAccount(
+            provider,
+            customOwner.publicKey,
+            program,
+            program_pda
+        );
 
         // const playerInventory = await program.account.inventoryData.fetch(player_inventory_pda);
         // assert.isTrue(playerInventory.boosterMintAllowance.eq(new BN(0)))

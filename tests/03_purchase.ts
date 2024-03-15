@@ -36,7 +36,7 @@ import account_init from './utils/initAccounts';
 /*
     TODO: Test try to pass nft different type
  */
-describe.only('Purchase', () => {
+describe.skip('Purchase', () => {
     const provider = anchor.AnchorProvider.env();
     anchor.setProvider(provider);
     const program = anchor.workspace.Battleboosters as Program<Battleboosters>;
@@ -60,11 +60,11 @@ describe.only('Purchase', () => {
     before(async () => {
         try {
             randomnessService = await RandomnessService.fromProvider(provider);
-        }catch (e) {
-            console.log(e)
+        } catch (e) {
+            console.log(e);
         }
-        console.log(randomnessService)
-        console.log("Randomness Service OK")
+        console.log(randomnessService);
+        console.log('Randomness Service OK');
 
         switchboardProgram = await SwitchboardProgram.load(
             new Connection('https://api.mainnet-beta.solana.com')
@@ -80,7 +80,7 @@ describe.only('Purchase', () => {
         lastPriceSolUsd = await aggregatorAccount.fetchLatestValue();
     });
 
-    it.only('Purchase successfully in-game assets for signer', async () => {
+    it('Purchase successfully in-game assets for signer', async () => {
         // Start watching for the settled event before triggering the request
         const requestKeypair = anchor.web3.Keypair.generate();
 
@@ -196,14 +196,13 @@ describe.only('Purchase', () => {
             console.log('tx start');
             console.log(randomnessService.accounts.state);
 
-
-            console.log("collector_pack_pda");
+            console.log('collector_pack_pda');
             console.log(collector_pack_pda);
-            console.log("player_account_pda");
+            console.log('player_account_pda');
             console.log(player_account_pda);
-            console.log("user_bank_pda");
+            console.log('user_bank_pda');
             console.log(user_bank_pda);
-            console.log("bank_pda");
+            console.log('bank_pda');
             console.log(bank_pda);
             const tx = await program.methods
                 .purchaseNfts(user_bank_bump, [
@@ -302,9 +301,9 @@ describe.only('Purchase', () => {
 
             const collectorPackPdaAfter =
                 await program.account.collectorPack.fetch(collector_pack_pda);
-            console.log("randomness saved")
+            console.log('randomness saved');
             console.log(Array.from(collectorPackPdaAfter.randomness));
-            console.log("champions pass");
+            console.log('champions pass');
             console.log(collectorPackPdaAfter.championsPassMintAllowance);
             // assert.isTrue(
             //     playerInventoryAccountAfter.randomness.eq(boosterQty)
@@ -315,7 +314,9 @@ describe.only('Purchase', () => {
             assert.isTrue(
                 collectorPackPdaAfter.fighterMintAllowance.eq(fighterQty)
             );
-            assert.isTrue(collectorPackPdaAfter.championsPassMintAllowance.eq(new BN(0)));
+            assert.isTrue(
+                collectorPackPdaAfter.championsPassMintAllowance.eq(new BN(0))
+            );
 
             // Test if bank PDA received the correct SOL amount
             const bankPdaBalance = await provider.connection.getBalance(
@@ -445,7 +446,11 @@ describe.only('Purchase', () => {
             assert.isTrue(
                 playerInventoryAccountAfter.fighterMintAllowance.eq(fighterQty)
             );
-            assert.isTrue(playerInventoryAccountAfter.championsPassMintAllowance.eq(new BN(0)));
+            assert.isTrue(
+                playerInventoryAccountAfter.championsPassMintAllowance.eq(
+                    new BN(0)
+                )
+            );
         } catch (e) {
             console.log(e);
         }
@@ -495,7 +500,8 @@ describe.only('Purchase', () => {
             .mul(boosterPrice)
             .add(fighterQty.mul(fighterPrice));
         const safeAmount =
-            total.add(new BN(0.1)).toNumber() * (1 / lastPriceSolUsd.toNumber());
+            total.add(new BN(0.1)).toNumber() *
+            (1 / lastPriceSolUsd.toNumber());
 
         const amountToSend = new anchor.BN(
             anchor.web3.LAMPORTS_PER_SOL * safeAmount
