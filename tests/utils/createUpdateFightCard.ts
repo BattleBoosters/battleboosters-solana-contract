@@ -2,10 +2,10 @@ import * as anchor from '@coral-xyz/anchor';
 import { BN } from '@coral-xyz/anchor';
 import { sleep } from '@switchboard-xyz/common';
 import { assert } from 'chai';
-
+import { Battleboosters } from '../../target/types/battleboosters';
 const createFightCard = async function (
-    provider,
-    program,
+    provider: anchor.AnchorProvider,
+    program: anchor.Program<Battleboosters>,
     admin_account,
     program_pda,
     event_id,
@@ -13,6 +13,7 @@ const createFightCard = async function (
     is_title_fight,
     id_reference_off_chain
 ) {
+
     const [event_account, event_account_bump] =
         anchor.web3.PublicKey.findProgramAddressSync(
             [
@@ -35,6 +36,7 @@ const createFightCard = async function (
             program.programId
         );
 
+
     const fightCardData = {
         id: new BN(id_reference_off_chain),
         eventPubkey: event_account,
@@ -49,7 +51,7 @@ const createFightCard = async function (
     };
 
     const tx = await program.methods
-        .createNewFightCard(fightCardData)
+        .createNewFightCard(new BN(event_id), fightCardData)
         .accounts({
             creator: admin_account.publicKey,
             program: program_pda,
@@ -76,8 +78,8 @@ const createFightCard = async function (
 };
 
 const updateFightCard = async function (
-    provider,
-    program,
+    provider: anchor.AnchorProvider,
+    program: anchor.Program<Battleboosters>,
     admin_account,
     program_pda,
     event_id,
@@ -102,7 +104,8 @@ const updateFightCard = async function (
                 Buffer.from('BattleBoosters'),
                 Buffer.from('fightCard'),
                 event_account.toBuffer(),
-                new BN(fight_card_id).toBuffer(),
+                //new BN(fight_card_id).toBuffer(),
+                Buffer.from([fight_card_id])
             ],
             program.programId
         );
@@ -120,7 +123,7 @@ const updateFightCard = async function (
     };
 
     const tx = await program.methods
-        .updateFightCard(fight_card_id, fightCardData)
+        .updateFightCard(new BN(event_id), fight_card_id, fightCardData)
         .accounts({
             creator: admin_account.publicKey,
             program: program_pda,

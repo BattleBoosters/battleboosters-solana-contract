@@ -1,10 +1,10 @@
 import * as anchor from '@coral-xyz/anchor';
 import { BN } from '@coral-xyz/anchor';
 import { sleep } from '@switchboard-xyz/common';
-
+import { Battleboosters } from '../../target/types/battleboosters';
 const createMintableGameAsset = async function (
-    program,
-    provider,
+    program: anchor.Program<Battleboosters>,
+    provider: anchor.AnchorProvider,
     program_pda,
     variant,
     rarity_pda,

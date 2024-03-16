@@ -887,32 +887,35 @@ pub mod battleboosters {
 
     pub fn create_new_fight_card(
         ctx: Context<CreateFightCard>,
+        event_id: u64,
         params: FightCardData,
     ) -> Result<()> {
-        processor::create_new_fight_card(ctx, params)
+        processor::create_new_fight_card(ctx, event_id, params)
     }
 
     pub fn update_fight_card(
         ctx: Context<UpdateFightCard>,
+        event_id: u64,
         fight_card_id: u8,
         params: FightCardData,
     ) -> Result<()> {
-        processor::update_fight_card(ctx, fight_card_id, params)
+        processor::update_fight_card(ctx, event_id, fight_card_id, params)
     }
 
     pub fn join_fight_card(
         ctx: Context<JoinFightCard>,
+        event_id: u64,            // Used in instruction
         fight_card_id: u8,            // Used in instruction
         fighter_asset_id: u64,        // Used in instruction
-        energy_booster_asset_id: u64, // Used in instruction
-        shield_booster_asset_id: u64, // Used in instruction
-        points_booster_asset_id: u64, // Used in instruction
-        champions_pass_asset_id: u64, // Used in instruction
+        energy_booster_asset_id: Option<u64>, // Used in instruction
+        shield_booster_asset_id: Option<u64>, // Used in instruction
+        points_booster_asset_id: Option<u64>, // Used in instruction
+        champions_pass_asset_id: Option<u64>, // Used in instruction
         fighter_link_id: u64,         // Used in instruction
-        energy_booster_link_id: u64,  // Used in instruction
-        shield_booster_link_id: u64,  // Used in instruction
-        points_booster_link_id: u64,  // Used in instruction
-        champions_pass_link_id: u64,  // Used in instruction
+        energy_booster_link_id: Option<u64>,  // Used in instruction
+        shield_booster_link_id: Option<u64>,  // Used in instruction
+        points_booster_link_id: Option<u64>,  // Used in instruction
+        champions_pass_link_id: Option<u64>,  // Used in instruction
         fighter_color_side: FighterColorSide,
     ) -> Result<()> {
         let clock = Clock::get().unwrap();
@@ -932,7 +935,7 @@ pub mod battleboosters {
 
         // Make sure the event have not started before joining the fight
         require!(
-            event.start_date < current_blockchain_timestamp,
+            event.start_date > current_blockchain_timestamp,
             ErrorCode::EventAlreadyStarted
         );
 
@@ -989,7 +992,7 @@ pub mod battleboosters {
             fight_card_link,
             event_link,
             None,
-            fighter_asset_id,
+            Some(fighter_asset_id),
         )?;
 
         process_game_asset_for_action(

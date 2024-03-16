@@ -5,12 +5,17 @@ use crate::types::FighterColorSide;
 use anchor_lang::prelude::*;
 
 #[derive(Accounts)]
+#[instruction(event_id: u64)]
 pub struct CreateFightCard<'info> {
     #[account(mut)]
     pub creator: Signer<'info>,
     #[account(mut)]
     pub program: Account<'info, ProgramData>,
-    #[account(mut)]
+    #[account(
+        mut,
+        seeds = [MY_APP_PREFIX, EVENT, event_id.to_le_bytes().as_ref()],
+        bump
+    )]
     pub event: Account<'info, EventData>,
     #[account(
     init,
@@ -24,13 +29,17 @@ pub struct CreateFightCard<'info> {
 }
 
 #[derive(Accounts)]
-#[instruction(fight_card_id: u8)]
+#[instruction(event_id: u64, fight_card_id: u8)]
 pub struct UpdateFightCard<'info> {
     #[account(mut)]
     pub creator: Signer<'info>,
     #[account(mut)]
     pub program: Account<'info, ProgramData>,
-    #[account(mut)]
+    #[account(
+    mut,
+    seeds = [MY_APP_PREFIX, EVENT, event_id.to_le_bytes().as_ref()],
+    bump
+    )]
     pub event: Account<'info, EventData>,
     #[account(
     mut,

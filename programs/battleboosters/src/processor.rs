@@ -99,7 +99,11 @@ pub fn update_event(
     Ok(())
 }
 
-pub fn create_new_fight_card(ctx: Context<CreateFightCard>, params: FightCardData) -> Result<()> {
+pub fn create_new_fight_card(
+    ctx: Context<CreateFightCard>,
+    event_id: u64, // used in instruction
+    params: FightCardData
+) -> Result<()> {
     let program = &ctx.accounts.program;
     verify_equality(&ctx.accounts.creator.key(), &program.admin_pubkey)?;
 
@@ -118,6 +122,7 @@ pub fn create_new_fight_card(ctx: Context<CreateFightCard>, params: FightCardDat
 
 pub fn update_fight_card(
     ctx: Context<UpdateFightCard>,
+    event_id: u64, // used in instruction
     fight_card_id: u8, // used in instruction
     params: FightCardData,
 ) -> Result<()> {

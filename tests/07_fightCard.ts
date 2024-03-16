@@ -29,6 +29,7 @@ describe('Create fight card', () => {
     } = account_init(program);
 
     it('Should add a new fight card', async () => {
+
         const { fight_card_account, event_account } = await createFightCard(
             provider,
             program,
@@ -80,6 +81,7 @@ describe('Create fight card', () => {
     });
 
     it('Should update fight card', async () => {
+
         const { fight_card_account, event_account } = await updateFightCard(
             provider,
             program,

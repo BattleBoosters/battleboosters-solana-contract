@@ -1,10 +1,10 @@
 import * as anchor from '@coral-xyz/anchor';
 import { assert } from 'chai';
-
+import { Battleboosters } from '../../target/types/battleboosters';
 const InitializePlayerAccount = async function (
-    provider,
+    provider: anchor.AnchorProvider,
     publicKey,
-    program,
+    program: anchor.Program<Battleboosters>,
     program_pda
 ) {
     // const [player_inventory_pda, player_inventory_bump] =
@@ -35,7 +35,6 @@ const InitializePlayerAccount = async function (
             .accounts({
                 creator: provider.wallet.publicKey,
                 playerAccount: player_account_pda,
-                program: program_pda,
             })
             .signers([]) // Include new_account as a signer
             .rpc();

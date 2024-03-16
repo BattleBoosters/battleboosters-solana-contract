@@ -2,10 +2,10 @@ import * as anchor from '@coral-xyz/anchor';
 import { BN } from '@coral-xyz/anchor';
 import { sleep } from '@switchboard-xyz/common';
 import { assert } from 'chai';
-
+import { Battleboosters } from '../../target/types/battleboosters';
 const createEvent = async function (
-    provider,
-    program,
+    provider: anchor.AnchorProvider,
+    program: anchor.Program<Battleboosters>,
     admin_account,
     program_pda,
     time_start,
@@ -60,8 +60,8 @@ const createEvent = async function (
 };
 
 const updateEvent = async function (
-    provider,
-    program,
+    provider: anchor.AnchorProvider,
+    program: anchor.Program<Battleboosters>,
     admin_account,
     program_pda,
     event_id,

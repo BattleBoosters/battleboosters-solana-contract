@@ -91,30 +91,35 @@ pub struct GenerateNftPreMint<'info> {
 
 #[derive(Accounts)]
 #[instruction(
+    event_id: u64,
     fight_card_id: u8,
     fighter_asset_id: u64,
-    energy_booster_asset_id: u64,
-    shield_booster_asset_id: u64,
-    points_booster_asset_id: u64,
-    champions_pass_asset_id: u64,
+    energy_booster_asset_id: Option<u64>,
+    shield_booster_asset_id: Option<u64>,
+    points_booster_asset_id: Option<u64>,
+    champions_pass_asset_id: Option<u64>,
     fighter_link_id: u64,
-    energy_booster_link_id: u64,
-    shield_booster_link_id: u64,
-    points_booster_link_id: u64,
-    champions_pass_link_id: u64,
+    energy_booster_link_id: Option<u64>,
+    shield_booster_link_id: Option<u64>,
+    points_booster_link_id: Option<u64>,
+    champions_pass_link_id: Option<u64>,
 )]
 pub struct JoinFightCard<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
-    #[account(mut)]
-    pub program: Account<'info, ProgramData>,
+    #[account(
+    mut,
+    seeds = [MY_APP_PREFIX, PROGRAM_STATE],
+    bump,
+    )]
+    pub program: Box<Account<'info, ProgramData>>,
 
     #[account(
     mut,
-    seeds = [MY_APP_PREFIX, EVENT, program.event_nonce.to_le_bytes().as_ref()],
+    seeds = [MY_APP_PREFIX, EVENT, event_id.to_le_bytes().as_ref()],
     bump
     )]
-    pub event: Account<'info, EventData>,
+    pub event: Box<Account<'info, EventData>>,
 
     #[account(
     mut,
@@ -124,7 +129,7 @@ pub struct JoinFightCard<'info> {
     pub fighter_asset: Box<Account<'info, MintableGameAssetData>>,
     #[account(
     mut,
-    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, energy_booster_asset_id.to_le_bytes().as_ref()],
+    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, energy_booster_asset_id.unwrap().to_le_bytes().as_ref()],
     // constraint = energy_booster_asset.as_ref().is_burned == true,
     // close = signer,
     bump
@@ -132,7 +137,7 @@ pub struct JoinFightCard<'info> {
     pub energy_booster_asset: Option<Box<Account<'info, MintableGameAssetData>>>,
     #[account(
     mut,
-    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, shield_booster_asset_id.to_le_bytes().as_ref()],
+    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, shield_booster_asset_id.unwrap().to_le_bytes().as_ref()],
     // constraint = shield_booster_asset.as_ref().is_burned == true,
     // close = signer,
     bump
@@ -140,7 +145,7 @@ pub struct JoinFightCard<'info> {
     pub shield_booster_asset: Option<Box<Account<'info, MintableGameAssetData>>>,
     #[account(
     mut,
-    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, points_booster_asset_id.to_le_bytes().as_ref()],
+    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, points_booster_asset_id.unwrap().to_le_bytes().as_ref()],
     // constraint = points_booster_asset.as_ref().is_burned == true,
     // close = signer,
     bump
@@ -148,7 +153,7 @@ pub struct JoinFightCard<'info> {
     pub points_booster_asset: Option<Box<Account<'info, MintableGameAssetData>>>,
     #[account(
     mut,
-    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, champions_pass_asset_id.to_le_bytes().as_ref()],
+    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, champions_pass_asset_id.unwrap().to_le_bytes().as_ref()],
     // constraint = points_booster_asset.as_ref().is_burned == true,
     // close = signer,
     bump
@@ -163,25 +168,25 @@ pub struct JoinFightCard<'info> {
     pub fighter_link: Box<Account<'info, PlayerGameAssetLinkData>>,
     #[account(
     mut,
-    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, signer.key().as_ref(), energy_booster_link_id.to_le_bytes().as_ref()],
+    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, signer.key().as_ref(), energy_booster_link_id.unwrap().to_le_bytes().as_ref()],
     bump
     )]
     pub energy_booster_link: Option<Box<Account<'info, PlayerGameAssetLinkData>>>,
     #[account(
     mut,
-    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, signer.key().as_ref(), shield_booster_link_id.to_le_bytes().as_ref()],
+    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, signer.key().as_ref(), shield_booster_link_id.unwrap().to_le_bytes().as_ref()],
     bump
     )]
     pub shield_booster_link: Option<Box<Account<'info, PlayerGameAssetLinkData>>>,
     #[account(
     mut,
-    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, signer.key().as_ref(), points_booster_link_id.to_le_bytes().as_ref()],
+    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, signer.key().as_ref(), points_booster_link_id.unwrap().to_le_bytes().as_ref()],
     bump
     )]
     pub points_booster_link: Option<Box<Account<'info, PlayerGameAssetLinkData>>>,
     #[account(
     mut,
-    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, signer.key().as_ref(), champions_pass_link_id.to_le_bytes().as_ref()],
+    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, signer.key().as_ref(), champions_pass_link_id.unwrap().to_le_bytes().as_ref()],
     bump
     )]
     pub champions_pass_link: Option<Box<Account<'info, PlayerGameAssetLinkData>>>,
@@ -191,25 +196,25 @@ pub struct JoinFightCard<'info> {
     seeds = [MY_APP_PREFIX, FIGHT_CARD, event.key().as_ref(), fight_card_id.to_le_bytes().as_ref()],
     bump
     )]
-    pub fight_card: Account<'info, FightCardData>,
+    pub fight_card: Box<Account<'info, FightCardData>>,
 
     #[account(
     init,
     payer = signer,
-    space = 8 + 32 + 32 + 8 + 2 + 1 + 1,
-    seeds = [MY_APP_PREFIX, FIGHT_CARD, event.key().as_ref(), fight_card_id.to_le_bytes().as_ref(), signer.key().as_ref()],
+    space = 8 + 32 + 32 + 1 + 32 + 8 + 32 + 8 + 32 + 8 + 32 + 8 + 32 + 8 + 2 + 1 + 1,
+    seeds = [MY_APP_PREFIX, FIGHT_CARD, event.key().as_ref(), signer.key().as_ref(), fight_card_id.to_le_bytes().as_ref()],
     bump
     )]
-    pub fight_card_link: Account<'info, FightCardLinkData>,
+    pub fight_card_link: Box<Account<'info, FightCardLinkData>>,
 
     #[account(
     init_if_needed,
     payer = signer,
-    space = 8 + 32 + 32 + 1 + 1,
-    seeds = [MY_APP_PREFIX, FIGHT_CARD, event.key().as_ref(), signer.key().as_ref()],
+    space = 8 + 32 + 32 + 1 + 32 + 8,
+    seeds = [MY_APP_PREFIX, EVENT, event.key().as_ref(), signer.key().as_ref()],
     bump
     )]
-    pub event_link: Account<'info, EventLinkData>,
+    pub event_link: Box<Account<'info, EventLinkData>>,
 
     pub system_program: Program<'info, System>,
 }
@@ -249,14 +254,11 @@ pub struct EventLinkData {
    TODO: UPDATE THE SPAAAAAAAAAAAAACEEEEEEEEEEEE!!!
 
 */
+
 #[account]
 pub struct FightCardLinkData {
     /// Signer of the tx
     pub creator: Pubkey,
-    // /// `Event` PDA public key for direct ref
-    // pub event_pubkey: Pubkey,
-    // /// Tracker to link the `FightCardLink` PDA to the `Event` PDA
-    // pub event_nonce_tracker: u8,
     /// `fight_card` PDA public key for direct ref
     pub fight_card_pubkey: Pubkey,
     /// Tracker to link the `FightCardLink` PDA to the `FightCard` PDA

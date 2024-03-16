@@ -68,7 +68,7 @@ pub fn process_and_verify_game_asset_type(
     fight_card_link: &mut Account<FightCardLinkData>,
     event_link: &mut Account<EventLinkData>,
     require_tournament_type: Option<&TournamentType>,
-    game_asset_id: u64,
+    game_asset_id: Option<u64>,
 ) -> Result<()> {
     if let Some(mintable_asset) = mintable_game_asset {
         for attr in mintable_asset.metadata.attributes.iter() {
@@ -77,45 +77,48 @@ pub fn process_and_verify_game_asset_type(
                     require!(
                         FighterType::from_name(&attr.value).is_some()
                             && fight_card_link.fighter_used.is_none()
-                            && fight_card_link.fighter_nonce_tracker.is_none(),
+                            && fight_card_link.fighter_nonce_tracker.is_none()
+                            && game_asset_id.is_some(),
                         ErrorCode::Unauthorized
                     );
 
                     fight_card_link.fighter_used = Some(mintable_asset.to_account_info().key());
-                    fight_card_link.fighter_nonce_tracker = Some(game_asset_id.clone());
+                    fight_card_link.fighter_nonce_tracker = Some(game_asset_id.unwrap().clone());
                 }
                 "Booster Type" => match BoosterType::from_name(&attr.value) {
                     Some(BoosterType::Points) => {
                         require!(
                             fight_card_link.points_booster_used.is_none()
-                                && fight_card_link.points_booster_nonce_tracker.is_none(),
+                                && fight_card_link.points_booster_nonce_tracker.is_none() &&
+                            game_asset_id.is_some(),
                             ErrorCode::Unauthorized
                         );
 
                         fight_card_link.points_booster_used =
                             Some(mintable_asset.to_account_info().key());
-                        fight_card_link.points_booster_nonce_tracker = Some(game_asset_id.clone());
+                        fight_card_link.points_booster_nonce_tracker = Some(game_asset_id.unwrap().clone());
                     }
                     Some(BoosterType::Shield) => {
                         require!(
                             fight_card_link.shield_booster_used.is_none()
-                                && fight_card_link.shield_booster_nonce_tracker.is_none(),
+                                && fight_card_link.shield_booster_nonce_tracker.is_none() && game_asset_id.is_some()
+                            ,
                             ErrorCode::Unauthorized
                         );
 
                         fight_card_link.shield_booster_used =
                             Some(mintable_asset.to_account_info().key());
-                        fight_card_link.shield_booster_nonce_tracker = Some(game_asset_id.clone());
+                        fight_card_link.shield_booster_nonce_tracker = Some(game_asset_id.unwrap().clone());
                     }
                     Some(BoosterType::Energy) => {
                         require!(
                             fight_card_link.energy_booster_used.is_none()
-                                && fight_card_link.energy_booster_nonce_tracker.is_none(),
+                                && fight_card_link.energy_booster_nonce_tracker.is_none() && game_asset_id.is_some(),
                             ErrorCode::Unauthorized
                         );
                         fight_card_link.energy_booster_used =
                             Some(mintable_asset.to_account_info().key());
-                        fight_card_link.energy_booster_nonce_tracker = Some(game_asset_id.clone());
+                        fight_card_link.energy_booster_nonce_tracker = Some(game_asset_id.unwrap().clone());
                     }
                     _ => return Err(ErrorCode::Unauthorized.into()),
                 },
@@ -123,13 +126,15 @@ pub fn process_and_verify_game_asset_type(
                     Some(TournamentType::MainCard) => {
                         require!(
                             fight_card_link.champions_pass_used.is_none()
-                                && fight_card_link.champions_pass_nonce_tracker.is_none(),
+                                && fight_card_link.champions_pass_nonce_tracker.is_none() &&
+                            game_asset_id.is_some()
+                            ,
                             ErrorCode::Unauthorized
                         );
 
                         event_link.champions_pass_pubkey =
                             Some(mintable_asset.to_account_info().key());
-                        event_link.champions_pass_nonce_tracker = Some(game_asset_id.clone())
+                        event_link.champions_pass_nonce_tracker = Some(game_asset_id.unwrap().clone())
                     }
                     _ => return Err(ErrorCode::Unauthorized.into()),
                 },

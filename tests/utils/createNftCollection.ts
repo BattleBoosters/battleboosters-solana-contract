@@ -6,10 +6,10 @@ import {
     TOKEN_PROGRAM_ID,
 } from '@solana/spl-token';
 import { MPL_TOKEN_METADATA_PROGRAM_ID } from '@metaplex-foundation/mpl-token-metadata';
-
+import { Battleboosters } from '../../target/types/battleboosters';
 const createNftCollection = async function (
-    program,
-    provider,
+    program: anchor.Program<Battleboosters>,
+    provider: anchor.AnchorProvider,
     program_pda,
     metadata_pubkey,
     mint_authority_account,

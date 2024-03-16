@@ -255,23 +255,23 @@ describe('Mintable Game Asset', () => {
             const attribute = [
                 {
                     traitType: 'Fighter Type',
-                    value: 'Sambo',
+                    value: 'Wrestling',
                 },
                 {
                     traitType: 'Rarity',
-                    value: 'Uncommon',
+                    value: 'Common',
                 },
                 {
                     traitType: 'Energy',
-                    value: '175',
+                    value: '104',
                 },
                 {
                     traitType: 'Power',
-                    value: '196',
+                    value: '110',
                 },
                 {
                     traitType: 'Lifespan',
-                    value: '172',
+                    value: '134',
                 },
             ];
             assert.isFalse(mintable_game_asset_pda_data.isLocked);
@@ -379,7 +379,7 @@ describe('Mintable Game Asset', () => {
                     mintable_game_asset_pda
                 );
             const attribute = [
-                { traitType: 'Booster Type', value: 'Points' },
+                { traitType: 'Booster Type', value: 'Energy' },
                 { traitType: 'Rarity', value: 'Uncommon' },
                 { traitType: 'Value', value: '175' },
             ];
