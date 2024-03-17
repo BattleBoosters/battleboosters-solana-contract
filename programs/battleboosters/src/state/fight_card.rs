@@ -52,12 +52,20 @@ pub struct UpdateFightCard<'info> {
 
 #[account]
 pub struct FightCardData {
-    /// Unique identifier for the fight card entry
+    /*
+       TODO: We should probably remove the identifier field?
+           Pros: reference on chain to the event off chain for trustability
+           Cons: probably no need to create this ref on chain but rather an off chain ref to on chain
+    */
+    /// Unique identifier for the fight card entry for off chain ref
     pub id: u64,
     /// Public key of the event account this fight card is part of
     pub event_pubkey: Pubkey,
     /// Nonce of the event PDA this fight card is part of
     pub event_nonce_tracker: u64,
+    /*
+       TODO:  We should probalby move the next field into the Event Directly ?
+    */
     /// The type of tournament MainCard, Prelims or Early Prelims
     pub tournament: TournamentType,
     /// Indicates whether this fight is a title fight

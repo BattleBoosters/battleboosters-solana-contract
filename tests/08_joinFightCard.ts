@@ -193,7 +193,7 @@ describe('Join fight card', () => {
             true
         );
     });
-    it('Should fail joining the same fight card', async () => {
+    it('Should join the next fight card', async () => {
         try {
             let {
                 event_account,
