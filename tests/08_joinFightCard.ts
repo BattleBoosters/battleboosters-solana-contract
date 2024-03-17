@@ -87,9 +87,20 @@ describe('Join fight card', () => {
             player_account_pda,
             fighter_mintable_game_asset_pda,
             fighter_mintable_game_asset_link_pda,
-        } = await joinFightCard(provider, program, admin_account, program_pda, {
-            fighterBlue: {},
-        });
+        } = await joinFightCard(
+            provider,
+            program,
+            admin_account,
+            program_pda,
+            {
+                fighterBlue: {},
+            },
+            0,
+            0,
+            0,
+            0,
+            0
+        );
 
         const fighter_mintable_game_asset_pda_data =
             await program.account.mintableGameAssetData.fetch(
@@ -154,11 +165,6 @@ describe('Join fight card', () => {
             fight_card_link_account_data.pointsBoosterNonceTracker,
             null
         );
-        assert.equal(fight_card_link_account_data.championsPassUsed, null);
-        assert.equal(
-            fight_card_link_account_data.championsPassNonceTracker,
-            null
-        );
 
         const player_account_pda_data = await program.account.playerData.fetch(
             player_account_pda
@@ -187,33 +193,36 @@ describe('Join fight card', () => {
             true
         );
     });
-    // it('Should fail joining the same fight card', async () => {
-    //
-    //     try {
-    //         let {
-    //             program_data_before,
-    //             event_account,
-    //             event_link_account,
-    //             fight_card_account,
-    //             fight_card_link_account,
-    //             player_account_pda,
-    //             fighter_mintable_game_asset_pda,
-    //             fighter_mintable_game_asset_link_pda
-    //         } = await joinFightCard(
-    //             provider,
-    //             program,
-    //             admin_account,
-    //             program_pda,
-    //         );
-    //
-    //         // const fighter_mintable_game_asset_pda_data = await program.account.mintableGameAssetData.fetch(
-    //         //     fighter_mintable_game_asset_pda
-    //         // );
-    //         // console.log(fighter_mintable_game_asset_pda_data.isLocked)
-    //
-    //
-    //     }catch (e) {
-    //         console.log(e)
-    //     }
-    // });
+    it('Should fail joining the same fight card', async () => {
+        try {
+            let {
+                event_account,
+                event_link_account,
+                fight_card_account,
+                fight_card_link_account,
+                player_account_pda,
+                fighter_mintable_game_asset_pda,
+                fighter_mintable_game_asset_link_pda,
+            } = await joinFightCard(
+                provider,
+                program,
+                admin_account,
+                program_pda,
+                {
+                    fighterBlue: {},
+                },
+                0,
+                1,
+                1,
+                1
+            );
+
+            // const fighter_mintable_game_asset_pda_data = await program.account.mintableGameAssetData.fetch(
+            //     fighter_mintable_game_asset_pda
+            // );
+            // console.log(fighter_mintable_game_asset_pda_data.isLocked)
+        } catch (e) {
+            console.log(e);
+        }
+    });
 });

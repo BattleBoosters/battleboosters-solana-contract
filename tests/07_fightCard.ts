@@ -28,7 +28,7 @@ describe('Create fight card', () => {
         authority_bump,
     } = account_init(program);
 
-    it('Should add a new fight card', async () => {
+    it('Should add a main card fight card', async () => {
         const { fight_card_account, event_account } = await createFightCard(
             provider,
             program,
@@ -79,7 +79,7 @@ describe('Create fight card', () => {
         }
     });
 
-    it('Should update fight card', async () => {
+    it('Should update fight card from main card to prelims', async () => {
         const { fight_card_account, event_account } = await updateFightCard(
             provider,
             program,
@@ -122,7 +122,7 @@ describe('Create fight card', () => {
                 unauthorized_account,
                 program_pda,
                 0,
-                { prelims: {} },
+                { mainCard: {} },
                 false,
                 112,
                 0
@@ -130,5 +130,73 @@ describe('Create fight card', () => {
         } catch (e) {
             assert.include(e.message, 'Unauthorized access attempt');
         }
+    });
+
+    it('Should add a early prelims fight card', async () => {
+        const { fight_card_account, event_account } = await createFightCard(
+            provider,
+            program,
+            admin_account,
+            program_pda,
+            0,
+            { earlyPrelims: {} },
+            false,
+            113
+        );
+        let fightCardAccountData = await program.account.fightCardData.fetch(
+            fight_card_account
+        );
+        assert.equal(fightCardAccountData.id.eq(new BN(113)), true);
+        assert.equal(
+            fightCardAccountData.eventNonceTracker.eq(new BN(0)),
+            true
+        );
+        assert.equal(fightCardAccountData.fightDuration, null);
+        assert.equal(fightCardAccountData.titleFight, false);
+        assert.equal(fightCardAccountData.fighterBlue, null);
+        assert.equal(fightCardAccountData.fighterRed, null);
+        assert.deepEqual(
+            fightCardAccountData.eventPubkey.equals(event_account),
+            true
+        );
+        assert.equal(fightCardAccountData.result, null);
+        assert.deepEqual(fightCardAccountData.tournament, { earlyPrelims: {} });
+
+        let fetchedEvent = await program.account.eventData.fetch(event_account);
+        assert.equal(fetchedEvent.fightCardIdCounter, 2);
+    });
+
+    it('Should add a main card fight card', async () => {
+        const { fight_card_account, event_account } = await createFightCard(
+            provider,
+            program,
+            admin_account,
+            program_pda,
+            0,
+            { mainCard: {} },
+            false,
+            114
+        );
+        let fightCardAccountData = await program.account.fightCardData.fetch(
+            fight_card_account
+        );
+        assert.equal(fightCardAccountData.id.eq(new BN(114)), true);
+        assert.equal(
+            fightCardAccountData.eventNonceTracker.eq(new BN(0)),
+            true
+        );
+        assert.equal(fightCardAccountData.fightDuration, null);
+        assert.equal(fightCardAccountData.titleFight, false);
+        assert.equal(fightCardAccountData.fighterBlue, null);
+        assert.equal(fightCardAccountData.fighterRed, null);
+        assert.deepEqual(
+            fightCardAccountData.eventPubkey.equals(event_account),
+            true
+        );
+        assert.equal(fightCardAccountData.result, null);
+        assert.deepEqual(fightCardAccountData.tournament, { mainCard: {} });
+
+        let fetchedEvent = await program.account.eventData.fetch(event_account);
+        assert.equal(fetchedEvent.fightCardIdCounter, 3);
     });
 });
