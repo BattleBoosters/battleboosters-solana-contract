@@ -13,7 +13,6 @@ const createFightCard = async function (
     is_title_fight,
     id_reference_off_chain
 ) {
-
     const [event_account, event_account_bump] =
         anchor.web3.PublicKey.findProgramAddressSync(
             [
@@ -35,7 +34,6 @@ const createFightCard = async function (
             ],
             program.programId
         );
-
 
     const fightCardData = {
         id: new BN(id_reference_off_chain),
@@ -105,7 +103,7 @@ const updateFightCard = async function (
                 Buffer.from('fightCard'),
                 event_account.toBuffer(),
                 //new BN(fight_card_id).toBuffer(),
-                Buffer.from([fight_card_id])
+                Buffer.from([fight_card_id]),
             ],
             program.programId
         );

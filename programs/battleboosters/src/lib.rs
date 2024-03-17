@@ -42,6 +42,7 @@ pub mod battleboosters {
     use anchor_lang::solana_program::native_token::LAMPORTS_PER_SOL;
     use anchor_lang::solana_program::system_instruction;
     use mpl_token_metadata::types::{Collection, CollectionDetails, DataV2};
+    use solana_program::address_lookup_table::state::ProgramState::LookupTable;
     use solana_randomness_service::TransactionOptions;
     use std::ops::Add;
 
@@ -904,14 +905,14 @@ pub mod battleboosters {
 
     pub fn join_fight_card(
         ctx: Context<JoinFightCard>,
-        event_id: u64,            // Used in instruction
-        fight_card_id: u8,            // Used in instruction
-        fighter_asset_id: u64,        // Used in instruction
+        event_id: u64,                        // Used in instruction
+        fight_card_id: u8,                    // Used in instruction
+        fighter_asset_id: u64,                // Used in instruction
         energy_booster_asset_id: Option<u64>, // Used in instruction
         shield_booster_asset_id: Option<u64>, // Used in instruction
         points_booster_asset_id: Option<u64>, // Used in instruction
         champions_pass_asset_id: Option<u64>, // Used in instruction
-        fighter_link_id: u64,         // Used in instruction
+        fighter_link_id: u64,                 // Used in instruction
         energy_booster_link_id: Option<u64>,  // Used in instruction
         shield_booster_link_id: Option<u64>,  // Used in instruction
         points_booster_link_id: Option<u64>,  // Used in instruction
@@ -947,7 +948,7 @@ pub mod battleboosters {
 
         */
         // Game assets
-
+        //
         // let is_fighter_type = &ctx
         //     .accounts
         //     .fighter_asset

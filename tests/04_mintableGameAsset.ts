@@ -130,7 +130,8 @@ describe('Mintable Game Asset', () => {
                     nftType: { fighter: {} },
                 },
                 rarity_pda,
-                null
+                null,
+                ''
             );
 
             const collector_pack_pda_data =
@@ -236,7 +237,8 @@ describe('Mintable Game Asset', () => {
                     nftType: { fighter: {} },
                 },
                 rarity_pda,
-                null
+                null,
+                ''
             );
             const collector_pack_pda_data =
                 await program.account.collectorPack.fetch(collector_pack_pda);
@@ -337,7 +339,8 @@ describe('Mintable Game Asset', () => {
                     nftType: { fighter: {} },
                 },
                 rarity_pda,
-                null
+                null,
+                ''
             );
         } catch (e) {
             assert.include(
@@ -362,7 +365,8 @@ describe('Mintable Game Asset', () => {
                     nftType: { booster: {} },
                 },
                 rarity_pda,
-                null
+                null,
+                ''
             );
             const collector_pack_pda_data =
                 await program.account.collectorPack.fetch(collector_pack_pda);
@@ -446,7 +450,8 @@ describe('Mintable Game Asset', () => {
                     nftType: { booster: {} },
                 },
                 rarity_pda,
-                1
+                1,
+                ''
             );
         } catch (e) {
             assert.include(
@@ -466,7 +471,8 @@ describe('Mintable Game Asset', () => {
                     nftType: { booster: {} },
                 },
                 rarity_pda,
-                10
+                10,
+                ''
             );
         } catch (e) {
             assert.include(

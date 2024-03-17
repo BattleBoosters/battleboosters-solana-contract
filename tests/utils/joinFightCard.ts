@@ -3,11 +3,15 @@ import { BN } from '@coral-xyz/anchor';
 import { sleep } from '@switchboard-xyz/common';
 import { assert } from 'chai';
 import { Battleboosters } from '../../target/types/battleboosters';
+import PrepareLookupTable from './prepareLookupTable';
+
+// Pseudo-code to illustrate the concept
+
 const joinFightCard = async function (
     provider: anchor.AnchorProvider,
     program: anchor.Program<Battleboosters>,
     admin_account,
-    program_pda,
+    program_pda
 ) {
     const program_data_before = await program.account.programData.fetch(
         program_pda
@@ -29,12 +33,13 @@ const joinFightCard = async function (
                 Buffer.from('event'),
                 event_account.toBuffer(),
                 provider.wallet.publicKey.toBuffer(),
+                //admin_account.publicKey.toBuffer()
                 // new BN(0).toBuffer('le', 8),
             ],
             program.programId
         );
 
-    console.log(event_account)
+    console.log(event_account);
 
     const [fight_card_account, fight_card_bump] =
         anchor.web3.PublicKey.findProgramAddressSync(
@@ -52,8 +57,9 @@ const joinFightCard = async function (
                 Buffer.from('BattleBoosters'),
                 Buffer.from('fightCard'),
                 event_account.toBuffer(),
-                provider.wallet.publicKey.toBuffer(),
                 new BN(0).toBuffer(),
+                provider.wallet.publicKey.toBuffer(),
+                //admin_account.publicKey.toBuffer()
             ],
             program.programId
         );
@@ -63,6 +69,7 @@ const joinFightCard = async function (
                 Buffer.from('BattleBoosters'),
                 Buffer.from('player'),
                 provider.wallet.publicKey.toBuffer(),
+                //admin_account.publicKey.toBuffer(),
             ],
             program.programId
         );
@@ -76,29 +83,25 @@ const joinFightCard = async function (
             [
                 Buffer.from('BattleBoosters'),
                 Buffer.from('mintableGameAsset'),
-                new BN(0).toBuffer(
-                    'le',
-                    8
-                ),
+                new BN(0).toBuffer('le', 8),
             ],
             program.programId
         );
-    const [fighter_mintable_game_asset_link_pda, fighter_mintable_game_asset_link_bump] =
-        anchor.web3.PublicKey.findProgramAddressSync(
-            [
-                Buffer.from('BattleBoosters'),
-                Buffer.from('mintableGameAsset'),
-                provider.wallet.publicKey.toBuffer(),
-                new BN(0).toBuffer(
-                    'le',
-                    8
-                ),
+    const [
+        fighter_mintable_game_asset_link_pda,
+        fighter_mintable_game_asset_link_bump,
+    ] = anchor.web3.PublicKey.findProgramAddressSync(
+        [
+            Buffer.from('BattleBoosters'),
+            Buffer.from('mintableGameAsset'),
+            new BN(0).toBuffer('le', 8),
+            provider.wallet.publicKey.toBuffer(),
+            //admin_account.publicKey.toBuffer(),
+        ],
+        program.programId
+    );
 
-            ],
-            program.programId
-        );
-
-    console.log(player_account_pda_data)
+    console.log(player_account_pda_data);
 
     // const [player_game_asset_link_pda, player_game_asset_link_bump] =
     //     anchor.web3.PublicKey.findProgramAddressSync(
@@ -116,48 +119,43 @@ const joinFightCard = async function (
     //         player_game_asset_link_pda
     //     );
 
-    try {
-        const tx = await program.methods
-            .joinFightCard(
-                new BN(0),
-                0,
-                new BN(0),
-                null,
-                null,
-                null,
-                null,
-                new BN(0),
-                null,
-                null,
-                null,
-                null,
-                { fighterBlue: {} }
-            )
-            .accounts({
-                signer: provider.wallet.publicKey,
-                program: program_pda,
-                event: event_account,
-                eventLink: event_link_account,
-                fightCard: fight_card_account,
-                fightCardLink: fight_card_link_account,
-                fighterAsset: fighter_mintable_game_asset_pda,
-                fighterLink: fighter_mintable_game_asset_link_pda,
-                energyBoosterAsset: null,
-                shieldBoosterAsset: null,
-                pointsBoosterAsset: null,
-                championsPassAsset: null,
-                energyBoosterLink: null,
-                shieldBoosterLink: null,
-                pointsBoosterLink: null,
-                championsPassLink: null,
-                systemProgram: anchor.web3.SystemProgram.programId,
-            })
-            .signers([])
-            .rpc();
-    }catch (e) {
-        console.log(e)
-    }
-
+    const tx = await program.methods
+        .joinFightCard(
+            new BN(0),
+            0,
+            new BN(0),
+            null,
+            null,
+            null,
+            null,
+            new BN(0),
+            null,
+            null,
+            null,
+            null,
+            { fighterBlue: {} }
+        )
+        .accounts({
+            signer: provider.wallet.publicKey,
+            program: program_pda,
+            event: event_account,
+            fighterAsset: fighter_mintable_game_asset_pda,
+            fighterLink: fighter_mintable_game_asset_link_pda,
+            energyBoosterAsset: null,
+            shieldBoosterAsset: null,
+            pointsBoosterAsset: null,
+            championsPassAsset: null,
+            energyBoosterLink: null,
+            shieldBoosterLink: null,
+            pointsBoosterLink: null,
+            championsPassLink: null,
+            fightCard: fight_card_account,
+            fightCardLink: fight_card_link_account,
+            eventLink: event_link_account,
+            systemProgram: anchor.web3.SystemProgram.programId,
+        })
+        .signers([])
+        .rpc();
 
     // const eventAccount = await program.account.eventData.fetch(
     //     event_account_one
@@ -176,13 +174,16 @@ const joinFightCard = async function (
     //
     // console.log(JSON.stringify(logs?.meta?.logMessages, undefined, 2));
 
-    // return {
-    //     program_data_before,
-    //     eventAccount,
-    //     program_data_after,
-    // };
+    return {
+        program_data_before,
+        event_account,
+        event_link_account,
+        fight_card_account,
+        fight_card_link_account,
+        player_account_pda,
+        fighter_mintable_game_asset_pda,
+        fighter_mintable_game_asset_link_pda,
+    };
 };
 
-export {
-    joinFightCard
-}
+export { joinFightCard };

@@ -89,36 +89,40 @@ pub fn process_and_verify_game_asset_type(
                     Some(BoosterType::Points) => {
                         require!(
                             fight_card_link.points_booster_used.is_none()
-                                && fight_card_link.points_booster_nonce_tracker.is_none() &&
-                            game_asset_id.is_some(),
+                                && fight_card_link.points_booster_nonce_tracker.is_none()
+                                && game_asset_id.is_some(),
                             ErrorCode::Unauthorized
                         );
 
                         fight_card_link.points_booster_used =
                             Some(mintable_asset.to_account_info().key());
-                        fight_card_link.points_booster_nonce_tracker = Some(game_asset_id.unwrap().clone());
+                        fight_card_link.points_booster_nonce_tracker =
+                            Some(game_asset_id.unwrap().clone());
                     }
                     Some(BoosterType::Shield) => {
                         require!(
                             fight_card_link.shield_booster_used.is_none()
-                                && fight_card_link.shield_booster_nonce_tracker.is_none() && game_asset_id.is_some()
-                            ,
+                                && fight_card_link.shield_booster_nonce_tracker.is_none()
+                                && game_asset_id.is_some(),
                             ErrorCode::Unauthorized
                         );
 
                         fight_card_link.shield_booster_used =
                             Some(mintable_asset.to_account_info().key());
-                        fight_card_link.shield_booster_nonce_tracker = Some(game_asset_id.unwrap().clone());
+                        fight_card_link.shield_booster_nonce_tracker =
+                            Some(game_asset_id.unwrap().clone());
                     }
                     Some(BoosterType::Energy) => {
                         require!(
                             fight_card_link.energy_booster_used.is_none()
-                                && fight_card_link.energy_booster_nonce_tracker.is_none() && game_asset_id.is_some(),
+                                && fight_card_link.energy_booster_nonce_tracker.is_none()
+                                && game_asset_id.is_some(),
                             ErrorCode::Unauthorized
                         );
                         fight_card_link.energy_booster_used =
                             Some(mintable_asset.to_account_info().key());
-                        fight_card_link.energy_booster_nonce_tracker = Some(game_asset_id.unwrap().clone());
+                        fight_card_link.energy_booster_nonce_tracker =
+                            Some(game_asset_id.unwrap().clone());
                     }
                     _ => return Err(ErrorCode::Unauthorized.into()),
                 },
@@ -126,15 +130,15 @@ pub fn process_and_verify_game_asset_type(
                     Some(TournamentType::MainCard) => {
                         require!(
                             fight_card_link.champions_pass_used.is_none()
-                                && fight_card_link.champions_pass_nonce_tracker.is_none() &&
-                            game_asset_id.is_some()
-                            ,
+                                && fight_card_link.champions_pass_nonce_tracker.is_none()
+                                && game_asset_id.is_some(),
                             ErrorCode::Unauthorized
                         );
 
                         event_link.champions_pass_pubkey =
                             Some(mintable_asset.to_account_info().key());
-                        event_link.champions_pass_nonce_tracker = Some(game_asset_id.unwrap().clone())
+                        event_link.champions_pass_nonce_tracker =
+                            Some(game_asset_id.unwrap().clone())
                     }
                     _ => return Err(ErrorCode::Unauthorized.into()),
                 },

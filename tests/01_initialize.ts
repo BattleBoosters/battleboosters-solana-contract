@@ -65,8 +65,8 @@ describe('Initialize', () => {
             throw new Error('Program is not executable');
         }
 
-        await airdrop_sol(provider, admin_account.publicKey, 1);
-        await airdrop_sol(provider, unauthorized_account.publicKey, 1);
+        await airdrop_sol(provider, admin_account.publicKey, 10);
+        await airdrop_sol(provider, unauthorized_account.publicKey, 10);
 
         try {
             await program.account.programData.fetch(program_pda);
