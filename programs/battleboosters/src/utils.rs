@@ -129,8 +129,8 @@ pub fn process_and_verify_game_asset_type(
                 "Champions Pass Type" => match require_tournament_type {
                     Some(TournamentType::MainCard) => {
                         require!(
-                            fight_card_link.champions_pass_used.is_none()
-                                && fight_card_link.champions_pass_nonce_tracker.is_none()
+                            event_link.champions_pass_pubkey.is_none()
+                                && event_link.champions_pass_nonce_tracker.is_none()
                                 && game_asset_id.is_some(),
                             ErrorCode::Unauthorized
                         );

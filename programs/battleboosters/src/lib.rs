@@ -1058,12 +1058,20 @@ pub mod battleboosters {
         match fight_card.tournament {
             TournamentType::MainCard => {
                 require!(
-                    fight_card_link.champions_pass_used.is_some()
-                        && fight_card_link.champions_pass_nonce_tracker.is_some(),
+                    event_link.champions_pass_pubkey.is_some()
+                        && event_link.champions_pass_nonce_tracker.is_some(),
                     ErrorCode::Unauthorized
                 );
             }
             _ => {}
+        }
+
+        // Init if needed event link
+        if !event_link.is_initialized {
+            event_link.is_initialized = true;
+            event_link.creator = signer.key();
+            event_link.event_pubkey = event.key();
+            event_link.event_nonce_tracker = event_id;
         }
 
         fight_card_link.creator = signer.key();
@@ -1075,6 +1083,10 @@ pub mod battleboosters {
 
         Ok(())
     }
+
+    /*
+       TODO: Create a ranking rewards system for events
+    */
 
     /*
        TODO: Admin resolve ranking

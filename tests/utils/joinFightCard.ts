@@ -11,12 +11,9 @@ const joinFightCard = async function (
     provider: anchor.AnchorProvider,
     program: anchor.Program<Battleboosters>,
     admin_account,
-    program_pda
+    program_pda,
+    fighterColorSide
 ) {
-    const program_data_before = await program.account.programData.fetch(
-        program_pda
-    );
-
     const [event_account, event_account_bump] =
         anchor.web3.PublicKey.findProgramAddressSync(
             [
@@ -133,7 +130,7 @@ const joinFightCard = async function (
             null,
             null,
             null,
-            { fighterBlue: {} }
+            fighterColorSide
         )
         .accounts({
             signer: provider.wallet.publicKey,
@@ -175,7 +172,6 @@ const joinFightCard = async function (
     // console.log(JSON.stringify(logs?.meta?.logMessages, undefined, 2));
 
     return {
-        program_data_before,
         event_account,
         event_link_account,
         fight_card_account,

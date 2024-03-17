@@ -201,7 +201,7 @@ pub struct JoinFightCard<'info> {
     #[account(
     init,
     payer = signer,
-    space = 8 + 32 + 32 + 1 + 33 + 9 + 33 + 9 + 33 + 9 + 33 + 9 + 33 + 9 + 2 + 1 + 1 + 100,
+    space = 8 + 32 + 32 + 1 + 33 + 9 + 33 + 9 + 33 + 9 + 33 + 9 + 2 + 1 + 1,
     seeds = [MY_APP_PREFIX, FIGHT_CARD, event.key().as_ref(), fight_card_id.to_le_bytes().as_ref(), signer.key().as_ref()],
     bump
     )]
@@ -210,7 +210,7 @@ pub struct JoinFightCard<'info> {
     #[account(
     init_if_needed,
     payer = signer,
-    space = 8 + 32 + 32 + 1 + 33 + 9,
+    space = 8 + 32 + 32 + 1 + 33 + 9 + 1,
     seeds = [MY_APP_PREFIX, EVENT, event.key().as_ref(), signer.key().as_ref()],
     bump
     )]
@@ -235,13 +235,15 @@ pub struct EventLinkData {
     pub creator: Pubkey,
     /// `Event` PDA public key for direct ref
     pub event_pubkey: Pubkey,
-    /// Tracker to link the `FightCardLink` PDA to the `Event` PDA
-    pub event_nonce_tracker: u8,
+    /// Tracker to link the `EventLink` PDA to the `Event` PDA
+    pub event_nonce_tracker: u64,
     /// Ensure a champions pass have been used for `MainCard` access
     /// `champions_pass_asset` PDA public key for direct ref
     pub champions_pass_pubkey: Option<Pubkey>,
     /// Tracker to link the `champions_pass` PDA
     pub champions_pass_nonce_tracker: Option<u64>,
+    /// Prevent accidental multiple initializations of a PDA
+    pub is_initialized: bool,
     /*
        TODO: Probably store the Pubkey of the metadata Champion's pass
              + the nonce tracker ?
@@ -279,10 +281,6 @@ pub struct FightCardLinkData {
     pub points_booster_used: Option<Pubkey>,
     /// Tracker to link the `Booster` PDA to the `FightCardLink` PDA
     pub points_booster_nonce_tracker: Option<u64>,
-    /// The `Pubkey` of the champions pass used
-    pub champions_pass_used: Option<Pubkey>,
-    /// Tracker to link the `Champions pass` PDA to the `FightCardLink` PDA
-    pub champions_pass_nonce_tracker: Option<u64>,
     /// The fighter side chosen by the player `Red Gloves` or `Blue Gloves`
     pub fighter_color_side: FighterColorSide,
     /// Prevents the calculation of points for the same fightCard multiple times

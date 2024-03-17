@@ -79,31 +79,113 @@ describe('Join fight card', () => {
     // })
 
     it('Should join a new fight card', async () => {
-        try {
-            let {
-                program_data_before,
-                event_account,
-                event_link_account,
-                fight_card_account,
-                fight_card_link_account,
-                player_account_pda,
-                fighter_mintable_game_asset_pda,
-                fighter_mintable_game_asset_link_pda,
-            } = await joinFightCard(
-                provider,
-                program,
-                admin_account,
-                program_pda
-            );
+        let {
+            event_account,
+            event_link_account,
+            fight_card_account,
+            fight_card_link_account,
+            player_account_pda,
+            fighter_mintable_game_asset_pda,
+            fighter_mintable_game_asset_link_pda,
+        } = await joinFightCard(provider, program, admin_account, program_pda, {
+            fighterBlue: {},
+        });
 
-            const fighter_mintable_game_asset_pda_data =
-                await program.account.mintableGameAssetData.fetch(
-                    fighter_mintable_game_asset_pda
-                );
-            console.log(fighter_mintable_game_asset_pda_data.isLocked);
-        } catch (e) {
-            console.log(e);
-        }
+        const fighter_mintable_game_asset_pda_data =
+            await program.account.mintableGameAssetData.fetch(
+                fighter_mintable_game_asset_pda
+            );
+        assert.equal(fighter_mintable_game_asset_pda_data.isLocked, true);
+        assert.equal(fighter_mintable_game_asset_pda_data.isBurned, false);
+        assert.equal(fighter_mintable_game_asset_pda_data.isMinted, false);
+        assert.deepEqual(
+            fighter_mintable_game_asset_pda_data.owner,
+            provider.wallet.publicKey
+        );
+
+        const fighter_mintable_game_asset_link_pda_data =
+            await program.account.playerGameAssetLinkData.fetch(
+                fighter_mintable_game_asset_link_pda
+            );
+        assert.equal(fighter_mintable_game_asset_link_pda_data.isFree, false);
+        assert.deepEqual(
+            fighter_mintable_game_asset_link_pda_data.mintableGameAssetPubkey,
+            fighter_mintable_game_asset_pda
+        );
+
+        const fight_card_link_account_data =
+            await program.account.fightCardLinkData.fetch(
+                fight_card_link_account
+            );
+        assert.equal(fight_card_link_account_data.isConsumed, false);
+        assert.equal(fight_card_link_account_data.isInitialized, true);
+        assert.deepEqual(fight_card_link_account_data.fighterColorSide, {
+            fighterBlue: {},
+        });
+        assert.deepEqual(
+            fight_card_link_account_data.creator,
+            provider.wallet.publicKey
+        );
+        assert.deepEqual(
+            fight_card_link_account_data.fighterUsed,
+            fighter_mintable_game_asset_pda
+        );
+        assert.deepEqual(
+            fight_card_link_account_data.fighterNonceTracker.eq(new BN(0)),
+            true
+        );
+        assert.deepEqual(
+            fight_card_link_account_data.fightCardPubkey,
+            fight_card_account
+        );
+        assert.equal(fight_card_link_account_data.fightCardNonceTracker, 0);
+        assert.equal(fight_card_link_account_data.energyBoosterUsed, null);
+        assert.equal(
+            fight_card_link_account_data.energyBoosterNonceTracker,
+            null
+        );
+        assert.equal(fight_card_link_account_data.shieldBoosterUsed, null);
+        assert.equal(
+            fight_card_link_account_data.shieldBoosterNonceTracker,
+            null
+        );
+        assert.equal(fight_card_link_account_data.pointsBoosterUsed, null);
+        assert.equal(
+            fight_card_link_account_data.pointsBoosterNonceTracker,
+            null
+        );
+        assert.equal(fight_card_link_account_data.championsPassUsed, null);
+        assert.equal(
+            fight_card_link_account_data.championsPassNonceTracker,
+            null
+        );
+
+        const player_account_pda_data = await program.account.playerData.fetch(
+            player_account_pda
+        );
+        assert.equal(player_account_pda_data.isInitialized, true);
+        assert.deepEqual(
+            player_account_pda_data.orderNonce.eq(new BN(0)),
+            true
+        );
+        assert.deepEqual(
+            player_account_pda_data.playerGameAssetLinkNonce.eq(new BN(3)),
+            true
+        );
+
+        const event_link_account_data =
+            await program.account.eventLinkData.fetch(event_link_account);
+        assert.deepEqual(
+            event_link_account_data.creator,
+            provider.wallet.publicKey
+        );
+        assert.equal(event_link_account_data.championsPassNonceTracker, null);
+        assert.equal(event_link_account_data.championsPassPubkey, null);
+        assert.deepEqual(event_link_account_data.eventPubkey, event_account);
+        assert.deepEqual(
+            event_link_account_data.eventNonceTracker.eq(new BN(0)),
+            true
+        );
     });
     // it('Should fail joining the same fight card', async () => {
     //
