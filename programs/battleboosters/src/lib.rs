@@ -1081,7 +1081,7 @@ pub mod battleboosters {
         fight_card_link.is_consumed = false;
         fight_card_link.is_initialized = true;
 
-        Ok(())
+        Ok(()) 
     }
 
     /*
