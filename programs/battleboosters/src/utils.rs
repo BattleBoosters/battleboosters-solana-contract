@@ -26,12 +26,23 @@ pub fn process_game_asset_for_action(
 ) -> Result<()> {
     if let Some(mintable_asset) = mintable_game_asset {
         // Ensure the owner of the mintable asset is the signer
-        let mintable_asset_owner = mintable_asset.owner.ok_or(ErrorCode::Unauthorized)?;
+        let mintable_asset_owner = mintable_asset
+            .owner
+            .ok_or(ErrorCode::MintableAssetHasNoOwner)?;
         verify_equality(&mintable_asset_owner, &signer)?;
 
-        require!(mintable_asset.is_burned == false, ErrorCode::Unauthorized);
-        require!(mintable_asset.is_locked == false, ErrorCode::Unauthorized);
-        require!(mintable_asset.is_minted == false, ErrorCode::Unauthorized);
+        require!(
+            mintable_asset.is_burned == false,
+            ErrorCode::MintableAssetBurned
+        );
+        require!(
+            mintable_asset.is_locked == false,
+            ErrorCode::MintableAssetLocked
+        );
+        require!(
+            mintable_asset.is_minted == false,
+            ErrorCode::MintableAssetMintedAndUnavailable
+        );
 
         if let Some(mintable_asset_link) = mintable_game_asset_link {
             // TODO: We probably doesn't need to do this check since it is unlikely to happen within
@@ -56,7 +67,7 @@ pub fn process_game_asset_for_action(
             // Lock the asset
             mintable_asset.is_locked = true
         } else {
-            return Err(error!(ErrorCode::Unauthorized));
+            return Err(error!(ErrorCode::MintableAssetLinkRequired));
         }
     }
 
@@ -79,7 +90,7 @@ pub fn process_and_verify_game_asset_type(
                             && fight_card_link.fighter_used.is_none()
                             && fight_card_link.fighter_nonce_tracker.is_none()
                             && game_asset_nonce.is_some(),
-                        ErrorCode::Unauthorized
+                        ErrorCode::FightCardLinkedToGameAsset
                     );
 
                     fight_card_link.fighter_used = Some(mintable_asset.to_account_info().key());
@@ -91,7 +102,7 @@ pub fn process_and_verify_game_asset_type(
                             fight_card_link.points_booster_used.is_none()
                                 && fight_card_link.points_booster_nonce_tracker.is_none()
                                 && game_asset_nonce.is_some(),
-                            ErrorCode::Unauthorized
+                            ErrorCode::FightCardLinkedToGameAsset
                         );
 
                         fight_card_link.points_booster_used =
@@ -104,7 +115,7 @@ pub fn process_and_verify_game_asset_type(
                             fight_card_link.shield_booster_used.is_none()
                                 && fight_card_link.shield_booster_nonce_tracker.is_none()
                                 && game_asset_nonce.is_some(),
-                            ErrorCode::Unauthorized
+                            ErrorCode::FightCardLinkedToGameAsset
                         );
 
                         fight_card_link.shield_booster_used =
@@ -117,14 +128,14 @@ pub fn process_and_verify_game_asset_type(
                             fight_card_link.energy_booster_used.is_none()
                                 && fight_card_link.energy_booster_nonce_tracker.is_none()
                                 && game_asset_nonce.is_some(),
-                            ErrorCode::Unauthorized
+                            ErrorCode::FightCardLinkedToGameAsset
                         );
                         fight_card_link.energy_booster_used =
                             Some(mintable_asset.to_account_info().key());
                         fight_card_link.energy_booster_nonce_tracker =
                             Some(game_asset_nonce.unwrap().clone());
                     }
-                    _ => return Err(ErrorCode::Unauthorized.into()),
+                    _ => return Err(ErrorCode::BoosterTypeNotFound.into()),
                 },
                 "Champions Pass Type" => match require_tournament_type {
                     Some(TournamentType::MainCard) => {
@@ -132,7 +143,7 @@ pub fn process_and_verify_game_asset_type(
                             event_link.champions_pass_pubkey.is_none()
                                 && event_link.champions_pass_nonce_tracker.is_none()
                                 && game_asset_nonce.is_some(),
-                            ErrorCode::Unauthorized
+                            ErrorCode::EventLinkedToGameAsset
                         );
 
                         event_link.champions_pass_pubkey =
@@ -140,7 +151,7 @@ pub fn process_and_verify_game_asset_type(
                         event_link.champions_pass_nonce_tracker =
                             Some(game_asset_nonce.unwrap().clone())
                     }
-                    _ => return Err(ErrorCode::Unauthorized.into()),
+                    _ => return Err(ErrorCode::NonMainCardEvent.into()),
                 },
                 _ => {}
             }

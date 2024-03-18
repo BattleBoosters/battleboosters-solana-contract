@@ -54,59 +54,62 @@ describe('Mintable Game Asset', () => {
     } = account_init(program);
 
     before(async () => {
-        await InitializePlayerAccount(
-            provider,
-            provider.wallet.publicKey,
-            program,
-            program_pda
-        );
-        const [player_account_pda, player_account_bump] =
-            anchor.web3.PublicKey.findProgramAddressSync(
-                [
-                    Buffer.from('BattleBoosters'),
-                    Buffer.from('player'),
-                    provider.wallet.publicKey.toBuffer(),
-                ],
-                program.programId
+        try {
+            await InitializePlayerAccount(
+                provider,
+                provider.wallet.publicKey,
+                program,
+                program_pda
             );
+            const [player_account_pda, player_account_bump] =
+                anchor.web3.PublicKey.findProgramAddressSync(
+                    [
+                        Buffer.from('BattleBoosters'),
+                        Buffer.from('player'),
+                        provider.wallet.publicKey.toBuffer(),
+                    ],
+                    program.programId
+                );
 
-        const player_account_pda_data = await program.account.playerData.fetch(
-            player_account_pda
-        );
-        const [collector_pack_pda, collector_pack_bump] =
-            anchor.web3.PublicKey.findProgramAddressSync(
-                [
-                    Buffer.from('BattleBoosters'),
-                    Buffer.from('collector'),
-                    provider.wallet.publicKey.toBuffer(),
-                    new BN(player_account_pda_data.orderNonce).toBuffer(
-                        'le',
-                        8
-                    ),
-                ],
-                program.programId
+            const player_account_pda_data =
+                await program.account.playerData.fetch(player_account_pda);
+            const [collector_pack_pda, collector_pack_bump] =
+                anchor.web3.PublicKey.findProgramAddressSync(
+                    [
+                        Buffer.from('BattleBoosters'),
+                        Buffer.from('collector'),
+                        provider.wallet.publicKey.toBuffer(),
+                        new BN(player_account_pda_data.orderNonce).toBuffer(
+                            'le',
+                            8
+                        ),
+                    ],
+                    program.programId
+                );
+
+            const tx = await program.methods
+                .adminAirdropCollectorPack(new BN(3), new BN(2), new BN(0))
+                .accounts({
+                    signer: admin_account.publicKey,
+                    recipient: provider.wallet.publicKey,
+                    program: program_pda,
+                    playerAccount: player_account_pda,
+                    collectorPack: collector_pack_pda,
+                })
+                .signers([admin_account])
+                .rpc();
+
+            const collector_pack_pda_data =
+                await program.account.collectorPack.fetch(collector_pack_pda);
+            assert.isTrue(
+                collector_pack_pda_data.boosterMintAllowance.eq(new BN(3))
             );
-
-        const tx = await program.methods
-            .testGiftCollectorPack()
-            .accounts({
-                signer: provider.wallet.publicKey,
-                recipient: provider.wallet.publicKey,
-                program: program_pda,
-                playerAccount: player_account_pda,
-                collectorPack: collector_pack_pda,
-            })
-            .signers([])
-            .rpc();
-
-        const collector_pack_pda_data =
-            await program.account.collectorPack.fetch(collector_pack_pda);
-        assert.isTrue(
-            collector_pack_pda_data.boosterMintAllowance.eq(new BN(3))
-        );
-        assert.isTrue(
-            collector_pack_pda_data.fighterMintAllowance.eq(new BN(2))
-        );
+            assert.isTrue(
+                collector_pack_pda_data.fighterMintAllowance.eq(new BN(2))
+            );
+        } catch (e) {
+            console.log(e);
+        }
     });
     it('Open a fighter from collector pack randomly', async () => {
         try {

@@ -33,4 +33,22 @@ pub enum ErrorCode {
     EventAlreadyStarted,
     #[msg("Attach rarity account to this transaction")]
     RarityAccountRequired,
+    #[msg("Fight card link already has a game asset, or game asset nonce is missing")]
+    FightCardLinkedToGameAsset,
+    #[msg("Event card link already has a game asset, or game asset nonce is missing")]
+    EventLinkedToGameAsset,
+    #[msg("Booster type not found")]
+    BoosterTypeNotFound,
+    #[msg("Champion's pass not required for non-main card events")]
+    NonMainCardEvent,
+    #[msg("This mintable game asset has no owner")]
+    MintableAssetHasNoOwner,
+    #[msg("This mintable game asset is burnt")]
+    MintableAssetBurned,
+    #[msg("This mintable game asset is locked")]
+    MintableAssetLocked,
+    #[msg("This mintable game asset has been minted as an NFT and is no longer available for in-game use")]
+    MintableAssetMintedAndUnavailable,
+    #[msg("This mintable game asset link is missing")]
+    MintableAssetLinkRequired,
 }

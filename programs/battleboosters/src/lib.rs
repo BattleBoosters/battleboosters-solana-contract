@@ -381,13 +381,22 @@ pub mod battleboosters {
 
     // TODO: REMOVE BEFORE MAINNET LAUNCH
     /// ONLY FOR TEST PURPOSE
-    pub fn test_gift_collector_pack(ctx: Context<TransactionTest>) -> Result<()> {
+    pub fn admin_airdrop_collector_pack(
+        ctx: Context<TransactionTest>,
+        booster_mint_alowance: u64,
+        fighter_mint_allowance: u64,
+        champions_pass_mint_allowance: u64,
+    ) -> Result<()> {
+        verify_equality(
+            &ctx.accounts.signer.key(),
+            &ctx.accounts.program.admin_pubkey,
+        )?;
         let collector_pack = &mut ctx.accounts.collector_pack;
 
         collector_pack.randomness = Some(vec![12, 23, 34, 34, 54, 74, 94, 23]);
-        collector_pack.booster_mint_allowance = 3;
-        collector_pack.fighter_mint_allowance = 2;
-        collector_pack.champions_pass_mint_allowance = 1;
+        collector_pack.booster_mint_allowance = booster_mint_alowance;
+        collector_pack.fighter_mint_allowance = fighter_mint_allowance;
+        collector_pack.champions_pass_mint_allowance = champions_pass_mint_allowance;
         Ok(())
     }
 
@@ -1022,14 +1031,14 @@ pub mod battleboosters {
         require!(
             fight_card_link.fighter_used.is_some()
                 && fight_card_link.fighter_nonce_tracker.is_some(),
-            ErrorCode::Unauthorized
+            ErrorCode::FightCardLinkedToGameAsset
         );
         match event.tournament_type {
             TournamentType::MainCard => {
                 require!(
                     event_link.champions_pass_pubkey.is_some()
                         && event_link.champions_pass_nonce_tracker.is_some(),
-                    ErrorCode::Unauthorized
+                    ErrorCode::EventLinkedToGameAsset
                 );
             }
             _ => {}
