@@ -6,7 +6,9 @@ pub enum ErrorCode {
     #[msg("Custom error message for an invalid operation")]
     InvalidOperation,
     #[msg("Unauthorized access attempt")]
-    Unauthorized, // ... other errors ...
+    Unauthorized,
+    #[msg("The mintable game asset link is not properly linked to the specified mintable game asset PDA")]
+    GameAssetLinkNotLinkedToAssetPDA,
     #[msg("Already initialized")]
     AlreadyInitialized,
     #[msg("The provided NFT type is not supported for this operation")]

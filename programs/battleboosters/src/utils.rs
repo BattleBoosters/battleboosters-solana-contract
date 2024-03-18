@@ -15,6 +15,14 @@ pub fn verify_equality(expected: &Pubkey, actual: &Pubkey) -> Result<()> {
     require!(expected == actual, ErrorCode::Unauthorized);
     Ok(())
 }
+
+pub fn verify_equality_mintable_asset(expected: &Pubkey, actual: &Pubkey) -> Result<()> {
+    require!(
+        expected == actual,
+        ErrorCode::GameAssetLinkNotLinkedToAssetPDA
+    );
+    Ok(())
+}
 /*
    TODO: Improve error msg's
 */
@@ -29,7 +37,7 @@ pub fn process_game_asset_for_action(
         let mintable_asset_owner = mintable_asset
             .owner
             .ok_or(ErrorCode::MintableAssetHasNoOwner)?;
-        verify_equality(&mintable_asset_owner, &signer)?;
+        verify_equality_mintable_asset(&mintable_asset_owner, &signer)?;
 
         require!(
             mintable_asset.is_burned == false,
@@ -51,7 +59,7 @@ pub fn process_game_asset_for_action(
             // require!(!mintable_asset_link.is_free, ErrorCode::Unauthorized);
 
             // Check the PDA `mintable_asset_link` is linked to the PDA `mintable_asset`
-            verify_equality(
+            verify_equality_mintable_asset(
                 &mintable_asset.to_account_info().key(),
                 &mintable_asset_link.mintable_game_asset_pubkey,
             )?;

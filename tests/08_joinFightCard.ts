@@ -98,7 +98,6 @@ describe('Join fight card', () => {
             0,
             0,
             0,
-            0,
             0
         );
 
@@ -193,7 +192,51 @@ describe('Join fight card', () => {
             true
         );
     });
-    it('Should join the next fight card', async () => {
+
+    it('Should fail reusing fighter game asset', async () => {
+        try {
+            await joinFightCard(
+                provider,
+                program,
+                admin_account,
+                program_pda,
+                {
+                    fighterBlue: {},
+                },
+                0,
+                1,
+                0,
+                0
+            );
+        } catch (e) {
+            assert.include(e.message, 'This mintable game asset is locked');
+        }
+    });
+
+    it('Should fail claiming wrong ownership game asset', async () => {
+        try {
+            await joinFightCard(
+                provider,
+                program,
+                admin_account,
+                program_pda,
+                {
+                    fighterBlue: {},
+                },
+                0,
+                1,
+                1,
+                2
+            );
+        } catch (e) {
+            assert.include(
+                e.message,
+                'The mintable game asset link is not properly linked to the specified mintable game asset PDA'
+            );
+        }
+    });
+
+    it('Should join the next fight card with a booster of energy', async () => {
         try {
             let {
                 event_account,
@@ -203,6 +246,8 @@ describe('Join fight card', () => {
                 player_account_pda,
                 fighter_mintable_game_asset_pda,
                 fighter_mintable_game_asset_link_pda,
+                energy_mintable_game_asset_pda,
+                energy_mintable_game_asset_link_pda,
             } = await joinFightCard(
                 provider,
                 program,
@@ -214,13 +259,25 @@ describe('Join fight card', () => {
                 0,
                 1,
                 1,
-                1
+                1,
+                2,
+                2
             );
-
-            // const fighter_mintable_game_asset_pda_data = await program.account.mintableGameAssetData.fetch(
-            //     fighter_mintable_game_asset_pda
-            // );
-            // console.log(fighter_mintable_game_asset_pda_data.isLocked)
+            const fight_card_link_account_data =
+                await program.account.fightCardLinkData.fetch(
+                    fight_card_link_account
+                );
+            console.log(fight_card_link_account_data.energyBoosterUsed);
+            const fighter_mintable_game_asset_pda_data =
+                await program.account.mintableGameAssetData.fetch(
+                    fighter_mintable_game_asset_pda
+                );
+            console.log(fighter_mintable_game_asset_pda_data.isLocked);
+            const energy_mintable_game_asset_pda_data =
+                await program.account.mintableGameAssetData.fetch(
+                    energy_mintable_game_asset_pda
+                );
+            console.log(energy_mintable_game_asset_pda_data.isLocked);
         } catch (e) {
             console.log(e);
         }

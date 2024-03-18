@@ -10,35 +10,40 @@ import PrepareLookupTable from './prepareLookupTable';
 function findProgramAddressSync(
     provider: anchor.AnchorProvider,
     program: anchor.Program<Battleboosters>,
-    asset_id,
-    asset_id_link
+    asset_nonce,
+    asset_link_nonce
 ) {
-    if (asset_id !== null && asset_id_link !== null) {
+    let asset_nonce_pda = null;
+    if (asset_nonce !== null) {
         const [mintable_game_asset_pda, mintable_game_asset_bump] =
             anchor.web3.PublicKey.findProgramAddressSync(
                 [
                     Buffer.from('BattleBoosters'),
                     Buffer.from('mintableGameAsset'),
-                    new BN(asset_id).toBuffer('le', 8),
+                    new BN(asset_nonce).toBuffer('le', 8),
                 ],
                 program.programId
             );
+        asset_nonce_pda = mintable_game_asset_pda;
+    }
+
+    let asset_link_nonce_pda = null;
+    if (asset_link_nonce !== null) {
         const [mintable_game_asset_link_pda, mintable_game_asset_link_bump] =
             anchor.web3.PublicKey.findProgramAddressSync(
                 [
                     Buffer.from('BattleBoosters'),
                     Buffer.from('mintableGameAsset'),
-                    new BN(asset_id_link).toBuffer('le', 8),
+                    new BN(asset_link_nonce).toBuffer('le', 8),
                     provider.wallet.publicKey.toBuffer(),
                     //admin_account.publicKey.toBuffer(),
                 ],
                 program.programId
             );
-
-        return [mintable_game_asset_pda, mintable_game_asset_link_pda];
-    } else {
-        return [null, null];
+        asset_link_nonce_pda = mintable_game_asset_link_pda;
     }
+
+    return [asset_nonce_pda, asset_link_nonce_pda];
 }
 const joinFightCard = async function (
     provider: anchor.AnchorProvider,
@@ -46,25 +51,25 @@ const joinFightCard = async function (
     admin_account,
     program_pda,
     fighterColorSide,
-    event_id,
-    fight_card_id,
-    fighter_mintable_asset_id,
-    fighter_mintable_asset_link_id,
-    energy_mintable_asset_id = null,
-    energy_mintable_asset_link_id = null,
-    shield_mintable_asset_id = null,
-    shield_mintable_asset_link_id = null,
-    points_mintable_asset_id = null,
-    points_mintable_asset_link_id = null,
-    champions_pass_mintable_asset_id = null,
-    champions_pass_mintable_asset_link_id = null
+    event_nonce,
+    fight_card_nonce,
+    fighter_mintable_asset_nonce,
+    fighter_mintable_asset_link_nonce,
+    energy_mintable_asset_nonce = null,
+    energy_mintable_asset_link_nonce = null,
+    shield_mintable_asset_nonce = null,
+    shield_mintable_asset_link_nonce = null,
+    points_mintable_asset_nonce = null,
+    points_mintable_asset_link_nonce = null,
+    champions_pass_mintable_asset_nonce = null,
+    champions_pass_mintable_asset_link_nonce = null
 ) {
     const [event_account, event_account_bump] =
         anchor.web3.PublicKey.findProgramAddressSync(
             [
                 Buffer.from('BattleBoosters'),
                 Buffer.from('event'),
-                new BN(event_id).toBuffer('le', 8),
+                new BN(event_nonce).toBuffer('le', 8),
             ],
             program.programId
         );
@@ -87,7 +92,7 @@ const joinFightCard = async function (
                 Buffer.from('BattleBoosters'),
                 Buffer.from('fightCard'),
                 event_account.toBuffer(),
-                new BN(fight_card_id).toBuffer(),
+                new BN(fight_card_nonce).toBuffer(),
             ],
             program.programId
         );
@@ -97,7 +102,7 @@ const joinFightCard = async function (
                 Buffer.from('BattleBoosters'),
                 Buffer.from('fightCard'),
                 event_account.toBuffer(),
-                new BN(fight_card_id).toBuffer(),
+                new BN(fight_card_nonce).toBuffer(),
                 provider.wallet.publicKey.toBuffer(),
                 //admin_account.publicKey.toBuffer()
             ],
@@ -124,8 +129,8 @@ const joinFightCard = async function (
     ] = findProgramAddressSync(
         provider,
         program,
-        fighter_mintable_asset_id,
-        fighter_mintable_asset_link_id
+        fighter_mintable_asset_nonce,
+        fighter_mintable_asset_link_nonce
     );
     const [
         energy_mintable_game_asset_pda,
@@ -133,8 +138,8 @@ const joinFightCard = async function (
     ] = findProgramAddressSync(
         provider,
         program,
-        energy_mintable_asset_id,
-        energy_mintable_asset_link_id
+        energy_mintable_asset_nonce,
+        energy_mintable_asset_link_nonce
     );
     const [
         shield_mintable_game_asset_pda,
@@ -142,8 +147,8 @@ const joinFightCard = async function (
     ] = findProgramAddressSync(
         provider,
         program,
-        shield_mintable_asset_id,
-        shield_mintable_asset_link_id
+        shield_mintable_asset_nonce,
+        shield_mintable_asset_link_nonce
     );
     const [
         points_mintable_game_asset_pda,
@@ -151,8 +156,8 @@ const joinFightCard = async function (
     ] = findProgramAddressSync(
         provider,
         program,
-        points_mintable_asset_id,
-        points_mintable_asset_link_id
+        points_mintable_asset_nonce,
+        points_mintable_asset_link_nonce
     );
     const [
         champions_pass_mintable_game_asset_pda,
@@ -160,33 +165,39 @@ const joinFightCard = async function (
     ] = findProgramAddressSync(
         provider,
         program,
-        champions_pass_mintable_asset_id,
-        champions_pass_mintable_asset_link_id
+        champions_pass_mintable_asset_nonce,
+        champions_pass_mintable_asset_link_nonce
     );
 
     const tx = await program.methods
         .joinFightCard(
-            new BN(event_id),
-            fight_card_id,
-            new BN(fighter_mintable_asset_id),
-            energy_mintable_asset_id ? new BN(energy_mintable_asset_id) : null,
-            shield_mintable_asset_id ? new BN(shield_mintable_asset_id) : null,
-            points_mintable_asset_id ? new BN(points_mintable_asset_id) : null,
-            champions_pass_mintable_asset_id
-                ? new BN(champions_pass_mintable_asset_id)
+            new BN(event_nonce),
+            fight_card_nonce,
+            new BN(fighter_mintable_asset_nonce),
+            energy_mintable_asset_nonce
+                ? new BN(energy_mintable_asset_nonce)
                 : null,
-            new BN(fighter_mintable_asset_link_id),
-            energy_mintable_asset_link_id
-                ? new BN(energy_mintable_asset_link_id)
+            shield_mintable_asset_nonce
+                ? new BN(shield_mintable_asset_nonce)
                 : null,
-            shield_mintable_asset_link_id
-                ? new BN(shield_mintable_asset_link_id)
+            points_mintable_asset_nonce
+                ? new BN(points_mintable_asset_nonce)
                 : null,
-            points_mintable_asset_link_id
-                ? new BN(points_mintable_asset_link_id)
+            champions_pass_mintable_asset_nonce
+                ? new BN(champions_pass_mintable_asset_nonce)
                 : null,
-            champions_pass_mintable_asset_link_id
-                ? new BN(champions_pass_mintable_asset_link_id)
+            new BN(fighter_mintable_asset_link_nonce),
+            energy_mintable_asset_link_nonce
+                ? new BN(energy_mintable_asset_link_nonce)
+                : null,
+            shield_mintable_asset_link_nonce
+                ? new BN(shield_mintable_asset_link_nonce)
+                : null,
+            points_mintable_asset_link_nonce
+                ? new BN(points_mintable_asset_link_nonce)
+                : null,
+            champions_pass_mintable_asset_link_nonce
+                ? new BN(champions_pass_mintable_asset_link_nonce)
                 : null,
             fighterColorSide
         )
@@ -237,6 +248,8 @@ const joinFightCard = async function (
         player_account_pda,
         fighter_mintable_game_asset_pda,
         fighter_mintable_game_asset_link_pda,
+        energy_mintable_game_asset_pda,
+        energy_mintable_game_asset_link_pda,
     };
 };
 
