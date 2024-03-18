@@ -171,3 +171,10 @@ impl FighterType {
         }
     }
 }
+
+#[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]
+pub enum TournamentType {
+    MainCard,
+    Prelims,
+    EarlyPrelims,
+}

@@ -8,17 +8,15 @@ const createFightCard = async function (
     program: anchor.Program<Battleboosters>,
     admin_account,
     program_pda,
-    event_id,
-    variant,
-    is_title_fight,
-    id_reference_off_chain
+    event_nonce,
+    is_title_fight
 ) {
     const [event_account, event_account_bump] =
         anchor.web3.PublicKey.findProgramAddressSync(
             [
                 Buffer.from('BattleBoosters'),
                 Buffer.from('event'),
-                new BN(event_id).toBuffer('le', 8),
+                new BN(event_nonce).toBuffer('le', 8),
             ],
             program.programId
         );
@@ -30,16 +28,14 @@ const createFightCard = async function (
                 Buffer.from('BattleBoosters'),
                 Buffer.from('fightCard'),
                 event_account.toBuffer(),
-                new BN(eventAccountData.fightCardIdCounter).toBuffer(),
+                new BN(eventAccountData.fightCardNonce).toBuffer(),
             ],
             program.programId
         );
 
     const fightCardData = {
-        id: new BN(id_reference_off_chain),
         eventPubkey: event_account,
-        eventNonceTracker: new BN(event_id),
-        tournament: variant,
+        eventNonceTracker: new BN(event_nonce),
         titleFight: is_title_fight,
         fighterBlue: null,
         fighterRed: null,
@@ -49,7 +45,7 @@ const createFightCard = async function (
     };
 
     const tx = await program.methods
-        .createNewFightCard(new BN(event_id), fightCardData)
+        .createNewFightCard(new BN(event_nonce), fightCardData)
         .accounts({
             creator: admin_account.publicKey,
             program: program_pda,
@@ -80,18 +76,16 @@ const updateFightCard = async function (
     program: anchor.Program<Battleboosters>,
     admin_account,
     program_pda,
-    event_id,
-    variant,
+    event_nonce,
     is_title_fight,
-    id_reference_off_chain,
-    fight_card_id
+    fight_card_nonce
 ) {
     const [event_account, event_account_bump] =
         anchor.web3.PublicKey.findProgramAddressSync(
             [
                 Buffer.from('BattleBoosters'),
                 Buffer.from('event'),
-                new BN(event_id).toBuffer('le', 8),
+                new BN(event_nonce).toBuffer('le', 8),
             ],
             program.programId
         );
@@ -103,15 +97,13 @@ const updateFightCard = async function (
                 Buffer.from('fightCard'),
                 event_account.toBuffer(),
                 //new BN(fight_card_id).toBuffer(),
-                Buffer.from([fight_card_id]),
+                Buffer.from([fight_card_nonce]),
             ],
             program.programId
         );
     const fightCardData = {
-        id: new BN(id_reference_off_chain),
         eventPubkey: event_account,
-        eventNonceTracker: new BN(event_id),
-        tournament: variant,
+        eventNonceTracker: new BN(event_nonce),
         titleFight: is_title_fight,
         fighterBlue: null,
         fighterRed: null,
@@ -121,7 +113,7 @@ const updateFightCard = async function (
     };
 
     const tx = await program.methods
-        .updateFightCard(new BN(event_id), fight_card_id, fightCardData)
+        .updateFightCard(new BN(event_nonce), fight_card_nonce, fightCardData)
         .accounts({
             creator: admin_account.publicKey,
             program: program_pda,

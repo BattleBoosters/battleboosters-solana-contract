@@ -34,11 +34,12 @@ describe('Create event', () => {
                 admin_account,
                 program_pda,
                 time_start,
-                time_end
+                time_end,
+                { mainCard: {} }
             );
 
         assert.equal(program_data_before.eventNonce.eq(new BN(0)), true);
-        assert.equal(eventAccount.fightCardIdCounter, 0);
+        assert.equal(eventAccount.fightCardNonce, 0);
         assert.equal(eventAccount.startDate.eq(new BN(time_start)), true);
         assert.equal(eventAccount.endDate.eq(new BN(time_end)), true);
         assert.equal(program_data_after.eventNonce.eq(new BN(1)), true);
@@ -55,10 +56,11 @@ describe('Create event', () => {
                 admin_account,
                 program_pda,
                 time_start,
-                time_end
+                time_end,
+                { prelims: {} }
             );
         assert.equal(program_data_before.eventNonce.eq(new BN(1)), true);
-        assert.equal(eventAccount.fightCardIdCounter, 0);
+        assert.equal(eventAccount.fightCardNonce, 0);
         assert.equal(eventAccount.startDate.eq(new BN(time_start)), true);
         assert.equal(eventAccount.endDate.eq(new BN(time_end)), true);
         assert.equal(program_data_after.eventNonce.eq(new BN(2)), true);
@@ -75,7 +77,8 @@ describe('Create event', () => {
                 unauthorized_account,
                 program_pda,
                 time_start,
-                time_end
+                time_end,
+                { mainCard: {} }
             );
         } catch (e) {
             assert.include(e.message, 'Unauthorized access attempt');
@@ -93,11 +96,12 @@ describe('Create event', () => {
             program_pda,
             event_id,
             new_time_start,
-            new_time_end
+            new_time_end,
+            { prelims: {} }
         );
         assert.equal(eventAccount.startDate.eq(new BN(new_time_start)), true);
         assert.equal(eventAccount.endDate.eq(new BN(new_time_end)), true);
-        assert.equal(eventAccount.fightCardIdCounter, 0);
+        assert.equal(eventAccount.fightCardNonce, 0);
     });
 
     it('Should fail updating a new event, unauthorized signer', async () => {
@@ -112,7 +116,8 @@ describe('Create event', () => {
                 program_pda,
                 event_id,
                 new_time_start,
-                new_time_end
+                new_time_end,
+                { prelims: {} }
             );
         } catch (err) {
             assert.include(err.message, 'Unauthorized access attempt');
@@ -131,7 +136,8 @@ describe('Create event', () => {
                 program_pda,
                 event_id,
                 new_time_start,
-                new_time_end
+                new_time_end,
+                { prelims: {} }
             );
         } catch (err) {
             assert.include(err.message, 'Unauthorized access attempt');

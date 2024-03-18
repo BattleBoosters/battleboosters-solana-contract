@@ -873,50 +873,52 @@ pub mod battleboosters {
         ctx: Context<CreateEvent>,
         start_date: i64,
         end_date: i64,
+        tournament_type: TournamentType,
     ) -> Result<()> {
-        processor::create_new_event(ctx, start_date, end_date)
+        processor::create_new_event(ctx, start_date, end_date, tournament_type)
     }
 
     pub fn update_event(
         ctx: Context<UpdateEvent>,
-        event_id: u64,
+        event_nonce: u64,
         start_date: i64,
         end_date: i64,
+        tournament_type: TournamentType,
     ) -> Result<()> {
-        processor::update_event(ctx, event_id, start_date, end_date)
+        processor::update_event(ctx, event_nonce, start_date, end_date, tournament_type)
     }
 
     pub fn create_new_fight_card(
         ctx: Context<CreateFightCard>,
-        event_id: u64,
+        event_nonce: u64,
         params: FightCardData,
     ) -> Result<()> {
-        processor::create_new_fight_card(ctx, event_id, params)
+        processor::create_new_fight_card(ctx, event_nonce, params)
     }
 
     pub fn update_fight_card(
         ctx: Context<UpdateFightCard>,
-        event_id: u64,
+        event_nonce: u64,
         fight_card_id: u8,
         params: FightCardData,
     ) -> Result<()> {
-        processor::update_fight_card(ctx, event_id, fight_card_id, params)
+        processor::update_fight_card(ctx, event_nonce, fight_card_id, params)
     }
 
     pub fn join_fight_card(
         ctx: Context<JoinFightCard>,
-        event_id: u64,                        // Used in instruction
-        fight_card_id: u8,                    // Used in instruction
-        fighter_asset_id: u64,                // Used in instruction
-        energy_booster_asset_id: Option<u64>, // Used in instruction
-        shield_booster_asset_id: Option<u64>, // Used in instruction
-        points_booster_asset_id: Option<u64>, // Used in instruction
-        champions_pass_asset_id: Option<u64>, // Used in instruction
-        fighter_link_id: u64,                 // Used in instruction
-        energy_booster_link_id: Option<u64>,  // Used in instruction
-        shield_booster_link_id: Option<u64>,  // Used in instruction
-        points_booster_link_id: Option<u64>,  // Used in instruction
-        champions_pass_link_id: Option<u64>,  // Used in instruction
+        event_nonce: u64,                        // Used in instruction
+        fight_card_nonce: u8,                    // Used in instruction
+        fighter_asset_nonce: u64,                // Used in instruction
+        energy_booster_asset_nonce: Option<u64>, // Used in instruction
+        shield_booster_asset_nonce: Option<u64>, // Used in instruction
+        points_booster_asset_nonce: Option<u64>, // Used in instruction
+        champions_pass_asset_nonce: Option<u64>, // Used in instruction
+        fighter_link_nonce: u64,                 // Used in instruction
+        energy_booster_link_nonce: Option<u64>,  // Used in instruction
+        shield_booster_link_nonce: Option<u64>,  // Used in instruction
+        points_booster_link_nonce: Option<u64>,  // Used in instruction
+        champions_pass_link_nonce: Option<u64>,  // Used in instruction
         fighter_color_side: FighterColorSide,
     ) -> Result<()> {
         let clock = Clock::get().unwrap();
@@ -948,39 +950,6 @@ pub mod battleboosters {
 
         */
         // Game assets
-        //
-        // let is_fighter_type = &ctx
-        //     .accounts
-        //     .fighter_asset
-        //     .metadata
-        //     .attributes
-        //     .iter()
-        //     .any(|attr| {
-        //         if attr.trait_type == "Fighter Type" {
-        //             // Use the from_name method to check if the trait_value is a valid FighterType
-        //             FighterType::from_name(&attr.value).is_some()
-        //         } else {
-        //             false
-        //         }
-        //     });
-        // require!(is_fighter_type, ErrorCode::Unauthorized);
-
-        // let is_energy_type = &ctx
-        //     .accounts
-        //     .energy_booster_asset
-        //     .as_ref()
-        //     .unwrap()
-        //     .metadata
-        //     .attributes
-        //     .iter()
-        //     .any(|attr| {
-        //         if attr.trait_type == "Booster Type" {
-        //             // Use the from_name method to check if the trait_value is a valid FighterType
-        //             BoosterType::from_name(&attr.value).is_some()
-        //         } else {
-        //             false
-        //         }
-        //     });
 
         process_game_asset_for_action(
             Some(&mut ctx.accounts.fighter_asset),
@@ -993,7 +962,7 @@ pub mod battleboosters {
             fight_card_link,
             event_link,
             None,
-            Some(fighter_asset_id),
+            Some(fighter_asset_nonce),
         )?;
 
         process_game_asset_for_action(
@@ -1007,7 +976,7 @@ pub mod battleboosters {
             fight_card_link,
             event_link,
             None,
-            energy_booster_asset_id,
+            energy_booster_asset_nonce,
         )?;
         process_game_asset_for_action(
             ctx.accounts.shield_booster_asset.as_mut(),
@@ -1020,7 +989,7 @@ pub mod battleboosters {
             fight_card_link,
             event_link,
             None,
-            shield_booster_asset_id,
+            shield_booster_asset_nonce,
         )?;
         process_game_asset_for_action(
             ctx.accounts.points_booster_asset.as_mut(),
@@ -1033,7 +1002,7 @@ pub mod battleboosters {
             fight_card_link,
             event_link,
             None,
-            points_booster_asset_id,
+            points_booster_asset_nonce,
         )?;
 
         process_game_asset_for_action(
@@ -1046,8 +1015,8 @@ pub mod battleboosters {
             champions_pass_asset.as_ref(),
             fight_card_link,
             event_link,
-            Some(&fight_card.tournament),
-            champions_pass_asset_id.clone(),
+            Some(&event.tournament_type),
+            champions_pass_asset_nonce.clone(),
         )?;
 
         require!(
@@ -1055,7 +1024,7 @@ pub mod battleboosters {
                 && fight_card_link.fighter_nonce_tracker.is_some(),
             ErrorCode::Unauthorized
         );
-        match fight_card.tournament {
+        match event.tournament_type {
             TournamentType::MainCard => {
                 require!(
                     event_link.champions_pass_pubkey.is_some()
@@ -1071,12 +1040,12 @@ pub mod battleboosters {
             event_link.is_initialized = true;
             event_link.creator = signer.key();
             event_link.event_pubkey = event.key();
-            event_link.event_nonce_tracker = event_id;
+            event_link.event_nonce_tracker = event_nonce;
         }
 
         fight_card_link.creator = signer.key();
         fight_card_link.fight_card_pubkey = fight_card.to_account_info().key();
-        fight_card_link.fight_card_nonce_tracker = fight_card_id;
+        fight_card_link.fight_card_nonce_tracker = fight_card_nonce;
         fight_card_link.fighter_color_side = fighter_color_side;
         fight_card_link.is_consumed = false;
         fight_card_link.is_initialized = true;

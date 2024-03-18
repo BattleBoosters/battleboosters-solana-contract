@@ -35,14 +35,12 @@ describe('Create fight card', () => {
             admin_account,
             program_pda,
             0,
-            { mainCard: {} },
-            true,
-            112
+            true
         );
         let fightCardAccountData = await program.account.fightCardData.fetch(
             fight_card_account
         );
-        assert.equal(fightCardAccountData.id.eq(new BN(112)), true);
+
         assert.equal(
             fightCardAccountData.eventNonceTracker.eq(new BN(0)),
             true
@@ -56,10 +54,9 @@ describe('Create fight card', () => {
             true
         );
         assert.equal(fightCardAccountData.result, null);
-        assert.deepEqual(fightCardAccountData.tournament, { mainCard: {} });
 
         let fetchedEvent = await program.account.eventData.fetch(event_account);
-        assert.equal(fetchedEvent.fightCardIdCounter, 1);
+        assert.equal(fetchedEvent.fightCardNonce, 1);
     });
 
     it('Should fail creating fight card unauthorized signer', async () => {
@@ -70,9 +67,7 @@ describe('Create fight card', () => {
                 unauthorized_account,
                 program_pda,
                 0,
-                { mainCard: {} },
-                true,
-                112
+                true
             );
         } catch (e) {
             assert.include(e.message, 'Unauthorized access attempt');
@@ -86,9 +81,7 @@ describe('Create fight card', () => {
             admin_account,
             program_pda,
             0,
-            { prelims: {} },
             false,
-            112,
             0
         );
 
@@ -98,7 +91,7 @@ describe('Create fight card', () => {
         let fetchedFightCard = await program.account.fightCardData.fetch(
             fight_card_account
         );
-        assert.equal(fetchedFightCard.id.eq(new BN(112)), true);
+
         assert.equal(fetchedFightCard.fightDuration, null);
         assert.equal(fetchedFightCard.titleFight, false);
         assert.equal(fetchedFightCard.fighterBlue, null);
@@ -108,10 +101,8 @@ describe('Create fight card', () => {
             true
         );
         assert.equal(fetchedFightCard.result, null);
-        assert.deepEqual(fetchedFightCard.tournament, { prelims: {} });
-
         let fetchedEvent = await program.account.eventData.fetch(event_account);
-        assert.equal(fetchedEvent.fightCardIdCounter, 1);
+        assert.equal(fetchedEvent.fightCardNonce, 1);
     });
 
     it('Should fail updating fight card unauthorized signer', async () => {
@@ -122,9 +113,7 @@ describe('Create fight card', () => {
                 unauthorized_account,
                 program_pda,
                 0,
-                { mainCard: {} },
                 false,
-                112,
                 0
             );
         } catch (e) {
@@ -139,14 +128,11 @@ describe('Create fight card', () => {
             admin_account,
             program_pda,
             0,
-            { earlyPrelims: {} },
-            false,
-            113
+            false
         );
         let fightCardAccountData = await program.account.fightCardData.fetch(
             fight_card_account
         );
-        assert.equal(fightCardAccountData.id.eq(new BN(113)), true);
         assert.equal(
             fightCardAccountData.eventNonceTracker.eq(new BN(0)),
             true
@@ -160,10 +146,9 @@ describe('Create fight card', () => {
             true
         );
         assert.equal(fightCardAccountData.result, null);
-        assert.deepEqual(fightCardAccountData.tournament, { earlyPrelims: {} });
 
         let fetchedEvent = await program.account.eventData.fetch(event_account);
-        assert.equal(fetchedEvent.fightCardIdCounter, 2);
+        assert.equal(fetchedEvent.fightCardNonce, 2);
     });
 
     it('Should add a main card fight card', async () => {
@@ -173,14 +158,11 @@ describe('Create fight card', () => {
             admin_account,
             program_pda,
             0,
-            { mainCard: {} },
-            false,
-            114
+            false
         );
         let fightCardAccountData = await program.account.fightCardData.fetch(
             fight_card_account
         );
-        assert.equal(fightCardAccountData.id.eq(new BN(114)), true);
         assert.equal(
             fightCardAccountData.eventNonceTracker.eq(new BN(0)),
             true
@@ -194,9 +176,8 @@ describe('Create fight card', () => {
             true
         );
         assert.equal(fightCardAccountData.result, null);
-        assert.deepEqual(fightCardAccountData.tournament, { mainCard: {} });
 
         let fetchedEvent = await program.account.eventData.fetch(event_account);
-        assert.equal(fetchedEvent.fightCardIdCounter, 3);
+        assert.equal(fetchedEvent.fightCardNonce, 3);
     });
 });
