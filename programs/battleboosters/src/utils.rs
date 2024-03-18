@@ -1,8 +1,8 @@
 use crate::errors::ErrorCode;
+use crate::state::event::EventLinkData;
 use crate::state::fight_card::*;
 use crate::state::player::{
-    Attribute, EventLinkData, FightCardLinkData, MintableGameAssetData, NftMetadata,
-    PlayerGameAssetLinkData,
+    Attribute, FightCardLinkData, MintableGameAssetData, NftMetadata, PlayerGameAssetLinkData,
 };
 use crate::state::rarity::Stats;
 use crate::types::*;
@@ -65,8 +65,10 @@ pub fn process_game_asset_for_action(
             )?;
             if burn {
                 // We set the mintabable game asset to burn true
-                // TODO: Check if we can close the account to send back the rent to the creator.
+                // Important! Do not close until the point calculation have been executed
                 mintable_asset.is_burned = true;
+                // Remove the owner
+                mintable_asset.owner = None;
                 // We free the PDA for re-usability
                 mintable_asset_link.is_free = true;
             }

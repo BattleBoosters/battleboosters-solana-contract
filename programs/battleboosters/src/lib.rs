@@ -32,7 +32,7 @@ use anchor_lang::solana_program::program::{invoke, invoke_signed};
 use solana_randomness_service::ID as SolanaRandomnessServiceID;
 use switchboard_solana::utils::get_ixn_discriminator;
 
-declare_id!("5i8NiCU6PusnomDTAHqgaAftn7nERQ7fXeGNz4nDabeB");
+declare_id!("7fvTzULhLmw4Vmk1HtwZwNQB1Wz2c4HX2ZBR6bZt7n26");
 
 #[program]
 pub mod battleboosters {
@@ -914,6 +914,22 @@ pub mod battleboosters {
         processor::update_fight_card(ctx, event_nonce, fight_card_id, params)
     }
 
+    pub fn initialize_event_link(
+        ctx: Context<InitializeEventLink>,
+        event_nonce: u64,
+    ) -> Result<()> {
+        let event_link = &mut ctx.accounts.event_link;
+        let event = &ctx.accounts.event;
+        require!(!event_link.is_initialized, ErrorCode::AlreadyInitialized);
+
+        event_link.event_pubkey = event.to_account_info().key();
+        event_link.event_nonce_tracker = event_nonce;
+        event_link.champions_pass_pubkey = None;
+        event_link.champions_pass_nonce_tracker = None;
+
+        Ok(())
+    }
+
     pub fn join_fight_card(
         ctx: Context<JoinFightCard>,
         event_nonce: u64,                        // Used in instruction
@@ -1020,6 +1036,7 @@ pub mod battleboosters {
             &signer.key(),
             true,
         )?;
+
         process_and_verify_game_asset_type(
             champions_pass_asset.as_ref(),
             fight_card_link,
@@ -1047,12 +1064,10 @@ pub mod battleboosters {
         // Init if needed event link
         if !event_link.is_initialized {
             event_link.is_initialized = true;
-            event_link.creator = signer.key();
             event_link.event_pubkey = event.key();
             event_link.event_nonce_tracker = event_nonce;
         }
 
-        fight_card_link.creator = signer.key();
         fight_card_link.fight_card_pubkey = fight_card.to_account_info().key();
         fight_card_link.fight_card_nonce_tracker = fight_card_nonce;
         fight_card_link.fighter_color_side = fighter_color_side;

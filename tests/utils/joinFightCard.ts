@@ -203,7 +203,6 @@ const joinFightCard = async function (
         )
         .accounts({
             signer: provider.wallet.publicKey,
-            program: program_pda,
             event: event_account,
             fighterAsset: fighter_mintable_game_asset_pda,
             fighterLink: fighter_mintable_game_asset_link_pda,

@@ -10,7 +10,7 @@ pub struct InitializeProgram<'info> {
     seeds = [MY_APP_PREFIX, PROGRAM_STATE],
     bump,
     space = 8 + 8 + 8 + 32 + 8 + 8 + 1 + 1 + 1 + 1)]
-    pub program: Account<'info, ProgramData>,
+    pub program: Box<Account<'info, ProgramData>>,
     /// CHECK: This is a PDA used as the bank
     #[account(mut, seeds = [MY_APP_PREFIX, BANK], bump = bank_bump)]
     pub bank: AccountInfo<'info>,

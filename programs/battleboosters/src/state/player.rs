@@ -4,7 +4,7 @@ use crate::constants::*;
 use crate::state::fight_card::FightCardData;
 use anchor_lang::prelude::*;
 
-use crate::state::event::EventData;
+use crate::state::event::{EventData, EventLinkData};
 use crate::state::rarity::RarityData;
 use crate::types::FighterColorSide;
 use anchor_lang::solana_program::sysvar;
@@ -109,13 +109,6 @@ pub struct JoinFightCard<'info> {
     pub signer: Signer<'info>,
     #[account(
     mut,
-    seeds = [MY_APP_PREFIX, PROGRAM_STATE],
-    bump,
-    )]
-    pub program: Box<Account<'info, ProgramData>>,
-
-    #[account(
-    mut,
     seeds = [MY_APP_PREFIX, EVENT, event_nonce.to_le_bytes().as_ref()],
     bump
     )]
@@ -201,20 +194,18 @@ pub struct JoinFightCard<'info> {
     #[account(
     init,
     payer = signer,
-    space = 8 + 32 + 32 + 1 + 33 + 9 + 33 + 9 + 33 + 9 + 33 + 9 + 2 + 1 + 1,
+    space = 250,
     seeds = [MY_APP_PREFIX, FIGHT_CARD, event.key().as_ref(), fight_card_nonce.to_le_bytes().as_ref(), signer.key().as_ref()],
     bump
     )]
     pub fight_card_link: Box<Account<'info, FightCardLinkData>>,
 
     #[account(
-    init_if_needed,
-    payer = signer,
-    space = 8 + 32 + 32 + 1 + 33 + 9 + 1,
+    mut,
     seeds = [MY_APP_PREFIX, EVENT, event.key().as_ref(), signer.key().as_ref()],
     bump
     )]
-    pub event_link: Account<'info, EventLinkData>,
+    pub event_link: Box<Account<'info, EventLinkData>>,
 
     pub system_program: Program<'info, System>,
 }
@@ -229,26 +220,6 @@ pub struct PlayerData {
     pub is_initialized: bool,
 }
 
-#[account]
-pub struct EventLinkData {
-    /// Signer of the tx
-    pub creator: Pubkey,
-    /// `Event` PDA public key for direct ref
-    pub event_pubkey: Pubkey,
-    /// Tracker to link the `EventLink` PDA to the `Event` PDA
-    pub event_nonce_tracker: u64,
-    /// Ensure a champions pass have been used for `MainCard` access
-    /// `champions_pass_asset` PDA public key for direct ref
-    pub champions_pass_pubkey: Option<Pubkey>,
-    /// Tracker to link the `champions_pass` PDA
-    pub champions_pass_nonce_tracker: Option<u64>,
-    /// Prevent accidental multiple initializations of a PDA
-    pub is_initialized: bool,
-    /*
-       TODO: Probably store the Pubkey of the metadata Champion's pass
-             + the nonce tracker ?
-    */
-}
 /*
 
    TODO: Store the PDA used to get back the Metadata when resolving the event
@@ -259,8 +230,6 @@ pub struct EventLinkData {
 
 #[account]
 pub struct FightCardLinkData {
-    /// Signer of the tx
-    pub creator: Pubkey,
     /// `fight_card` PDA public key for direct ref
     pub fight_card_pubkey: Pubkey,
     /// Tracker to link the `FightCardLink` PDA to the `FightCard` PDA

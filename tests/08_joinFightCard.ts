@@ -6,6 +6,8 @@ import account_init from './utils/initAccounts';
 import { joinFightCard } from './utils/joinFightCard';
 import createMintableGameAsset from './utils/createMintableGameAsset';
 import InitializePlayerAccount from './utils/initializePlayerAccount';
+import airdropSol from './utils/airdropSol';
+import { SystemProgram } from '@solana/web3.js';
 describe('Join fight card', () => {
     const provider = anchor.AnchorProvider.env();
 
@@ -78,6 +80,41 @@ describe('Join fight card', () => {
     //
     // })
 
+    before(async () => {
+        const [event_account, event_account_bump] =
+            anchor.web3.PublicKey.findProgramAddressSync(
+                [
+                    Buffer.from('BattleBoosters'),
+                    Buffer.from('event'),
+                    new BN(0).toBuffer('le', 8),
+                ],
+                program.programId
+            );
+        const [event_link_account, event_link_account_bump] =
+            anchor.web3.PublicKey.findProgramAddressSync(
+                [
+                    Buffer.from('BattleBoosters'),
+                    Buffer.from('event'),
+                    event_account.toBuffer(),
+                    provider.wallet.publicKey.toBuffer(),
+                    //admin_account.publicKey.toBuffer()
+                    // new BN(0).toBuffer('le', 8),
+                ],
+                program.programId
+            );
+
+        const tx = await program.methods
+            .initializeEventLink(new BN(0))
+            .accounts({
+                creator: provider.wallet.publicKey,
+                event: event_account,
+                eventLink: event_link_account,
+                systemProgram: anchor.web3.SystemProgram.programId,
+            })
+            .signers([])
+            .rpc();
+    });
+
     it('Should join a new fight card', async () => {
         let {
             event_account,
@@ -133,10 +170,6 @@ describe('Join fight card', () => {
             fighterBlue: {},
         });
         assert.deepEqual(
-            fight_card_link_account_data.creator,
-            provider.wallet.publicKey
-        );
-        assert.deepEqual(
             fight_card_link_account_data.fighterUsed,
             fighter_mintable_game_asset_pda
         );
@@ -180,10 +213,6 @@ describe('Join fight card', () => {
 
         const event_link_account_data =
             await program.account.eventLinkData.fetch(event_link_account);
-        assert.deepEqual(
-            event_link_account_data.creator,
-            provider.wallet.publicKey
-        );
         assert.equal(event_link_account_data.championsPassNonceTracker, null);
         assert.equal(event_link_account_data.championsPassPubkey, null);
         assert.deepEqual(event_link_account_data.eventPubkey, event_account);
@@ -236,6 +265,29 @@ describe('Join fight card', () => {
         }
     });
 
+    it('Should fail claiming wrong ownership game asset', async () => {
+        try {
+            await joinFightCard(
+                provider,
+                program,
+                admin_account,
+                program_pda,
+                {
+                    fighterBlue: {},
+                },
+                0,
+                1,
+                1,
+                2
+            );
+        } catch (e) {
+            assert.include(
+                e.message,
+                'The mintable game asset link is not properly linked to the specified mintable game asset PDA'
+            );
+        }
+    });
+
     it('Should join the next fight card with a booster of energy', async () => {
         try {
             let {
@@ -254,7 +306,7 @@ describe('Join fight card', () => {
                 admin_account,
                 program_pda,
                 {
-                    fighterBlue: {},
+                    fighterRed: {},
                 },
                 0,
                 1,
@@ -267,17 +319,34 @@ describe('Join fight card', () => {
                 await program.account.fightCardLinkData.fetch(
                     fight_card_link_account
                 );
-            console.log(fight_card_link_account_data.energyBoosterUsed);
+
             const fighter_mintable_game_asset_pda_data =
                 await program.account.mintableGameAssetData.fetch(
                     fighter_mintable_game_asset_pda
                 );
-            console.log(fighter_mintable_game_asset_pda_data.isLocked);
+
             const energy_mintable_game_asset_pda_data =
                 await program.account.mintableGameAssetData.fetch(
                     energy_mintable_game_asset_pda
                 );
-            console.log(energy_mintable_game_asset_pda_data.isLocked);
+            assert.isTrue(energy_mintable_game_asset_pda_data.isLocked);
+            assert.deepEqual(energy_mintable_game_asset_pda_data.owner, null);
+
+            const energy_mintable_game_asset_link_pda_data =
+                await program.account.playerGameAssetLinkData.fetch(
+                    energy_mintable_game_asset_link_pda
+                );
+            assert.isTrue(energy_mintable_game_asset_link_pda_data.isFree);
+            assert.deepEqual(
+                energy_mintable_game_asset_link_pda_data.mintableGameAssetPubkey,
+                energy_mintable_game_asset_pda
+            );
+            assert.deepEqual(
+                energy_mintable_game_asset_link_pda_data.mintableGameAssetNonceTracker.eq(
+                    new BN(2)
+                ),
+                true
+            );
         } catch (e) {
             console.log(e);
         }
