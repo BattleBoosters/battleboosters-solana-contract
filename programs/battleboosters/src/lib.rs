@@ -32,7 +32,7 @@ use anchor_lang::solana_program::program::{invoke, invoke_signed};
 use solana_randomness_service::ID as SolanaRandomnessServiceID;
 use switchboard_solana::utils::get_ixn_discriminator;
 
-declare_id!("7fvTzULhLmw4Vmk1HtwZwNQB1Wz2c4HX2ZBR6bZt7n26");
+declare_id!("A92RCbQNmTNcGBQS63gvPXz1pdaVcSQjo4LZBQuswzia");
 
 #[program]
 pub mod battleboosters {
