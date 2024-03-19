@@ -37,7 +37,6 @@ pub fn process_game_asset_for_action(
         let mintable_asset_owner = mintable_asset
             .owner
             .ok_or(ErrorCode::MintableAssetHasNoOwner)?;
-        verify_equality_mintable_asset(&mintable_asset_owner, &signer)?;
 
         require!(
             mintable_asset.is_burned == false,
@@ -53,6 +52,10 @@ pub fn process_game_asset_for_action(
         );
 
         if let Some(mintable_asset_link) = mintable_game_asset_link {
+            verify_equality_mintable_asset(
+                &mintable_asset_owner,
+                &mintable_asset_link.to_account_info().key(),
+            )?;
             // TODO: We probably doesn't need to do this check since it is unlikely to happen within
             //      a `mintable_game_asset` with `is_burned`, `is_locked` and `is_minted` is false
             // Double check also the `mintable_asset_lint` is not set to free

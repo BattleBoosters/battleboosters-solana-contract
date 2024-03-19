@@ -737,9 +737,9 @@ pub mod battleboosters {
             mintable_game_asset.to_account_info().key();
         // Updates the global state to track the current amount of created `mintable_game_asset` instances.
         program.mintable_game_asset_nonce += 1;
-        // Assigns the signer as the owner of the mintable asset,
+        // Assigns the player_game_asset_link as the owner of the mintable asset,
         // ensuring ownership until the user decides to mint it.
-        mintable_game_asset.owner = Some(signer.key());
+        mintable_game_asset.owner = Some(player_game_asset_link.to_account_info().key());
 
         Ok(())
     }
@@ -926,6 +926,7 @@ pub mod battleboosters {
         event_link.event_nonce_tracker = event_nonce;
         event_link.champions_pass_pubkey = None;
         event_link.champions_pass_nonce_tracker = None;
+        event_link.is_initialized = true;
 
         Ok(())
     }
