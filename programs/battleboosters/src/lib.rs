@@ -1061,13 +1061,6 @@ pub mod battleboosters {
             _ => {}
         }
 
-        // Init if needed event link
-        if !event_link.is_initialized {
-            event_link.is_initialized = true;
-            event_link.event_pubkey = event.key();
-            event_link.event_nonce_tracker = event_nonce;
-        }
-
         fight_card_link.fight_card_pubkey = fight_card.to_account_info().key();
         fight_card_link.fight_card_nonce_tracker = fight_card_nonce;
         fight_card_link.fighter_color_side = fighter_color_side;
