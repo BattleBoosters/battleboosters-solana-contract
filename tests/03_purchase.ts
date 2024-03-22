@@ -301,7 +301,7 @@ describe.only('Purchase', () => {
             console.log(JSON.stringify(logs?.meta?.logMessages, undefined, 2));
 
             const collectorPackPdaAfter =
-                await program.account.collectorPackData.fetch(
+                await program.account.mysteryBoxData.fetch(
                     collector_pack_pda
                 );
             console.log('randomness saved');
@@ -441,7 +441,7 @@ describe.only('Purchase', () => {
             console.log(JSON.stringify(logs?.meta?.logMessages, undefined, 2));
 
             const playerInventoryAccountAfter =
-                await program.account.collectorPackData.fetch(
+                await program.account.mysteryBoxData.fetch(
                     player_inventory_pda
                 );
             assert.isTrue(

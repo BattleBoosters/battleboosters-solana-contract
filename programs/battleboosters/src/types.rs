@@ -83,7 +83,7 @@ impl fmt::Display for FighterCategory {
 }
 
 impl FighterCategory {
-    pub fn from_name(index: &str) -> Option<FighterCategory> {
+    pub fn _from_name(index: &str) -> Option<FighterCategory> {
         match index {
             "Striker" => Some(FighterCategory::Striker),
             "Grappler" => Some(FighterCategory::Grappler),
@@ -157,7 +157,7 @@ impl FighterType {
     }
 
     // Determine the category of the fighter
-    pub fn category(&self) -> FighterCategory {
+    pub fn _category(&self) -> FighterCategory {
         match self {
             FighterType::Boxer
             | FighterType::MuayThai

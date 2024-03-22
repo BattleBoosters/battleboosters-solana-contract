@@ -1,12 +1,6 @@
-use super::collector_pack::CollectorPackData;
-use super::player::PlayerData;
-use super::program::ProgramData;
+use super::mystery_box::MysteryBoxData;
 use crate::constants::*;
 use anchor_lang::prelude::*;
-
-use crate::state::rarity::RarityData;
-use anchor_lang::solana_program::system_program;
-use anchor_lang::solana_program::sysvar;
 use solana_randomness_service::SimpleRandomnessV1Account;
 use solana_randomness_service::ID as SolanaRandomnessServiceID;
 use switchboard_solana::prelude::*;
@@ -37,7 +31,7 @@ pub struct ConsumeRandomness<'info> {
     // pub player_account: Box<Account<'info, PlayerData>>,
     /// CHECK:
     #[account(mut, seeds = [MY_APP_PREFIX, COLLECTOR, recipient.key().as_ref(), order_nonce.to_le_bytes().as_ref()], bump)]
-    pub collector_pack: Box<Account<'info, CollectorPackData>>,
+    pub collector_pack: Box<Account<'info, MysteryBoxData>>,
     // /// CHECK: This is a PDA used as the bank
     // #[account(mut, seeds = [MY_APP_PREFIX, BANK], bump = program.bank_bump)]
     // /// CHECK:

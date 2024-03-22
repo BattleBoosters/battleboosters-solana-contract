@@ -1,5 +1,4 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token::MintTo;
 mod constants;
 mod errors;
 mod events;
@@ -9,10 +8,9 @@ mod types;
 mod utils;
 
 use crate::constants::*;
-use crate::events::*;
 use crate::state::{
-    collector_pack::*, create_spl_nft::*, event::*, fight_card::*, player::*, program::*,
-    rarity::*, switchboard_callback::*, transaction_escrow::*,
+    mystery_box::*, create_spl_nft::*, event::*, fight_card::*, player::*, program::*,
+    rarity::*, switchboard_callback::*, transaction_escrow::*, join_fight_card::*, mintable_game_asset::*
 };
 
 use crate::types::*;
@@ -21,15 +19,14 @@ use crate::utils::*;
 use errors::ErrorCode;
 
 use mpl_token_metadata::instructions::{
-    BurnCpiBuilder, CreateMetadataAccountV3, CreateV1, CreateV1Builder, CreateV1CpiBuilder,
-    MintV1CpiBuilder, TransferV1Cpi, TransferV1CpiAccounts, TransferV1InstructionArgs,
+    CreateV1CpiBuilder,
+    MintV1CpiBuilder,
     VerifyCollectionV1CpiBuilder,
 };
 
 use mpl_token_metadata::types::{PrintSupply, TokenStandard};
 
-use anchor_lang::solana_program::program::{invoke, invoke_signed};
-use solana_randomness_service::ID as SolanaRandomnessServiceID;
+use anchor_lang::solana_program::program::{invoke_signed};
 use switchboard_solana::utils::get_ixn_discriminator;
 declare_id!("5GW3wfyowgfKsKCeC2VKg6ucM4wKYX5ebZNAqvBcvTSd");
 
@@ -40,11 +37,10 @@ pub mod battleboosters {
     use crate::state::rarity::InitializeRarity;
     use anchor_lang::solana_program::native_token::LAMPORTS_PER_SOL;
     use anchor_lang::solana_program::system_instruction;
-    use anchor_lang::system_program;
-    use mpl_token_metadata::types::{Collection, CollectionDetails, DataV2};
-    use solana_program::address_lookup_table::state::ProgramState::LookupTable;
+
+    use mpl_token_metadata::types::{Collection, DataV2};
     use solana_randomness_service::TransactionOptions;
-    use std::ops::Add;
+
 
     pub fn initialize(
         ctx: Context<InitializeProgram>,
@@ -776,7 +772,7 @@ pub mod battleboosters {
     }
 
     pub fn mint_collector_pack(
-        ctx: Context<MintCollectorPack>,
+        ctx: Context<MintMysteryBox>,
         //requests: Vec<PurchaseRequest>,
     ) -> Result<()> {
         let program = &mut ctx.accounts.program;

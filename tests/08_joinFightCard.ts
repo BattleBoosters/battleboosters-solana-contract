@@ -151,7 +151,7 @@ describe('Join fight card', () => {
         );
 
         const fighter_mintable_game_asset_link_pda_data =
-            await program.account.playerGameAssetLinkData.fetch(
+            await program.account.mintableGameAssetLinkData.fetch(
                 fighter_mintable_game_asset_link_pda
             );
         assert.equal(fighter_mintable_game_asset_link_pda_data.isFree, false);
@@ -390,7 +390,7 @@ describe('Join fight card', () => {
             assert.isFalse(fighter_mintable_game_asset_pda_data.isMinted);
 
             const fighter_mintable_game_asset_link_pda_data =
-                await program.account.playerGameAssetLinkData.fetch(
+                await program.account.mintableGameAssetLinkData.fetch(
                     fighter_mintable_game_asset_link_pda
                 );
             assert.deepEqual(
@@ -415,7 +415,7 @@ describe('Join fight card', () => {
             assert.isFalse(energy_mintable_game_asset_pda_data.isMinted);
 
             const energy_mintable_game_asset_link_pda_data =
-                await program.account.playerGameAssetLinkData.fetch(
+                await program.account.mintableGameAssetLinkData.fetch(
                     energy_mintable_game_asset_link_pda
                 );
             assert.isTrue(energy_mintable_game_asset_link_pda_data.isFree);

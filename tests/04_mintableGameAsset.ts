@@ -99,7 +99,7 @@ describe('Mintable Game Asset', () => {
                 .rpc();
 
             const collector_pack_pda_data =
-                await program.account.collectorPackData.fetch(
+                await program.account.mysteryBoxData.fetch(
                     collector_pack_pda
                 );
             assert.isTrue(
@@ -139,7 +139,7 @@ describe('Mintable Game Asset', () => {
             );
 
             const collector_pack_pda_data =
-                await program.account.collectorPackData.fetch(
+                await program.account.mysteryBoxData.fetch(
                     collector_pack_pda
                 );
             assert.isTrue(
@@ -194,7 +194,7 @@ describe('Mintable Game Asset', () => {
             );
 
             const player_game_asset_link_pda_data =
-                await program.account.playerGameAssetLinkData.fetch(
+                await program.account.mintableGameAssetLinkData.fetch(
                     player_game_asset_link_pda
                 );
             assert.isFalse(player_game_asset_link_pda_data.isFree);
@@ -247,7 +247,7 @@ describe('Mintable Game Asset', () => {
                 ''
             );
             const collector_pack_pda_data =
-                await program.account.collectorPackData.fetch(
+                await program.account.mysteryBoxData.fetch(
                     collector_pack_pda
                 );
             assert.isTrue(
@@ -303,7 +303,7 @@ describe('Mintable Game Asset', () => {
             );
 
             const player_game_asset_link_pda_data =
-                await program.account.playerGameAssetLinkData.fetch(
+                await program.account.mintableGameAssetLinkData.fetch(
                     player_game_asset_link_pda
                 );
             assert.isFalse(player_game_asset_link_pda_data.isFree);
@@ -377,7 +377,7 @@ describe('Mintable Game Asset', () => {
                 ''
             );
             const collector_pack_pda_data =
-                await program.account.collectorPackData.fetch(
+                await program.account.mysteryBoxData.fetch(
                     collector_pack_pda
                 );
             assert.isTrue(
@@ -416,7 +416,7 @@ describe('Mintable Game Asset', () => {
             );
 
             const player_game_asset_link_pda_data =
-                await program.account.playerGameAssetLinkData.fetch(
+                await program.account.mintableGameAssetLinkData.fetch(
                     player_game_asset_link_pda
                 );
             assert.isFalse(player_game_asset_link_pda_data.isFree);

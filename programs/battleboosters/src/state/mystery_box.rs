@@ -1,4 +1,3 @@
-use super::rarity::RarityData;
 use crate::constants::*;
 use crate::state::player::PlayerData;
 use crate::state::program::ProgramData;
@@ -8,14 +7,12 @@ use anchor_lang::prelude::*;
 use anchor_lang::solana_program::sysvar;
 use anchor_spl::{
     associated_token::AssociatedToken,
-    token::{Mint, MintTo, Token, TokenAccount, Transfer},
+    token::{Mint, Token, TokenAccount},
 };
-use mpl_token_metadata::accounts::Metadata;
-use mpl_token_metadata::accounts::TokenRecord;
 
 #[derive(Accounts)]
 #[instruction(player_pubkey: Pubkey)]
-pub struct InitializeCollectorPack<'info> {
+pub struct InitializeMysteryBox<'info> {
     #[account(mut)]
     pub creator: Signer<'info>,
     #[account(
@@ -31,12 +28,12 @@ pub struct InitializeCollectorPack<'info> {
         bump,
         space = 8 + 8 + 8 + 8 + 1 + 8 + 8
     )]
-    pub collector_pack: Account<'info, CollectorPackData>,
+    pub collector_pack: Account<'info, MysteryBoxData>,
     pub system_program: Program<'info, System>,
 }
 
 #[derive(Accounts)]
-pub struct MintCollectorPack<'info> {
+pub struct MintMysteryBox<'info> {
     #[account(mut)]
     pub creator: Signer<'info>,
     #[account(mut, seeds = [MY_APP_PREFIX, PROGRAM_STATE], bump)]
@@ -166,7 +163,7 @@ pub struct MintCollectorPack<'info> {
 }
 
 #[account]
-pub struct CollectorPackData {
+pub struct MysteryBoxData {
     pub fighter_mint_allowance: u64,
     pub booster_mint_allowance: u64,
     pub champions_pass_mint_allowance: u64,

@@ -1,4 +1,4 @@
-pub mod collector_pack;
+pub mod mystery_box;
 pub mod create_spl_nft;
 pub mod event;
 pub mod fight_card;
@@ -7,4 +7,5 @@ pub mod program;
 pub mod rarity;
 pub mod switchboard_callback;
 pub mod transaction_escrow;
-pub mod transaction_escrow_v2;
+pub mod join_fight_card;
+pub mod mintable_game_asset;

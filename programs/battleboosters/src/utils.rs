@@ -1,15 +1,11 @@
 use crate::errors::ErrorCode;
 use crate::state::event::EventLinkData;
 use crate::state::fight_card::*;
-use crate::state::player::{
-    Attribute, FightCardLinkData, MintableGameAssetData, NftMetadata, PlayerGameAssetLinkData,
-};
 use crate::state::rarity::Stats;
 use crate::types::*;
 use anchor_lang::prelude::*;
-use anchor_spl::token::{initialize_mint, InitializeMint};
 use sha2::{Digest, Sha256};
-use std::ops::Deref;
+use crate::state::mintable_game_asset::{Attribute, MintableGameAssetData, MintableGameAssetLinkData, NftMetadata};
 
 pub fn verify_equality(expected: &Pubkey, actual: &Pubkey) -> Result<()> {
     require!(expected == actual, ErrorCode::Unauthorized);
@@ -28,7 +24,7 @@ pub fn verify_equality_mintable_asset(expected: &Pubkey, actual: &Pubkey) -> Res
 */
 pub fn process_game_asset_for_action(
     mintable_game_asset: Option<&mut Box<Account<MintableGameAssetData>>>,
-    mintable_game_asset_link: Option<&mut Box<Account<PlayerGameAssetLinkData>>>,
+    mintable_game_asset_link: Option<&mut Box<Account<MintableGameAssetLinkData>>>,
     signer: &Pubkey,
     burn: bool,
 ) -> Result<()> {
@@ -207,7 +203,7 @@ pub fn create_rng_seed(
 ) -> u64 {
     let mut hasher = Sha256::new();
     hasher.update(&randomness);
-    hasher.update(public_key_bytes.clone()); // Ensures each iteration has a unique input
+    hasher.update(public_key_bytes); // Ensures each iteration has a unique input
     hasher.update(nonce_byte.to_be_bytes());
     if let Some(x) = extra_byte {
         hasher.update(x.to_be_bytes());

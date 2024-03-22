@@ -72,6 +72,37 @@ pub struct FightCardData {
     /// This is None in case of a draw when fight is finished
     pub winner: Option<FighterColorSide>,
 }
+#[account]
+pub struct FightCardLinkData {
+    /// `fight_card` PDA public key for direct ref
+    pub fight_card_pubkey: Pubkey,
+    /// Tracker to link the `FightCardLink` PDA to the `FightCard` PDA
+    pub fight_card_nonce_tracker: u8,
+    /// The `Pubkey` of the booster used
+    pub fighter_used: Option<Pubkey>,
+    /// Tracker to link the `Fighter` PDA to the `FightCardLink` PDA
+    pub fighter_nonce_tracker: Option<u64>,
+    /// The `Pubkey` of the booster used
+    pub energy_booster_used: Option<Pubkey>,
+    /// Tracker to link the `Booster` PDA to the `FightCardLink` PDA
+    pub energy_booster_nonce_tracker: Option<u64>,
+    /// The `Pubkey` of the booster used
+    pub shield_booster_used: Option<Pubkey>,
+    /// Tracker to link the `Booster` PDA to the `FightCardLink` PDA
+    pub shield_booster_nonce_tracker: Option<u64>,
+    /// The `Pubkey` of the booster used
+    pub points_booster_used: Option<Pubkey>,
+    /// Tracker to link the `Booster` PDA to the `FightCardLink` PDA
+    pub points_booster_nonce_tracker: Option<u64>,
+    /// The fighter side chosen by the player `Red Gloves` or `Blue Gloves`
+    pub fighter_color_side: FighterColorSide,
+    /// Prevents the calculation of points for the same fightCard multiple times
+    /// If this occurs, it should close and refund the creator of the fighCardLink PDA
+    pub is_consumed: bool,
+    /// Prevent accidental multiple initializations of a PDA
+    pub is_initialized: bool,
+}
+
 
 #[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]
 pub struct SharedStrength {

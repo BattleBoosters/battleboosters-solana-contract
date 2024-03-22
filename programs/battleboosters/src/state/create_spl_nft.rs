@@ -5,9 +5,8 @@ use anchor_lang::prelude::*;
 use anchor_lang::solana_program::sysvar;
 use anchor_spl::{
     associated_token::AssociatedToken,
-    token::{Mint, MintTo, Token, TokenAccount, Transfer},
+    token::{Mint, Token, TokenAccount},
 };
-use mpl_token_metadata::accounts::Metadata;
 
 #[derive(Accounts)]
 #[instruction(collection_id: CollectionType)]

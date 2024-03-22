@@ -54,7 +54,7 @@ address = "5ExuoQR69trmKQfB95fDsUGsUrrChbGq9PFgt8qouncz"
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "devnet"
+cluster = "http://127.0.0.1:8899"
 wallet = "/Users/0xantman/.config/solana/id.json"
 
 

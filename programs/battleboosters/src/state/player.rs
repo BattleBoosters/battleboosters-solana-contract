@@ -1,4 +1,4 @@
-use super::collector_pack::CollectorPackData;
+use super::mystery_box::MysteryBoxData;
 use super::program::ProgramData;
 use crate::constants::*;
 use crate::state::fight_card::FightCardData;
@@ -13,6 +13,7 @@ use solana_randomness_service::{
     program::SolanaRandomnessService, ID as SolanaRandomnessServiceID,
 };
 use switchboard_solana::prelude::*;
+use crate::state::mintable_game_asset::{MintableGameAssetData, MintableGameAssetLinkData};
 
 // Struct for initializing player
 #[derive(Accounts)]
@@ -61,7 +62,7 @@ pub struct GenerateNftPreMint<'info> {
     seeds = [MY_APP_PREFIX, COLLECTOR, signer.key().as_ref(), player_account.order_nonce.to_le_bytes().as_ref()],
     bump,
     )]
-    pub collector_pack: Box<Account<'info, CollectorPackData>>,
+    pub collector_pack: Box<Account<'info, MysteryBoxData>>,
     #[account(
     mut,
     seeds = [MY_APP_PREFIX, RARITY],
@@ -84,128 +85,7 @@ pub struct GenerateNftPreMint<'info> {
     space = 8 + 32 + 8 + 1,
     bump,
     )]
-    pub player_game_asset_link: Box<Account<'info, PlayerGameAssetLinkData>>,
-
-    pub system_program: Program<'info, System>,
-}
-
-#[derive(Accounts)]
-#[instruction(
-    event_nonce: u64,
-    fight_card_nonce: u8,
-    fighter_asset_nonce: u64,
-    energy_booster_asset_nonce: Option<u64>,
-    shield_booster_asset_nonce: Option<u64>,
-    points_booster_asset_nonce: Option<u64>,
-    champions_pass_asset_nonce: Option<u64>,
-    fighter_link_nonce: u64,
-    energy_booster_link_nonce: Option<u64>,
-    shield_booster_link_nonce: Option<u64>,
-    points_booster_link_nonce: Option<u64>,
-    champions_pass_link_nonce: Option<u64>,
-)]
-pub struct JoinFightCard<'info> {
-    #[account(mut)]
-    pub signer: Signer<'info>,
-    #[account(
-    mut,
-    seeds = [MY_APP_PREFIX, EVENT, event_nonce.to_le_bytes().as_ref()],
-    bump
-    )]
-    pub event: Box<Account<'info, EventData>>,
-
-    #[account(
-    mut,
-    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, fighter_asset_nonce.to_le_bytes().as_ref()],
-    bump
-    )]
-    pub fighter_asset: Box<Account<'info, MintableGameAssetData>>,
-    #[account(
-    mut,
-    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, energy_booster_asset_nonce.unwrap().to_le_bytes().as_ref()],
-    // constraint = energy_booster_asset.as_ref().is_burned == true,
-    // close = signer,
-    bump
-    )]
-    pub energy_booster_asset: Option<Box<Account<'info, MintableGameAssetData>>>,
-    #[account(
-    mut,
-    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, shield_booster_asset_nonce.unwrap().to_le_bytes().as_ref()],
-    // constraint = shield_booster_asset.as_ref().is_burned == true,
-    // close = signer,
-    bump
-    )]
-    pub shield_booster_asset: Option<Box<Account<'info, MintableGameAssetData>>>,
-    #[account(
-    mut,
-    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, points_booster_asset_nonce.unwrap().to_le_bytes().as_ref()],
-    // constraint = points_booster_asset.as_ref().is_burned == true,
-    // close = signer,
-    bump
-    )]
-    pub points_booster_asset: Option<Box<Account<'info, MintableGameAssetData>>>,
-    #[account(
-    mut,
-    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, champions_pass_asset_nonce.unwrap().to_le_bytes().as_ref()],
-    // constraint = points_booster_asset.as_ref().is_burned == true,
-    // close = signer,
-    bump
-    )]
-    pub champions_pass_asset: Option<Box<Account<'info, MintableGameAssetData>>>,
-
-    #[account(
-    mut,
-    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, fighter_link_nonce.to_le_bytes().as_ref(), signer.key().as_ref()],
-    bump
-    )]
-    pub fighter_link: Box<Account<'info, PlayerGameAssetLinkData>>,
-    #[account(
-    mut,
-    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, energy_booster_link_nonce.unwrap().to_le_bytes().as_ref(), signer.key().as_ref()],
-    bump
-    )]
-    pub energy_booster_link: Option<Box<Account<'info, PlayerGameAssetLinkData>>>,
-    #[account(
-    mut,
-    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, shield_booster_link_nonce.unwrap().to_le_bytes().as_ref(), signer.key().as_ref()],
-    bump
-    )]
-    pub shield_booster_link: Option<Box<Account<'info, PlayerGameAssetLinkData>>>,
-    #[account(
-    mut,
-    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, points_booster_link_nonce.unwrap().to_le_bytes().as_ref(), signer.key().as_ref()],
-    bump
-    )]
-    pub points_booster_link: Option<Box<Account<'info, PlayerGameAssetLinkData>>>,
-    #[account(
-    mut,
-    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, champions_pass_link_nonce.unwrap().to_le_bytes().as_ref(), signer.key().as_ref()],
-    bump
-    )]
-    pub champions_pass_link: Option<Box<Account<'info, PlayerGameAssetLinkData>>>,
-
-    #[account(
-    mut,
-    seeds = [MY_APP_PREFIX, FIGHT_CARD, event.key().as_ref(), fight_card_nonce.to_le_bytes().as_ref()],
-    bump
-    )]
-    pub fight_card: Box<Account<'info, FightCardData>>,
-
-    #[account(
-    init,
-    payer = signer,
-    space = 250,
-    seeds = [MY_APP_PREFIX, FIGHT_CARD, event.key().as_ref(), fight_card_nonce.to_le_bytes().as_ref(), signer.key().as_ref()],
-    bump
-    )]
-    pub fight_card_link: Box<Account<'info, FightCardLinkData>>,
-
-    #[account(
-    mut,
-    seeds = [MY_APP_PREFIX, EVENT, event.key().as_ref(), signer.key().as_ref()],
-    bump
-    )]
-    pub event_link: Box<Account<'info, EventLinkData>>,
+    pub player_game_asset_link: Box<Account<'info, MintableGameAssetLinkData>>,
 
     pub system_program: Program<'info, System>,
 }
@@ -228,80 +108,9 @@ pub struct PlayerData {
 
 */
 
-#[account]
-pub struct FightCardLinkData {
-    /// `fight_card` PDA public key for direct ref
-    pub fight_card_pubkey: Pubkey,
-    /// Tracker to link the `FightCardLink` PDA to the `FightCard` PDA
-    pub fight_card_nonce_tracker: u8,
-    /// The `Pubkey` of the booster used
-    pub fighter_used: Option<Pubkey>,
-    /// Tracker to link the `Fighter` PDA to the `FightCardLink` PDA
-    pub fighter_nonce_tracker: Option<u64>,
-    /// The `Pubkey` of the booster used
-    pub energy_booster_used: Option<Pubkey>,
-    /// Tracker to link the `Booster` PDA to the `FightCardLink` PDA
-    pub energy_booster_nonce_tracker: Option<u64>,
-    /// The `Pubkey` of the booster used
-    pub shield_booster_used: Option<Pubkey>,
-    /// Tracker to link the `Booster` PDA to the `FightCardLink` PDA
-    pub shield_booster_nonce_tracker: Option<u64>,
-    /// The `Pubkey` of the booster used
-    pub points_booster_used: Option<Pubkey>,
-    /// Tracker to link the `Booster` PDA to the `FightCardLink` PDA
-    pub points_booster_nonce_tracker: Option<u64>,
-    /// The fighter side chosen by the player `Red Gloves` or `Blue Gloves`
-    pub fighter_color_side: FighterColorSide,
-    /// Prevents the calculation of points for the same fightCard multiple times
-    /// If this occurs, it should close and refund the creator of the fighCardLink PDA
-    pub is_consumed: bool,
-    /// Prevent accidental multiple initializations of a PDA
-    pub is_initialized: bool,
-}
 
-#[account]
-pub struct PlayerGameAssetLinkData {
-    /// `Pubkey` of the mintable_game_asset
-    pub mintable_game_asset_pubkey: Pubkey,
-    /// this is the link to the address of the pda
-    pub mintable_game_asset_nonce_tracker: u64,
-    /// Checks if a PDA is eligible to update its `mintable_game_asset_nonce`.
-    /// The PDA becomes eligible upon minting and withdrawing a `mintable_game_asset`,
-    /// which break the link with the last `mintable_game_asset_nonce`.
-    pub is_free: bool,
-}
 
-#[account]
-pub struct MintableGameAssetData {
-    /// is Locked will mean the PDA is in use and cannot be minted or re used
-    pub is_locked: bool,
-    /// is Burned will mean the PDA have been used and cannot be minted or re used
-    pub is_burned: bool,
-    /// is Minted mean the PDA have been minted
-    pub is_minted: bool,
-    /// owner of the PDA can use it in-game,
-    /// on mint the owner is set to None which mean it is not available in the game until re-deposited
-    pub owner: Option<Pubkey>,
-    /// The metadata on-chain, which allow dynamic use on our game
-    pub metadata: NftMetadata,
-}
 
-/// Metatada Standards copy on-chain
-#[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]
-pub struct NftMetadata {
-    pub name: String,
-    pub description: String,
-    pub image: String,
-    pub animation_url: Option<String>,
-    pub external_url: Option<String>,
-    pub attributes: Vec<Attribute>,
-}
-
-#[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]
-pub struct Attribute {
-    pub trait_type: String,
-    pub value: String,
-}
 
 // #[derive(Accounts)]
 // pub struct CreateEvent<'info> {
