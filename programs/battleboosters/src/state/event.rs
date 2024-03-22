@@ -89,5 +89,15 @@ pub struct EventData {
 }
 
 /*
+   TODO: Add rank rewards directly on the `eventData`?
+*/
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug)]
+pub struct RankReward {
+    pub start_rank: u32, // Inclusive start rank for this tier
+    pub end_rank: u32,   // Inclusive end rank for this tier
+    pub prize_tier: u64,
+}
+
+/*
    TODO: Delete Event
 */
