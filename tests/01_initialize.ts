@@ -67,7 +67,7 @@ describe('Initialize', () => {
 
         await airdrop_sol(provider, admin_account.publicKey, 10);
         await airdrop_sol(provider, unauthorized_account.publicKey, 10);
-
+        await airdrop_sol(provider, provider.wallet.publicKey, 10);
         try {
             await program.account.programData.fetch(program_pda);
         } catch (e) {
@@ -337,8 +337,7 @@ describe('Initialize', () => {
         const { player_account_pda } = await InitializePlayerAccount(
             provider,
             customOwner.publicKey,
-            program,
-            program_pda
+            program
         );
 
         // const playerInventory = await program.account.inventoryData.fetch(player_inventory_pda);

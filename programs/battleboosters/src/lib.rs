@@ -31,8 +31,7 @@ use mpl_token_metadata::types::{PrintSupply, TokenStandard};
 use anchor_lang::solana_program::program::{invoke, invoke_signed};
 use solana_randomness_service::ID as SolanaRandomnessServiceID;
 use switchboard_solana::utils::get_ixn_discriminator;
-
-declare_id!("A92RCbQNmTNcGBQS63gvPXz1pdaVcSQjo4LZBQuswzia");
+declare_id!("5GW3wfyowgfKsKCeC2VKg6ucM4wKYX5ebZNAqvBcvTSd");
 
 #[program]
 pub mod battleboosters {
@@ -41,6 +40,7 @@ pub mod battleboosters {
     use crate::state::rarity::InitializeRarity;
     use anchor_lang::solana_program::native_token::LAMPORTS_PER_SOL;
     use anchor_lang::solana_program::system_instruction;
+    use anchor_lang::system_program;
     use mpl_token_metadata::types::{Collection, CollectionDetails, DataV2};
     use solana_program::address_lookup_table::state::ProgramState::LookupTable;
     use solana_randomness_service::TransactionOptions;
@@ -183,7 +183,7 @@ pub mod battleboosters {
         Ok(())
     }
 
-    pub fn purchase_nfts(
+    pub fn purchase_collector_pack(
         ctx: Context<TransactionEscrow>,
         bank_escrow_bump: u8,
         requests: Vec<PurchaseRequest>,
@@ -192,8 +192,9 @@ pub mod battleboosters {
         let feed = &ctx.accounts.price_feed.load()?;
         let collector_pack = &mut ctx.accounts.collector_pack;
         let player_account = &mut ctx.accounts.player_account;
-        let bank = &ctx.accounts.bank;
-        let bank_escrow = &ctx.accounts.bank_escrow;
+        let bank = &mut ctx.accounts.bank;
+        let bank_escrow = &mut ctx.accounts.bank_escrow;
+        let signer_key = &ctx.accounts.signer.to_account_info().key();
 
         // get result
         let val: f64 = feed.get_result()?.try_into()?;
@@ -234,7 +235,7 @@ pub mod battleboosters {
         let total_sol = total_usd as f64 * sol_per_usd;
         let total_lamports = (total_sol * LAMPORTS_PER_SOL as f64).round() as u64;
         let bank_escrow_balance = bank_escrow.lamports();
-
+        msg!("bank balance before: {}", bank.lamports());
         if bank_escrow_balance < total_lamports {
             msg!(
                 "Insufficient funds: required {}, available {}.",
@@ -244,11 +245,36 @@ pub mod battleboosters {
             return Err(ErrorCode::InsufficientFunds.into());
         }
 
+        let transfer_instruction = system_instruction::transfer(
+            &bank_escrow.key(),
+            &bank.key(),
+            // Withdraw the full balance
+            total_lamports, // Amount in lamports to transfer
+        );
+
+        let bank_escrow_seeds = [
+            MY_APP_PREFIX,
+            BANK,
+            signer_key.as_ref(),
+            &[bank_escrow_bump],
+        ];
+
+        //Perform the transfer
+        invoke_signed(
+            &transfer_instruction,
+            &[
+                bank_escrow.to_account_info(),
+                bank.to_account_info(),
+                ctx.accounts.system_program.to_account_info(),
+            ],
+            &[&bank_escrow_seeds],
+        )?;
+        msg!("bank balance now: {}", bank.lamports());
+
         let mut ix_data = get_ixn_discriminator("consume_randomness").to_vec();
         ix_data.extend_from_slice(&player_account.order_nonce.to_le_bytes());
-        ix_data.extend_from_slice(&ctx.accounts.recipient.to_account_info().key().as_ref());
-        ix_data.extend_from_slice(&[bank_escrow_bump.clone()]);
-        ix_data.extend_from_slice(&total_lamports.to_le_bytes());
+        // ix_data.extend_from_slice(&[bank_escrow_bump.clone()]);
+        // ix_data.extend_from_slice(&total_lamports.to_le_bytes());
 
         solana_randomness_service::cpi::simple_randomness_v1(
             CpiContext::new(
@@ -281,15 +307,20 @@ pub mod battleboosters {
                         false,
                     )
                     .into(),
-                    //AccountMeta::new(ctx.accounts.program.to_account_info().key(), false).into(),
                     AccountMeta::new_readonly(
                         ctx.accounts.recipient.to_account_info().key(),
                         false,
                     )
                     .into(),
-                    // AccountMeta::new(player_account.to_account_info().key(), false).into(),
-                    //AccountMeta::new(ctx.accounts.collector_pack.to_account_info().key(), false).into(),
+                    // AccountMeta::new_readonly(
+                    //     ctx.accounts.signer.to_account_info().key(),
+                    //     false,
+                    // )
+                    //     .into(),
                     AccountMeta::new(collector_pack.to_account_info().key(), false).into(),
+                    // AccountMeta::new(ctx.accounts.bank.to_account_info().key(), false).into(),
+                    // AccountMeta::new(ctx.accounts.bank_escrow.to_account_info().key(), false).into(),
+                    //AccountMeta::new_readonly(ctx.accounts.system_program.to_account_info().key(), false).into(),
                 ],
                 ix_data, // TODO: hardcode this discriminator [190,217,49,162,99,26,73,234]
             },
@@ -310,52 +341,52 @@ pub mod battleboosters {
     pub fn consume_randomness(
         ctx: Context<ConsumeRandomness>,
         order_nonce: u64,
-        recipient_pubkey: Pubkey,
-        bank_escrow_bump: u8,
-        total_lamports: u64,
+        // bank_escrow_bump: u8,
+        // total_lamports: u64,
         result: Vec<u8>,
     ) -> Result<()> {
         msg!("Randomness received: {:?}", result);
         msg!("order_nonce: {:?}", order_nonce);
-        msg!("pubkjey recipient: {:?}", recipient_pubkey);
         msg!(
-            "mint allowance:  {:?}",
+            "fighter mint allowance:  {:?}",
             ctx.accounts.collector_pack.fighter_mint_allowance
+        );
+        msg!(
+            "booster mint allowance:  {:?}",
+            ctx.accounts.collector_pack.booster_mint_allowance
         );
         let collector_pack = &mut ctx.accounts.collector_pack;
         collector_pack.randomness = Some(result);
-        // let x = &mut ctx.accounts.collector_pack;
-        // x.randomness = Some(result);
 
-        // // 1. PDA Derivation
-        // let (collector_pack_pda, bump_seed) = Pubkey::find_program_address(
-        //     &[MY_APP_PREFIX, COLLECTOR, ctx.accounts.signer.key().as_ref(), order_nonce.to_le_bytes().as_ref()],
-        //     ctx.program_id);
-        // RpcClient::new(collector_pack_pda);
-
-        // let signer = &ctx.accounts.signer.key();
-        // let collector_pack = &mut ctx.accounts.collector_pack;
-        // let bank = &ctx.accounts.bank;
-        // let bank_escrow = &ctx.accounts.bank_escrow;
-        //
-        // collector_pack.randomness = Some(result);
-        //
+        // // let signer = &ctx.accounts.signer.key();
+        // let bank = &mut ctx.accounts.bank;
+        // let bank_escrow = &mut ctx.accounts.bank_escrow;
         // let bank_escrow_balance = bank_escrow.lamports();
+        // msg!("lamport balance: {}",bank_escrow_balance);
+        // msg!("total lamports to send: {}",total_lamports);
         // if bank_escrow_balance < total_lamports {
-        //     msg!(
-        //         "Insufficient funds: required {}, available {}.",
-        //         total_lamports,
-        //         bank_escrow_balance
-        //     );
-        //     return Err(ErrorCode::InsufficientFunds.into());
-        // }
+        //      msg!(
+        //          "Insufficient funds: required {}, available {}.",
+        //          total_lamports,
+        //          bank_escrow_balance
+        //      );
+        //      return Err(ErrorCode::InsufficientFunds.into());
+        //  }
+        // bank_escrow.sub_lamports(total_lamports)?;
+        // bank.add_lamports(total_lamports)?;
+
+        // ctx.accounts.bank_escrow.sub_lamports(total_lamports)?;
+        // ctx.accounts.bank.add_lamports(total_lamports)?;
+        // **ctx.accounts.bank_escrow.to_account_info().try_borrow_mut_lamports()? -= total_lamports;
+        // **ctx.accounts.bank.to_account_info().try_borrow_mut_lamports()? += total_lamports;
         //
-        // //Calculate the minimum balance required to remain rent-exempt
-        // // let rent_exempt_balance = Rent::get()?.minimum_balance(bank_escrow.data_len());
-        // // // Calculate the maximum amount that can be safely withdrawn while keeping the account rent-exempt
-        // // let withdrawable_balance = bank_escrow_balance.saturating_sub(rent_exempt_balance);
-        //
-        // // Construct the transfer instruction
+        //Calculate the minimum balance required to remain rent-exempt
+        // let rent_exempt_balance = Rent::get()?.minimum_balance(bank_escrow.data_len());
+        // // Calculate the maximum amount that can be safely withdrawn while keeping the account rent-exempt
+        // let withdrawable_balance = bank_escrow_balance.saturating_sub(rent_exempt_balance);
+
+        // Construct the transfer instruction
+
         // let transfer_instruction = system_instruction::transfer(
         //     &bank_escrow.key(),
         //     &bank.key(),
@@ -364,8 +395,8 @@ pub mod battleboosters {
         // );
         //
         // let bank_escrow_seeds = [MY_APP_PREFIX, BANK, signer.as_ref(), &[bank_escrow_bump]];
-        //
-        // // Perform the transfer
+
+        //Perform the transfer
         // invoke_signed(
         //     &transfer_instruction,
         //     &[

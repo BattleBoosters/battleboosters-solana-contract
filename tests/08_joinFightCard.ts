@@ -317,47 +317,93 @@ describe('Join fight card', () => {
             );
 
             const event_link_account_data =
-                await program.account.eventLinkData.fetch(
-                    event_link_account
-                );
-            assert.deepEqual(event_link_account_data.eventPubkey, event_account)
-            assert.equal(event_link_account_data.eventNonceTracker.eq(new BN(0)), true)
-            assert.equal(event_link_account_data.isInitialized, true)
-            assert.deepEqual(event_link_account_data.championsPassPubkey, null)
-            assert.deepEqual(event_link_account_data.championsPassNonceTracker, null)
+                await program.account.eventLinkData.fetch(event_link_account);
+            assert.deepEqual(
+                event_link_account_data.eventPubkey,
+                event_account
+            );
+            assert.equal(
+                event_link_account_data.eventNonceTracker.eq(new BN(0)),
+                true
+            );
+            assert.equal(event_link_account_data.isInitialized, true);
+            assert.deepEqual(event_link_account_data.championsPassPubkey, null);
+            assert.deepEqual(
+                event_link_account_data.championsPassNonceTracker,
+                null
+            );
 
             const fight_card_link_account_data =
                 await program.account.fightCardLinkData.fetch(
                     fight_card_link_account
                 );
-            assert.deepEqual(fight_card_link_account_data.fighterColorSide, {fighterRed:{}})
-            assert.isFalse(fight_card_link_account_data.isConsumed)
-            assert.isTrue(fight_card_link_account_data.isInitialized)
-            assert.deepEqual(fight_card_link_account_data.energyBoosterUsed, energy_mintable_game_asset_pda)
-            assert.equal(fight_card_link_account_data.energyBoosterNonceTracker.eq(new BN(2)), true)
-            assert.deepEqual(fight_card_link_account_data.fighterUsed, fighter_mintable_game_asset_pda)
-            assert.equal(fight_card_link_account_data.fighterNonceTracker.eq(new BN(1)), true)
-            assert.deepEqual(fight_card_link_account_data.pointsBoosterUsed, null)
-            assert.equal(fight_card_link_account_data.pointsBoosterNonceTracker, null)
-            assert.deepEqual(fight_card_link_account_data.shieldBoosterUsed, null)
-            assert.equal(fight_card_link_account_data.shieldBoosterNonceTracker, null)
+            assert.deepEqual(fight_card_link_account_data.fighterColorSide, {
+                fighterRed: {},
+            });
+            assert.isFalse(fight_card_link_account_data.isConsumed);
+            assert.isTrue(fight_card_link_account_data.isInitialized);
+            assert.deepEqual(
+                fight_card_link_account_data.energyBoosterUsed,
+                energy_mintable_game_asset_pda
+            );
+            assert.equal(
+                fight_card_link_account_data.energyBoosterNonceTracker.eq(
+                    new BN(2)
+                ),
+                true
+            );
+            assert.deepEqual(
+                fight_card_link_account_data.fighterUsed,
+                fighter_mintable_game_asset_pda
+            );
+            assert.equal(
+                fight_card_link_account_data.fighterNonceTracker.eq(new BN(1)),
+                true
+            );
+            assert.deepEqual(
+                fight_card_link_account_data.pointsBoosterUsed,
+                null
+            );
+            assert.equal(
+                fight_card_link_account_data.pointsBoosterNonceTracker,
+                null
+            );
+            assert.deepEqual(
+                fight_card_link_account_data.shieldBoosterUsed,
+                null
+            );
+            assert.equal(
+                fight_card_link_account_data.shieldBoosterNonceTracker,
+                null
+            );
 
             const fighter_mintable_game_asset_pda_data =
                 await program.account.mintableGameAssetData.fetch(
                     fighter_mintable_game_asset_pda
                 );
             assert.isTrue(fighter_mintable_game_asset_pda_data.isLocked);
-            assert.deepEqual(fighter_mintable_game_asset_pda_data.owner, fighter_mintable_game_asset_link_pda);
-            assert.isFalse(fighter_mintable_game_asset_pda_data.isBurned)
-            assert.isFalse(fighter_mintable_game_asset_pda_data.isMinted)
+            assert.deepEqual(
+                fighter_mintable_game_asset_pda_data.owner,
+                fighter_mintable_game_asset_link_pda
+            );
+            assert.isFalse(fighter_mintable_game_asset_pda_data.isBurned);
+            assert.isFalse(fighter_mintable_game_asset_pda_data.isMinted);
 
             const fighter_mintable_game_asset_link_pda_data =
                 await program.account.playerGameAssetLinkData.fetch(
                     fighter_mintable_game_asset_link_pda
                 );
-            assert.deepEqual(fighter_mintable_game_asset_link_pda_data.mintableGameAssetPubkey, fighter_mintable_game_asset_pda)
-            assert.isFalse(fighter_mintable_game_asset_link_pda_data.isFree)
-            assert.equal(fighter_mintable_game_asset_link_pda_data.mintableGameAssetNonceTracker.eq(new BN(1)), true)
+            assert.deepEqual(
+                fighter_mintable_game_asset_link_pda_data.mintableGameAssetPubkey,
+                fighter_mintable_game_asset_pda
+            );
+            assert.isFalse(fighter_mintable_game_asset_link_pda_data.isFree);
+            assert.equal(
+                fighter_mintable_game_asset_link_pda_data.mintableGameAssetNonceTracker.eq(
+                    new BN(1)
+                ),
+                true
+            );
 
             const energy_mintable_game_asset_pda_data =
                 await program.account.mintableGameAssetData.fetch(
@@ -366,7 +412,7 @@ describe('Join fight card', () => {
             assert.isTrue(energy_mintable_game_asset_pda_data.isLocked);
             assert.deepEqual(energy_mintable_game_asset_pda_data.owner, null);
             assert.isTrue(energy_mintable_game_asset_pda_data.isBurned);
-            assert.isFalse(energy_mintable_game_asset_pda_data.isMinted)
+            assert.isFalse(energy_mintable_game_asset_pda_data.isMinted);
 
             const energy_mintable_game_asset_link_pda_data =
                 await program.account.playerGameAssetLinkData.fetch(

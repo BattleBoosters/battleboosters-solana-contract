@@ -31,7 +31,7 @@ pub struct InitializeCollectorPack<'info> {
         bump,
         space = 8 + 8 + 8 + 8 + 1 + 8 + 8
     )]
-    pub collector_pack: Account<'info, CollectorPack>,
+    pub collector_pack: Account<'info, CollectorPackData>,
     pub system_program: Program<'info, System>,
 }
 
@@ -166,7 +166,7 @@ pub struct MintCollectorPack<'info> {
 }
 
 #[account]
-pub struct CollectorPack {
+pub struct CollectorPackData {
     pub fighter_mint_allowance: u64,
     pub booster_mint_allowance: u64,
     pub champions_pass_mint_allowance: u64,

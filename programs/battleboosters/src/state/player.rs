@@ -1,4 +1,4 @@
-use super::collector_pack::CollectorPack;
+use super::collector_pack::CollectorPackData;
 use super::program::ProgramData;
 use crate::constants::*;
 use crate::state::fight_card::FightCardData;
@@ -61,7 +61,7 @@ pub struct GenerateNftPreMint<'info> {
     seeds = [MY_APP_PREFIX, COLLECTOR, signer.key().as_ref(), player_account.order_nonce.to_le_bytes().as_ref()],
     bump,
     )]
-    pub collector_pack: Box<Account<'info, CollectorPack>>,
+    pub collector_pack: Box<Account<'info, CollectorPackData>>,
     #[account(
     mut,
     seeds = [MY_APP_PREFIX, RARITY],

@@ -58,8 +58,7 @@ describe('Mintable Game Asset', () => {
             await InitializePlayerAccount(
                 provider,
                 provider.wallet.publicKey,
-                program,
-                program_pda
+                program
             );
             const [player_account_pda, player_account_bump] =
                 anchor.web3.PublicKey.findProgramAddressSync(
@@ -100,7 +99,9 @@ describe('Mintable Game Asset', () => {
                 .rpc();
 
             const collector_pack_pda_data =
-                await program.account.collectorPack.fetch(collector_pack_pda);
+                await program.account.collectorPackData.fetch(
+                    collector_pack_pda
+                );
             assert.isTrue(
                 collector_pack_pda_data.boosterMintAllowance.eq(new BN(3))
             );
@@ -138,7 +139,9 @@ describe('Mintable Game Asset', () => {
             );
 
             const collector_pack_pda_data =
-                await program.account.collectorPack.fetch(collector_pack_pda);
+                await program.account.collectorPackData.fetch(
+                    collector_pack_pda
+                );
             assert.isTrue(
                 collector_pack_pda_data.boosterMintAllowance.eq(new BN(3))
             );
@@ -244,7 +247,9 @@ describe('Mintable Game Asset', () => {
                 ''
             );
             const collector_pack_pda_data =
-                await program.account.collectorPack.fetch(collector_pack_pda);
+                await program.account.collectorPackData.fetch(
+                    collector_pack_pda
+                );
             assert.isTrue(
                 collector_pack_pda_data.boosterMintAllowance.eq(new BN(3))
             );
@@ -372,7 +377,9 @@ describe('Mintable Game Asset', () => {
                 ''
             );
             const collector_pack_pda_data =
-                await program.account.collectorPack.fetch(collector_pack_pda);
+                await program.account.collectorPackData.fetch(
+                    collector_pack_pda
+                );
             assert.isTrue(
                 collector_pack_pda_data.boosterMintAllowance.eq(new BN(2))
             );

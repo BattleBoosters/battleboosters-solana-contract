@@ -1,4 +1,4 @@
-use super::collector_pack::CollectorPack;
+use super::collector_pack::CollectorPackData;
 use super::player::PlayerData;
 use super::program::ProgramData;
 use super::rarity::RarityData;
@@ -37,7 +37,7 @@ pub struct TransactionEscrow<'info> {
         bump,
         space = 8 + 8 + 8 + 8 + 1 + 4 + 8
     )]
-    pub collector_pack: Account<'info, CollectorPack>,
+    pub collector_pack: Account<'info, CollectorPackData>,
     /// CHECK: This is a PDA used as the bank
     #[account(mut, seeds = [MY_APP_PREFIX, BANK], bump = program.bank_bump)]
     pub bank: AccountInfo<'info>,
@@ -114,7 +114,7 @@ pub struct TransactionTest<'info> {
     bump,
     space = 45
     )]
-    pub collector_pack: Account<'info, CollectorPack>,
+    pub collector_pack: Account<'info, CollectorPackData>,
 
     /// The Solana System program. Used to allocate space on-chain for the randomness_request account.
     pub system_program: Program<'info, System>,

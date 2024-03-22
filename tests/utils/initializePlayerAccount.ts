@@ -1,11 +1,12 @@
 import * as anchor from '@coral-xyz/anchor';
 import { assert } from 'chai';
 import { Battleboosters } from '../../target/types/battleboosters';
+import account_init from './initAccounts';
+import { PublicKey } from '@solana/web3.js';
 const InitializePlayerAccount = async function (
     provider: anchor.AnchorProvider,
-    publicKey,
-    program: anchor.Program<Battleboosters>,
-    program_pda
+    publicKey: PublicKey,
+    program: anchor.Program<Battleboosters>
 ) {
     // const [player_inventory_pda, player_inventory_bump] =
     //     anchor.web3.PublicKey.findProgramAddressSync(
@@ -16,7 +17,15 @@ const InitializePlayerAccount = async function (
     //         ],
     //         program.programId
     //     );
-
+    // const [player_account_pda, player_account_bump] =
+    //     anchor.web3.PublicKey.findProgramAddressSync(
+    //         [
+    //             Buffer.from('BattleBoosters'),
+    //             Buffer.from('player'),
+    //             publicKey.toBuffer(),
+    //         ],
+    //         program.programId
+    //     );
     const [player_account_pda, player_account_bump] =
         anchor.web3.PublicKey.findProgramAddressSync(
             [

@@ -36,7 +36,7 @@ import account_init from './utils/initAccounts';
 /*
     TODO: Test try to pass nft different type
  */
-describe.skip('Purchase', () => {
+describe.only('Purchase', () => {
     const provider = anchor.AnchorProvider.env();
     anchor.setProvider(provider);
     const program = anchor.workspace.Battleboosters as Program<Battleboosters>;
@@ -59,6 +59,7 @@ describe.skip('Purchase', () => {
     let lastPriceSolUsd;
     before(async () => {
         try {
+            console.log('Randomness Service pending');
             randomnessService = await RandomnessService.fromProvider(provider);
         } catch (e) {
             console.log(e);
@@ -80,7 +81,7 @@ describe.skip('Purchase', () => {
         lastPriceSolUsd = await aggregatorAccount.fetchLatestValue();
     });
 
-    it('Purchase successfully in-game assets for signer', async () => {
+    it.only('Purchase successfully in-game assets for signer', async () => {
         // Start watching for the settled event before triggering the request
         const requestKeypair = anchor.web3.Keypair.generate();
 
@@ -175,23 +176,22 @@ describe.skip('Purchase', () => {
             })
         );
 
-        // Sign and send the transaction
-        await provider.sendAndConfirm(transferTx, []);
-        const accountData = await provider.connection.getAccountInfo(
-            user_bank_pda
-        );
-        const rentExemptionAmount =
-            await provider.connection.getMinimumBalanceForRentExemption(
-                accountData.data.length
-            );
-
         try {
+            // Sign and send the transaction
+            await provider.sendAndConfirm(transferTx, []);
+            const accountData = await provider.connection.getAccountInfo(
+                user_bank_pda
+            );
+            const rentExemptionAmount =
+                await provider.connection.getMinimumBalanceForRentExemption(
+                    accountData.data.length
+                );
+
             // Initialize the player account first
             await InitializePlayerAccount(
                 provider,
                 provider.wallet.publicKey,
-                program,
-                program_pda
+                program
             );
             console.log('tx start');
             console.log(randomnessService.accounts.state);
@@ -204,14 +204,15 @@ describe.skip('Purchase', () => {
             console.log(user_bank_pda);
             console.log('bank_pda');
             console.log(bank_pda);
+
             const tx = await program.methods
-                .purchaseNfts(user_bank_bump, [
+                .purchaseCollectorPack(user_bank_bump, [
                     {
                         nftType: { booster: {} }, // Use the variant name as key for enum
                         quantity: boosterQty,
                     },
                     {
-                        nftType: { fighterPack: {} }, // Use the variant name as key for enum
+                        nftType: { fighter: {} }, // Use the variant name as key for enum
                         quantity: fighterQty,
                     },
                 ])
@@ -221,8 +222,8 @@ describe.skip('Purchase', () => {
                     program: program_pda,
                     playerAccount: player_account_pda,
                     collectorPack: collector_pack_pda,
-                    bankEscrow: user_bank_pda,
                     bank: bank_pda,
+                    bankEscrow: user_bank_pda,
                     priceFeed: priceFeedAccount,
                     randomnessService: randomnessService.programId,
                     randomnessRequest: requestKeypair.publicKey,
@@ -232,9 +233,9 @@ describe.skip('Purchase', () => {
                     }),
                     randomnessState: randomnessService.accounts.state,
                     randomnessMint: randomnessService.accounts.mint,
+                    systemProgram: anchor.web3.SystemProgram.programId,
                     tokenProgram: TOKEN_PROGRAM_ID,
                     associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-                    systemProgram: anchor.web3.SystemProgram.programId,
                 })
                 .signers([requestKeypair]) // Include new_account as a signer
                 .rpc();
@@ -300,7 +301,9 @@ describe.skip('Purchase', () => {
             console.log(JSON.stringify(logs?.meta?.logMessages, undefined, 2));
 
             const collectorPackPdaAfter =
-                await program.account.collectorPack.fetch(collector_pack_pda);
+                await program.account.collectorPackData.fetch(
+                    collector_pack_pda
+                );
             console.log('randomness saved');
             console.log(Array.from(collectorPackPdaAfter.randomness));
             console.log('champions pass');
@@ -403,18 +406,17 @@ describe.skip('Purchase', () => {
             await InitializePlayerAccount(
                 provider,
                 newRecipient.publicKey,
-                program,
-                program_pda
+                program
             );
 
             const tx = await program.methods
-                .purchaseNfts(user_bank_bump, [
+                .purchaseCollectorPack(user_bank_bump, [
                     {
                         nftType: { booster: {} }, // Use the variant name as key for enum
                         quantity: boosterQty,
                     },
                     {
-                        nftType: { fighterPack: {} }, // Use the variant name as key for enum
+                        nftType: { fighter: {} }, // Use the variant name as key for enum
                         quantity: fighterQty,
                     },
                 ])
@@ -439,7 +441,9 @@ describe.skip('Purchase', () => {
             console.log(JSON.stringify(logs?.meta?.logMessages, undefined, 2));
 
             const playerInventoryAccountAfter =
-                await program.account.collectorPack.fetch(player_inventory_pda);
+                await program.account.collectorPackData.fetch(
+                    player_inventory_pda
+                );
             assert.isTrue(
                 playerInventoryAccountAfter.boosterMintAllowance.eq(boosterQty)
             );
@@ -524,18 +528,17 @@ describe.skip('Purchase', () => {
             await InitializePlayerAccount(
                 provider,
                 newRecipient.publicKey,
-                program,
-                program_pda
+                program
             );
 
             const tx = await program.methods
-                .purchaseNfts(user_bank_bump, [
+                .purchaseCollectorPack(user_bank_bump, [
                     {
                         nftType: { booster: {} }, // Use the variant name as key for enum
                         quantity: boosterQty,
                     },
                     {
-                        nftType: { fighterPack: {} }, // Use the variant name as key for enum
+                        nftType: { fighter: {} }, // Use the variant name as key for enum
                         quantity: fighterQty,
                     },
                 ])
@@ -625,18 +628,17 @@ describe.skip('Purchase', () => {
             await InitializePlayerAccount(
                 provider,
                 newRecipient.publicKey,
-                program,
-                program_pda
+                program
             );
 
             const tx = await program.methods
-                .purchaseNfts(user_bank_bump, [
+                .purchaseCollectorPack(user_bank_bump, [
                     {
                         nftType: { booster: {} }, // Use the variant name as key for enum
                         quantity: boosterQty,
                     },
                     {
-                        nftType: { fighterPack: {} }, // Use the variant name as key for enum
+                        nftType: { fighter: {} }, // Use the variant name as key for enum
                         quantity: fighterQty,
                     },
                 ])

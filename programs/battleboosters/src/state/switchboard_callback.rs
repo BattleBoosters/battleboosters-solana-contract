@@ -1,10 +1,11 @@
-use super::collector_pack::CollectorPack;
+use super::collector_pack::CollectorPackData;
 use super::player::PlayerData;
 use super::program::ProgramData;
 use crate::constants::*;
 use anchor_lang::prelude::*;
 
 use crate::state::rarity::RarityData;
+use anchor_lang::solana_program::system_program;
 use anchor_lang::solana_program::sysvar;
 use solana_randomness_service::SimpleRandomnessV1Account;
 use solana_randomness_service::ID as SolanaRandomnessServiceID;
@@ -25,10 +26,7 @@ pub struct ConsumeRandomness<'info> {
     /// CHECK:
     pub recipient: AccountInfo<'info>,
     // /// CHECK: Only used to verify
-    // #[account(mut)]
     // pub signer: AccountInfo<'info>,
-    // #[account(mut, seeds = [MY_APP_PREFIX, PROGRAM_STATE], bump)]
-    // pub program: Account<'info, ProgramData>,
     // /// CHECK:
     // pub player_account: Box<Account<'info, PlayerData>>,
     // #[account(
@@ -39,7 +37,7 @@ pub struct ConsumeRandomness<'info> {
     // pub player_account: Box<Account<'info, PlayerData>>,
     /// CHECK:
     #[account(mut, seeds = [MY_APP_PREFIX, COLLECTOR, recipient.key().as_ref(), order_nonce.to_le_bytes().as_ref()], bump)]
-    pub collector_pack: Account<'info, CollectorPack>,
+    pub collector_pack: Box<Account<'info, CollectorPackData>>,
     // /// CHECK: This is a PDA used as the bank
     // #[account(mut, seeds = [MY_APP_PREFIX, BANK], bump = program.bank_bump)]
     // /// CHECK:
@@ -48,6 +46,12 @@ pub struct ConsumeRandomness<'info> {
     // // #[account(mut, seeds = [MY_APP_PREFIX, BANK, signer.key().as_ref()], bump)]
     // /// CHECK:
     // pub bank_escrow: AccountInfo<'info>,
-
-    //pub system_program: Program<'info, System>,
+    // /// CHECK: This is a PDA used as the bank
+    // #[account(mut, seeds = [MY_APP_PREFIX, BANK], bump)]
+    // pub bank: AccountInfo<'info>,
+    // /// CHECK: This is a PDA used as the bank
+    // #[account(mut, seeds = [MY_APP_PREFIX, BANK, signer.key().as_ref()], bump)]
+    // pub bank_escrow: AccountInfo<'info>,
+    // /// CHECK:
+    // pub system_program: AccountInfo<'info>,
 }
