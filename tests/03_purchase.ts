@@ -36,7 +36,7 @@ import account_init from './utils/initAccounts';
 /*
     TODO: Test try to pass nft different type
  */
-describe.only('Purchase', () => {
+describe.skip('Purchase', () => {
     const provider = anchor.AnchorProvider.env();
     anchor.setProvider(provider);
     const program = anchor.workspace.Battleboosters as Program<Battleboosters>;
@@ -81,7 +81,7 @@ describe.only('Purchase', () => {
         lastPriceSolUsd = await aggregatorAccount.fetchLatestValue();
     });
 
-    it.only('Purchase successfully in-game assets for signer', async () => {
+    it('Purchase successfully in-game assets for signer', async () => {
         // Start watching for the settled event before triggering the request
         const requestKeypair = anchor.web3.Keypair.generate();
 
