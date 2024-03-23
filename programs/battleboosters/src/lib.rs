@@ -22,14 +22,6 @@ declare_id!("5GW3wfyowgfKsKCeC2VKg6ucM4wKYX5ebZNAqvBcvTSd");
 #[program]
 pub mod battleboosters {
     use super::*;
-    use crate::state::player::InitializePlayer;
-    use crate::state::rarity::InitializeRarity;
-    use anchor_lang::solana_program::native_token::LAMPORTS_PER_SOL;
-    use anchor_lang::solana_program::system_instruction;
-
-    use mpl_token_metadata::types::{Collection, DataV2};
-    use solana_randomness_service::TransactionOptions;
-
     pub fn initialize(
         ctx: Context<InitializeProgram>,
         authority_bump: u8,

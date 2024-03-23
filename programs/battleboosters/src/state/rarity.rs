@@ -73,31 +73,11 @@ pub enum RarityFighter {
 impl fmt::Display for RarityFighter {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let variant_str = match self {
-            RarityFighter::Common {
-                energy,
-                power,
-                lifespan,
-            } => "Common",
-            RarityFighter::Uncommon {
-                energy,
-                power,
-                lifespan,
-            } => "Uncommon",
-            RarityFighter::Rare {
-                energy,
-                power,
-                lifespan,
-            } => "Rare",
-            RarityFighter::Epic {
-                energy,
-                power,
-                lifespan,
-            } => "Epic",
-            RarityFighter::Legendary {
-                energy,
-                power,
-                lifespan,
-            } => "Legendary",
+            RarityFighter::Common { .. } => "Common",
+            RarityFighter::Uncommon { .. } => "Uncommon",
+            RarityFighter::Rare { .. } => "Rare",
+            RarityFighter::Epic { .. } => "Epic",
+            RarityFighter::Legendary { .. } => "Legendary",
         };
         write!(f, "{}", variant_str)
     }
@@ -122,11 +102,11 @@ pub enum RarityBooster {
 impl fmt::Display for RarityBooster {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let variant_str = match self {
-            RarityBooster::Common { value } => "Common",
-            RarityBooster::Uncommon { value } => "Uncommon",
-            RarityBooster::Rare { value } => "Rare",
-            RarityBooster::Epic { value } => "Epic",
-            RarityBooster::Legendary { value } => "Legendary",
+            RarityBooster::Common { .. } => "Common",
+            RarityBooster::Uncommon { .. } => "Uncommon",
+            RarityBooster::Rare { .. } => "Rare",
+            RarityBooster::Epic { .. } => "Epic",
+            RarityBooster::Legendary { .. } => "Legendary",
         };
         write!(f, "{}", variant_str)
     }

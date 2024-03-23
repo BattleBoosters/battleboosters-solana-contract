@@ -101,7 +101,7 @@ pub fn initialize_event_link(ctx: Context<InitializeEventLink>, event_nonce: u64
 }
 pub fn initialize_player(
     ctx: Context<InitializePlayer>,
-    player_pubkey: Pubkey, /* Used in initialization */
+    _player_pubkey: Pubkey, /* Used in initialization */
 ) -> Result<()> {
     //let player_inventory = &mut ctx.accounts.inventory;
     let player_account = &mut ctx.accounts.player_account;
@@ -124,7 +124,7 @@ pub fn initialize_player(
 }
 pub fn create_nft_collection(
     ctx: Context<CreateSplNft>,
-    collection_id: CollectionType, /* Used in initialization */
+    _collection_id: CollectionType, /* Used in initialization */
     collection_name: String,
     symbol: String,
     uri: String,
@@ -441,7 +441,7 @@ pub fn create_new_event(
 
 pub fn update_event(
     ctx: Context<UpdateEvent>,
-    event_nonce: u64, // used in instruction
+    _event_nonce: u64, // used in instruction
     start_date: i64,
     end_date: i64,
     tournament_type: TournamentType,
@@ -463,7 +463,7 @@ pub fn update_event(
 
 pub fn create_new_fight_card(
     ctx: Context<CreateFightCard>,
-    event_nonce: u64, // used in instruction
+    _event_nonce: u64, // used in instruction
     params: FightCardData,
 ) -> Result<()> {
     let program = &ctx.accounts.program;
@@ -484,8 +484,8 @@ pub fn create_new_fight_card(
 
 pub fn update_fight_card(
     ctx: Context<UpdateFightCard>,
-    event_nonce: u64,     // used in instruction
-    fight_card_nonce: u8, // used in instruction
+    _event_nonce: u64,     // used in instruction
+    _fight_card_nonce: u8, // used in instruction
     params: FightCardData,
 ) -> Result<()> {
     let program = &ctx.accounts.program;
@@ -975,24 +975,23 @@ pub fn generate_mintable_game_asset(
 
 pub fn join_fight_card(
     ctx: Context<JoinFightCard>,
-    event_nonce: u64,                        // Used in instruction
+    _event_nonce: u64,                       // Used in instruction
     fight_card_nonce: u8,                    // Used in instruction
     fighter_asset_nonce: u64,                // Used in instruction
     energy_booster_asset_nonce: Option<u64>, // Used in instruction
     shield_booster_asset_nonce: Option<u64>, // Used in instruction
     points_booster_asset_nonce: Option<u64>, // Used in instruction
     champions_pass_asset_nonce: Option<u64>, // Used in instruction
-    fighter_link_nonce: u64,                 // Used in instruction
-    energy_booster_link_nonce: Option<u64>,  // Used in instruction
-    shield_booster_link_nonce: Option<u64>,  // Used in instruction
-    points_booster_link_nonce: Option<u64>,  // Used in instruction
-    champions_pass_link_nonce: Option<u64>,  // Used in instruction
+    _fighter_link_nonce: u64,                // Used in instruction
+    _energy_booster_link_nonce: Option<u64>, // Used in instruction
+    _shield_booster_link_nonce: Option<u64>, // Used in instruction
+    _points_booster_link_nonce: Option<u64>, // Used in instruction
+    _champions_pass_link_nonce: Option<u64>, // Used in instruction
     fighter_color_side: FighterColorSide,
 ) -> Result<()> {
     let clock = Clock::get().unwrap();
     let current_blockchain_timestamp = clock.unix_timestamp;
 
-    let signer = &ctx.accounts.signer.to_account_info();
     let event = &ctx.accounts.event;
     let fight_card = &ctx.accounts.fight_card;
     let fight_card_link = &mut ctx.accounts.fight_card_link;
@@ -1014,7 +1013,6 @@ pub fn join_fight_card(
     process_game_asset_for_action(
         Some(&mut ctx.accounts.fighter_asset),
         Some(&mut ctx.accounts.fighter_link),
-        &signer.key(),
         false,
     )?;
     process_and_verify_game_asset_type(
@@ -1028,7 +1026,6 @@ pub fn join_fight_card(
     process_game_asset_for_action(
         ctx.accounts.energy_booster_asset.as_mut(),
         ctx.accounts.energy_booster_link.as_mut(),
-        &signer.key(),
         true,
     )?;
     process_and_verify_game_asset_type(
@@ -1041,7 +1038,6 @@ pub fn join_fight_card(
     process_game_asset_for_action(
         ctx.accounts.shield_booster_asset.as_mut(),
         ctx.accounts.shield_booster_link.as_mut(),
-        &signer.key(),
         true,
     )?;
     process_and_verify_game_asset_type(
@@ -1054,7 +1050,6 @@ pub fn join_fight_card(
     process_game_asset_for_action(
         ctx.accounts.points_booster_asset.as_mut(),
         ctx.accounts.points_booster_link.as_mut(),
-        &signer.key(),
         true,
     )?;
     process_and_verify_game_asset_type(
@@ -1068,7 +1063,6 @@ pub fn join_fight_card(
     process_game_asset_for_action(
         champions_pass_asset.clone().as_mut(),
         ctx.accounts.champions_pass_link.as_mut(),
-        &signer.key(),
         true,
     )?;
 
