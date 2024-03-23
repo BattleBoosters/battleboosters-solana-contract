@@ -14,7 +14,7 @@ pub struct CreateEvent<'info> {
     payer = creator,
     seeds = [MY_APP_PREFIX, EVENT, program.event_nonce.to_le_bytes().as_ref()],
     bump,
-    space = 8 + 1 + 1 + 8 + 8
+    space = 8 + 1 + 1 + 8 + 8 + 4 + (30 * 31)
     )]
     pub event: Box<Account<'info, EventData>>,
     pub system_program: Program<'info, System>,
@@ -86,16 +86,18 @@ pub struct EventData {
     pub start_date: i64,
     /// End date in seconds
     pub end_date: i64,
+    /// Rank rewards for prize distribution
+    pub rank_rewards: Vec<RankReward>,
 }
 
-/*
-   TODO: Add rank rewards directly on the `eventData`?
-*/
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug)]
 pub struct RankReward {
-    pub start_rank: u32, // Inclusive start rank for this tier
-    pub end_rank: u32,   // Inclusive end rank for this tier
-    pub prize_tier: u64,
+    pub start_rank: u64,            //  Defines the beginning rank of a reward tier.
+    pub end_rank: Option<u64>, // Explicitly indicates the ending rank (inclusive) with the use of `Option` to handle possible open-ended tiers.
+    pub prize_amount: u64,     // Currency or token reward
+    pub fighter_amount: i16,   // Quantities of fighter in-game assets awarded
+    pub booster_amount: i16,   // Quantities of booster in-game assets awarded
+    pub champions_pass_amount: i16, // Quantities of champion's pass in-game assets awarded
 }
 
 /*

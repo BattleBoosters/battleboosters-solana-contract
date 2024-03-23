@@ -4,7 +4,7 @@ use crate::constants::{
 use crate::errors::ErrorCode;
 use crate::events::*;
 use crate::state::create_spl_nft::CreateSplNft;
-use crate::state::event::{CreateEvent, InitializeEventLink, UpdateEvent};
+use crate::state::event::{CreateEvent, InitializeEventLink, RankReward, UpdateEvent};
 use crate::state::fight_card::{CreateFightCard, FightCardData, UpdateFightCard};
 use crate::state::join_fight_card::JoinFightCard;
 use crate::state::mint_nft_from_game_asset::MintNftFromGameAsset;
@@ -418,6 +418,7 @@ pub fn create_new_event(
     start_date: i64,
     end_date: i64,
     tournament_type: TournamentType,
+    rank_reward: Vec<RankReward>,
 ) -> Result<()> {
     let program = &mut ctx.accounts.program;
     verify_equality(&ctx.accounts.creator.key(), &program.admin_pubkey)?;
@@ -428,6 +429,7 @@ pub fn create_new_event(
     create_event.start_date = start_date;
     create_event.end_date = end_date;
     create_event.tournament_type = tournament_type;
+    create_event.rank_rewards = rank_reward;
 
     emit!(EventCreated {
         event_id: program.event_nonce
@@ -445,6 +447,7 @@ pub fn update_event(
     start_date: i64,
     end_date: i64,
     tournament_type: TournamentType,
+    rank_reward: Vec<RankReward>,
 ) -> Result<()> {
     let program = &ctx.accounts.program;
     verify_equality(&ctx.accounts.creator.key(), &program.admin_pubkey)?;
@@ -453,6 +456,7 @@ pub fn update_event(
     update_event.tournament_type = tournament_type;
     update_event.start_date = start_date;
     update_event.end_date = end_date;
+    update_event.rank_rewards = rank_reward;
 
     emit!(EventUpdated {
         event_id: program.event_nonce

@@ -150,8 +150,9 @@ pub mod battleboosters {
         start_date: i64,
         end_date: i64,
         tournament_type: TournamentType,
+        rank_reward: Vec<RankReward>,
     ) -> Result<()> {
-        processor::create_new_event(ctx, start_date, end_date, tournament_type)
+        processor::create_new_event(ctx, start_date, end_date, tournament_type, rank_reward)
     }
 
     pub fn update_event(
@@ -160,8 +161,16 @@ pub mod battleboosters {
         start_date: i64,
         end_date: i64,
         tournament_type: TournamentType,
+        rank_reward: Vec<RankReward>,
     ) -> Result<()> {
-        processor::update_event(ctx, event_nonce, start_date, end_date, tournament_type)
+        processor::update_event(
+            ctx,
+            event_nonce,
+            start_date,
+            end_date,
+            tournament_type,
+            rank_reward,
+        )
     }
 
     pub fn create_new_fight_card(

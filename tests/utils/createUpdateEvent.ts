@@ -10,7 +10,8 @@ const createEvent = async function (
     program_pda,
     time_start,
     time_end,
-    tournament_type
+    tournament_type,
+    rank_reward
 ) {
     const program_data_before = await program.account.programData.fetch(
         program_pda
@@ -26,7 +27,12 @@ const createEvent = async function (
         );
 
     const tx = await program.methods
-        .createNewEvent(new BN(time_start), new BN(time_end), tournament_type)
+        .createNewEvent(
+            new BN(time_start),
+            new BN(time_end),
+            tournament_type,
+            rank_reward
+        )
         .accounts({
             creator: admin_account.publicKey,
             program: program_pda,
@@ -68,7 +74,8 @@ const updateEvent = async function (
     event_nonce,
     time_start,
     time_end,
-    tournament_type
+    tournament_type,
+    rank_reward
 ) {
     const [event_account_one, event_account_one_bump] =
         anchor.web3.PublicKey.findProgramAddressSync(
@@ -86,7 +93,8 @@ const updateEvent = async function (
                 new BN(event_nonce),
                 new BN(time_start),
                 new BN(time_end),
-                tournament_type
+                tournament_type,
+                rank_reward
             )
             .accounts({
                 creator: admin_account.publicKey,

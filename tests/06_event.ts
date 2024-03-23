@@ -35,7 +35,25 @@ describe('Create event', () => {
                 program_pda,
                 time_start,
                 time_end,
-                { mainCard: {} }
+                { mainCard: {} },
+                [
+                    {
+                        startRank: new BN(1),
+                        endRank: new BN(1),
+                        prizeAmount: new BN(100),
+                        fighterAmount: 1,
+                        boosterAmount: 5,
+                        championsPassAmount: 1,
+                    },
+                    {
+                        startRank: new BN(2),
+                        endRank: new BN(2),
+                        prizeAmount: new BN(50),
+                        fighterAmount: 1,
+                        boosterAmount: 5,
+                        championsPassAmount: 1,
+                    },
+                ]
             );
 
         assert.equal(program_data_before.eventNonce.eq(new BN(0)), true);
@@ -57,7 +75,25 @@ describe('Create event', () => {
                 program_pda,
                 time_start,
                 time_end,
-                { prelims: {} }
+                { prelims: {} },
+                [
+                    {
+                        startRank: new BN(1),
+                        endRank: new BN(1),
+                        prizeAmount: new BN(100),
+                        fighterAmount: 1,
+                        boosterAmount: 5,
+                        championsPassAmount: 1,
+                    },
+                    {
+                        startRank: new BN(2),
+                        endRank: new BN(2),
+                        prizeAmount: new BN(50),
+                        fighterAmount: 1,
+                        boosterAmount: 5,
+                        championsPassAmount: 1,
+                    },
+                ]
             );
         assert.equal(program_data_before.eventNonce.eq(new BN(1)), true);
         assert.equal(eventAccount.fightCardNonce, 0);
@@ -78,7 +114,25 @@ describe('Create event', () => {
                 program_pda,
                 time_start,
                 time_end,
-                { mainCard: {} }
+                { mainCard: {} },
+                [
+                    {
+                        startRank: new BN(1),
+                        endRank: new BN(1),
+                        prizeAmount: new BN(100),
+                        fighterAmount: 1,
+                        boosterAmount: 5,
+                        championsPassAmount: 1,
+                    },
+                    {
+                        startRank: new BN(2),
+                        endRank: new BN(2),
+                        prizeAmount: new BN(50),
+                        fighterAmount: 1,
+                        boosterAmount: 5,
+                        championsPassAmount: 1,
+                    },
+                ]
             );
         } catch (e) {
             assert.include(e.message, 'Unauthorized access attempt');
@@ -97,7 +151,25 @@ describe('Create event', () => {
             event_id,
             new_time_start,
             new_time_end,
-            { prelims: {} }
+            { prelims: {} },
+            [
+                {
+                    startRank: new BN(1),
+                    endRank: new BN(1),
+                    prizeAmount: new BN(100),
+                    fighterAmount: 1,
+                    boosterAmount: 5,
+                    championsPassAmount: 1,
+                },
+                {
+                    startRank: new BN(2),
+                    endRank: new BN(2),
+                    prizeAmount: new BN(50),
+                    fighterAmount: 1,
+                    boosterAmount: 5,
+                    championsPassAmount: 1,
+                },
+            ]
         );
         assert.equal(eventAccount.startDate.eq(new BN(new_time_start)), true);
         assert.equal(eventAccount.endDate.eq(new BN(new_time_end)), true);
@@ -117,7 +189,25 @@ describe('Create event', () => {
                 event_id,
                 new_time_start,
                 new_time_end,
-                { prelims: {} }
+                { prelims: {} },
+                [
+                    {
+                        startRank: new BN(1),
+                        endRank: new BN(1),
+                        prizeAmount: new BN(100),
+                        fighterAmount: 1,
+                        boosterAmount: 5,
+                        championsPassAmount: 1,
+                    },
+                    {
+                        startRank: new BN(2),
+                        endRank: new BN(2),
+                        prizeAmount: new BN(50),
+                        fighterAmount: 1,
+                        boosterAmount: 5,
+                        championsPassAmount: 1,
+                    },
+                ]
             );
         } catch (err) {
             assert.include(err.message, 'Unauthorized access attempt');
@@ -137,7 +227,25 @@ describe('Create event', () => {
                 event_id,
                 new_time_start,
                 new_time_end,
-                { prelims: {} }
+                { prelims: {} },
+                [
+                    {
+                        startRank: new BN(1),
+                        endRank: new BN(1),
+                        prizeAmount: new BN(100),
+                        fighterAmount: 1,
+                        boosterAmount: 5,
+                        championsPassAmount: 1,
+                    },
+                    {
+                        startRank: new BN(2),
+                        endRank: new BN(2),
+                        prizeAmount: new BN(50),
+                        fighterAmount: 1,
+                        boosterAmount: 5,
+                        championsPassAmount: 1,
+                    },
+                ]
             );
         } catch (err) {
             assert.include(err.message, 'Unauthorized access attempt');
