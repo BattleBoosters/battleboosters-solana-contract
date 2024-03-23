@@ -72,11 +72,11 @@ describe('Mintable Game Asset', () => {
 
             const player_account_pda_data =
                 await program.account.playerData.fetch(player_account_pda);
-            const [collector_pack_pda, collector_pack_bump] =
+            const [mystery_box_pda, mystery_box_bump] =
                 anchor.web3.PublicKey.findProgramAddressSync(
                     [
                         Buffer.from('BattleBoosters'),
-                        Buffer.from('collector'),
+                        Buffer.from('mysteryBox'),
                         provider.wallet.publicKey.toBuffer(),
                         new BN(player_account_pda_data.orderNonce).toBuffer(
                             'le',
@@ -93,26 +93,24 @@ describe('Mintable Game Asset', () => {
                     recipient: provider.wallet.publicKey,
                     program: program_pda,
                     playerAccount: player_account_pda,
-                    collectorPack: collector_pack_pda,
+                    mysteryBox: mystery_box_pda,
                 })
                 .signers([admin_account])
                 .rpc();
 
-            const collector_pack_pda_data =
-                await program.account.mysteryBoxData.fetch(
-                    collector_pack_pda
-                );
+            const mystery_box_pda_data =
+                await program.account.mysteryBoxData.fetch(mystery_box_pda);
             assert.isTrue(
-                collector_pack_pda_data.boosterMintAllowance.eq(new BN(3))
+                mystery_box_pda_data.boosterMintAllowance.eq(new BN(3))
             );
             assert.isTrue(
-                collector_pack_pda_data.fighterMintAllowance.eq(new BN(2))
+                mystery_box_pda_data.fighterMintAllowance.eq(new BN(2))
             );
         } catch (e) {
             console.log(e);
         }
     });
-    it('Open a fighter from collector pack randomly', async () => {
+    it('Open a fighter from mystery box randomly', async () => {
         try {
             const program_pda_data_before =
                 await program.account.programData.fetch(program_pda);
@@ -122,7 +120,7 @@ describe('Mintable Game Asset', () => {
             );
 
             let {
-                collector_pack_pda,
+                mystery_box,
                 mintable_game_asset_pda,
                 player_game_asset_link_pda,
                 player_account_pda,
@@ -138,15 +136,13 @@ describe('Mintable Game Asset', () => {
                 ''
             );
 
-            const collector_pack_pda_data =
-                await program.account.mysteryBoxData.fetch(
-                    collector_pack_pda
-                );
+            const mystery_box_pda_data =
+                await program.account.mysteryBoxData.fetch(mystery_box);
             assert.isTrue(
-                collector_pack_pda_data.boosterMintAllowance.eq(new BN(3))
+                mystery_box_pda_data.boosterMintAllowance.eq(new BN(3))
             );
             assert.isTrue(
-                collector_pack_pda_data.fighterMintAllowance.eq(new BN(1))
+                mystery_box_pda_data.fighterMintAllowance.eq(new BN(1))
             );
             //const pre_mint_pda_data = await program.account.mintableGameAssetData.fetch(mintable_game_asset_pda);
             const mintable_game_asset_pda_data =
@@ -228,10 +224,10 @@ describe('Mintable Game Asset', () => {
         }
     });
 
-    it('Open a second fighter from collector pack randomly', async () => {
+    it('Open a second fighter from mystery box randomly', async () => {
         try {
             let {
-                collector_pack_pda,
+                mystery_box,
                 mintable_game_asset_pda,
                 player_game_asset_link_pda,
                 player_account_pda,
@@ -246,16 +242,14 @@ describe('Mintable Game Asset', () => {
                 null,
                 ''
             );
-            const collector_pack_pda_data =
-                await program.account.mysteryBoxData.fetch(
-                    collector_pack_pda
-                );
+            const mystery_box_pda_data =
+                await program.account.mysteryBoxData.fetch(mystery_box);
             assert.isTrue(
-                collector_pack_pda_data.boosterMintAllowance.eq(new BN(3))
+                mystery_box_pda_data.boosterMintAllowance.eq(new BN(3))
             );
 
             assert.isTrue(
-                collector_pack_pda_data.fighterMintAllowance.eq(new BN(0))
+                mystery_box_pda_data.fighterMintAllowance.eq(new BN(0))
             );
 
             const mintable_game_asset_pda_data =
@@ -337,7 +331,7 @@ describe('Mintable Game Asset', () => {
         }
     });
 
-    it('Fail minting allowance too low trying to mint fighter from collector pack', async () => {
+    it('Fail minting allowance too low trying to mint fighter from mystery box', async () => {
         try {
             await createMintableGameAsset(
                 program,
@@ -358,10 +352,10 @@ describe('Mintable Game Asset', () => {
         }
     });
 
-    it('Open a booster from collector pack randomly', async () => {
+    it('Open a booster from mystery box randomly', async () => {
         try {
             let {
-                collector_pack_pda,
+                mystery_box,
                 mintable_game_asset_pda,
                 player_game_asset_link_pda,
                 player_account_pda,
@@ -376,16 +370,14 @@ describe('Mintable Game Asset', () => {
                 null,
                 ''
             );
-            const collector_pack_pda_data =
-                await program.account.mysteryBoxData.fetch(
-                    collector_pack_pda
-                );
+            const mystery_box_pda_data =
+                await program.account.mysteryBoxData.fetch(mystery_box);
             assert.isTrue(
-                collector_pack_pda_data.boosterMintAllowance.eq(new BN(2))
+                mystery_box_pda_data.boosterMintAllowance.eq(new BN(2))
             );
 
             assert.isTrue(
-                collector_pack_pda_data.fighterMintAllowance.eq(new BN(0))
+                mystery_box_pda_data.fighterMintAllowance.eq(new BN(0))
             );
 
             const mintable_game_asset_pda_data =

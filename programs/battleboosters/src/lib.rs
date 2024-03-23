@@ -9,8 +9,9 @@ mod utils;
 
 use crate::constants::*;
 use crate::state::{
-    mystery_box::*, create_spl_nft::*, event::*, fight_card::*, player::*, program::*,
-    rarity::*, switchboard_callback::*, transaction_escrow::*, join_fight_card::*, mintable_game_asset::*
+    create_spl_nft::*, event::*, fight_card::*, join_fight_card::*, mint_nft_from_game_asset::*,
+    mintable_game_asset::*, player::*, program::*, rarity::*, switchboard_callback::*,
+    transaction_escrow::*,
 };
 
 use crate::types::*;
@@ -19,14 +20,12 @@ use crate::utils::*;
 use errors::ErrorCode;
 
 use mpl_token_metadata::instructions::{
-    CreateV1CpiBuilder,
-    MintV1CpiBuilder,
-    VerifyCollectionV1CpiBuilder,
+    CreateV1CpiBuilder, MintV1CpiBuilder, VerifyCollectionV1CpiBuilder,
 };
 
 use mpl_token_metadata::types::{PrintSupply, TokenStandard};
 
-use anchor_lang::solana_program::program::{invoke_signed};
+use anchor_lang::solana_program::program::invoke_signed;
 use switchboard_solana::utils::get_ixn_discriminator;
 declare_id!("5GW3wfyowgfKsKCeC2VKg6ucM4wKYX5ebZNAqvBcvTSd");
 
@@ -40,7 +39,6 @@ pub mod battleboosters {
 
     use mpl_token_metadata::types::{Collection, DataV2};
     use solana_randomness_service::TransactionOptions;
-
 
     pub fn initialize(
         ctx: Context<InitializeProgram>,
@@ -179,14 +177,14 @@ pub mod battleboosters {
         Ok(())
     }
 
-    pub fn purchase_collector_pack(
+    pub fn purchase_mystery_box(
         ctx: Context<TransactionEscrow>,
         bank_escrow_bump: u8,
         requests: Vec<PurchaseRequest>,
     ) -> Result<()> {
         let program = &ctx.accounts.program;
         let feed = &ctx.accounts.price_feed.load()?;
-        let collector_pack = &mut ctx.accounts.collector_pack;
+        let mystery_box = &mut ctx.accounts.mystery_box;
         let player_account = &mut ctx.accounts.player_account;
         let bank = &mut ctx.accounts.bank;
         let bank_escrow = &mut ctx.accounts.bank_escrow;
@@ -204,7 +202,7 @@ pub mod battleboosters {
             match request.nft_type {
                 NftType::Booster => {
                     // update the quantity of fighter mint allowance
-                    collector_pack.fighter_mint_allowance += request.quantity.clone();
+                    mystery_box.fighter_mint_allowance += request.quantity.clone();
                     total_usd += request
                         .quantity
                         .checked_mul(program.booster_price.clone())
@@ -212,7 +210,7 @@ pub mod battleboosters {
                 }
                 NftType::Fighter => {
                     // update the quantity of fighter mint allowance
-                    collector_pack.booster_mint_allowance += request
+                    mystery_box.booster_mint_allowance += request
                         .quantity
                         .checked_mul(program.fighter_pack_amount.clone() as u64)
                         .unwrap();
@@ -313,7 +311,7 @@ pub mod battleboosters {
                     //     false,
                     // )
                     //     .into(),
-                    AccountMeta::new(collector_pack.to_account_info().key(), false).into(),
+                    AccountMeta::new(mystery_box.to_account_info().key(), false).into(),
                     // AccountMeta::new(ctx.accounts.bank.to_account_info().key(), false).into(),
                     // AccountMeta::new(ctx.accounts.bank_escrow.to_account_info().key(), false).into(),
                     //AccountMeta::new_readonly(ctx.accounts.system_program.to_account_info().key(), false).into(),
@@ -327,7 +325,7 @@ pub mod battleboosters {
         )?;
 
         // Set the collector pack to default `champion_s_pass_mint_allowance`
-        collector_pack.champions_pass_mint_allowance = 0;
+        mystery_box.champions_pass_mint_allowance = 0;
         // Increase order
         player_account.order_nonce += 1;
 
@@ -345,14 +343,14 @@ pub mod battleboosters {
         msg!("order_nonce: {:?}", order_nonce);
         msg!(
             "fighter mint allowance:  {:?}",
-            ctx.accounts.collector_pack.fighter_mint_allowance
+            ctx.accounts.mystery_box.fighter_mint_allowance
         );
         msg!(
             "booster mint allowance:  {:?}",
-            ctx.accounts.collector_pack.booster_mint_allowance
+            ctx.accounts.mystery_box.booster_mint_allowance
         );
-        let collector_pack = &mut ctx.accounts.collector_pack;
-        collector_pack.randomness = Some(result);
+        let mystery_box = &mut ctx.accounts.mystery_box;
+        mystery_box.randomness = Some(result);
 
         // // let signer = &ctx.accounts.signer.key();
         // let bank = &mut ctx.accounts.bank;
@@ -418,33 +416,33 @@ pub mod battleboosters {
             &ctx.accounts.signer.key(),
             &ctx.accounts.program.admin_pubkey,
         )?;
-        let collector_pack = &mut ctx.accounts.collector_pack;
+        let mystery_box = &mut ctx.accounts.mystery_box;
 
-        collector_pack.randomness = Some(vec![12, 23, 34, 34, 54, 74, 94, 23]);
-        collector_pack.booster_mint_allowance = booster_mint_alowance;
-        collector_pack.fighter_mint_allowance = fighter_mint_allowance;
-        collector_pack.champions_pass_mint_allowance = champions_pass_mint_allowance;
+        mystery_box.randomness = Some(vec![12, 23, 34, 34, 54, 74, 94, 23]);
+        mystery_box.booster_mint_allowance = booster_mint_alowance;
+        mystery_box.fighter_mint_allowance = fighter_mint_allowance;
+        mystery_box.champions_pass_mint_allowance = champions_pass_mint_allowance;
         Ok(())
     }
 
     pub fn generate_mintable_game_asset(
         ctx: Context<GenerateNftPreMint>,
-        player_game_asset_link_nonce: u64, // used on instruction
+        mintable_game_asset_link_nonce: u64, // used on instruction
         request: OpenRequest,
     ) -> Result<()> {
         let program = &mut ctx.accounts.program;
-        let collector_pack = &mut ctx.accounts.collector_pack;
+        let mystery_box = &mut ctx.accounts.mystery_box;
         let player_game_asset_link = &mut ctx.accounts.player_game_asset_link;
         let mintable_game_asset = &mut ctx.accounts.mintable_game_asset;
         let player_account = &mut ctx.accounts.player_account;
         let signer = &ctx.accounts.signer;
 
         require!(
-            player_game_asset_link_nonce <= player_account.player_game_asset_link_nonce,
+            mintable_game_asset_link_nonce <= player_account.player_game_asset_link_nonce,
             ErrorCode::WrongPlayerGameAssetLinkNonce
         );
 
-        if player_game_asset_link_nonce < player_account.player_game_asset_link_nonce {
+        if mintable_game_asset_link_nonce < player_account.player_game_asset_link_nonce {
             require!(player_game_asset_link.is_free, ErrorCode::NotFreePDA);
         } else {
             // increase the player game asset link nonce for the next game asset generation
@@ -454,7 +452,7 @@ pub mod battleboosters {
         match request.nft_type {
             NftType::Booster => {
                 require!(
-                    collector_pack.booster_mint_allowance >= 1,
+                    mystery_box.booster_mint_allowance >= 1,
                     ErrorCode::NotEnoughAllowance
                 );
                 let rarity = &ctx
@@ -462,15 +460,15 @@ pub mod battleboosters {
                     .rarity
                     .clone()
                     .ok_or(ErrorCode::RarityAccountRequired)?;
-                let randomness = collector_pack
+                let randomness = mystery_box
                     .randomness
                     .clone()
                     .ok_or(ErrorCode::RandomnessUnavailable)?;
                 let public_key_bytes = signer.key().to_bytes();
 
-                let combined_allowance = &collector_pack.booster_mint_allowance
-                    + &collector_pack.fighter_mint_allowance
-                    + &collector_pack.champions_pass_mint_allowance;
+                let combined_allowance = &mystery_box.booster_mint_allowance
+                    + &mystery_box.fighter_mint_allowance
+                    + &mystery_box.champions_pass_mint_allowance;
                 let nonce_byte = (combined_allowance % 256) as u8;
 
                 let rng_seed = create_rng_seed(&randomness, &public_key_bytes, &nonce_byte, None);
@@ -558,15 +556,13 @@ pub mod battleboosters {
                     return Err(ErrorCode::NoMatchingRarityFound.into());
                 }
 
-                collector_pack.booster_mint_allowance = collector_pack
-                    .booster_mint_allowance
-                    .checked_sub(1)
-                    .unwrap();
+                mystery_box.booster_mint_allowance =
+                    mystery_box.booster_mint_allowance.checked_sub(1).unwrap();
                 msg!("GOOD");
             }
             NftType::Fighter => {
                 require!(
-                    collector_pack.fighter_mint_allowance >= 1,
+                    mystery_box.fighter_mint_allowance >= 1,
                     ErrorCode::NotEnoughAllowance
                 );
                 let rarity = &ctx
@@ -574,15 +570,15 @@ pub mod battleboosters {
                     .rarity
                     .clone()
                     .ok_or(ErrorCode::RarityAccountRequired)?;
-                let randomness = collector_pack
+                let randomness = mystery_box
                     .randomness
                     .clone()
                     .ok_or(ErrorCode::RandomnessUnavailable)?;
                 let public_key_bytes = signer.key().to_bytes();
 
-                let combined_allowance = &collector_pack.booster_mint_allowance
-                    + &collector_pack.fighter_mint_allowance
-                    + &collector_pack.champions_pass_mint_allowance;
+                let combined_allowance = &mystery_box.booster_mint_allowance
+                    + &mystery_box.fighter_mint_allowance
+                    + &mystery_box.champions_pass_mint_allowance;
                 let nonce_byte = (combined_allowance % 256) as u8;
 
                 let rng_seed = create_rng_seed(&randomness, &public_key_bytes, &nonce_byte, None);
@@ -702,10 +698,8 @@ pub mod battleboosters {
                         None,
                         attributes,
                     );
-                    collector_pack.fighter_mint_allowance = collector_pack
-                        .fighter_mint_allowance
-                        .checked_sub(1)
-                        .unwrap();
+                    mystery_box.fighter_mint_allowance =
+                        mystery_box.fighter_mint_allowance.checked_sub(1).unwrap();
 
                     msg!("{:?}", mintable_game_asset.metadata);
                 } else {
@@ -717,7 +711,7 @@ pub mod battleboosters {
             }
             NftType::ChampionsPass => {
                 require!(
-                    collector_pack.champions_pass_mint_allowance >= 1,
+                    mystery_box.champions_pass_mint_allowance >= 1,
                     ErrorCode::NotEnoughAllowance
                 );
                 /*
@@ -747,7 +741,7 @@ pub mod battleboosters {
                     None,
                     attributes,
                 );
-                collector_pack.champions_pass_mint_allowance = collector_pack
+                mystery_box.champions_pass_mint_allowance = mystery_box
                     .champions_pass_mint_allowance
                     .checked_sub(1)
                     .unwrap();
@@ -771,8 +765,8 @@ pub mod battleboosters {
         Ok(())
     }
 
-    pub fn mint_collector_pack(
-        ctx: Context<MintMysteryBox>,
+    pub fn mint_nft_from_game_asset(
+        ctx: Context<MintNftFromGameAsset>,
         //requests: Vec<PurchaseRequest>,
     ) -> Result<()> {
         let program = &mut ctx.accounts.program;

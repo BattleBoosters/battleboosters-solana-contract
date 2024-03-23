@@ -30,8 +30,8 @@ pub struct ConsumeRandomness<'info> {
     // )]
     // pub player_account: Box<Account<'info, PlayerData>>,
     /// CHECK:
-    #[account(mut, seeds = [MY_APP_PREFIX, COLLECTOR, recipient.key().as_ref(), order_nonce.to_le_bytes().as_ref()], bump)]
-    pub collector_pack: Box<Account<'info, MysteryBoxData>>,
+    #[account(mut, seeds = [MY_APP_PREFIX, MYSTERY_BOX, recipient.key().as_ref(), order_nonce.to_le_bytes().as_ref()], bump)]
+    pub mystery_box: Box<Account<'info, MysteryBoxData>>,
     // /// CHECK: This is a PDA used as the bank
     // #[account(mut, seeds = [MY_APP_PREFIX, BANK], bump = program.bank_bump)]
     // /// CHECK:

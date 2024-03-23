@@ -135,11 +135,11 @@ describe.skip('Purchase', () => {
             player_account_pda
         );
 
-        const [collector_pack_pda, collector_pack_bump] =
+        const [mystery_box, mystery_box_bump] =
             anchor.web3.PublicKey.findProgramAddressSync(
                 [
                     Buffer.from('BattleBoosters'),
-                    Buffer.from('collector_v2'),
+                    Buffer.from('mystery_box'),
                     provider.wallet.publicKey.toBuffer(),
                     new BN(playerAccountData.orderNonce).toBuffer('le', 8),
                 ],
@@ -196,8 +196,8 @@ describe.skip('Purchase', () => {
             console.log('tx start');
             console.log(randomnessService.accounts.state);
 
-            console.log('collector_pack_pda');
-            console.log(collector_pack_pda);
+            console.log('mystery_box');
+            console.log(mystery_box);
             console.log('player_account_pda');
             console.log(player_account_pda);
             console.log('user_bank_pda');
@@ -206,7 +206,7 @@ describe.skip('Purchase', () => {
             console.log(bank_pda);
 
             const tx = await program.methods
-                .purchaseCollectorPack(user_bank_bump, [
+                .purchaseMysteryBox(user_bank_bump, [
                     {
                         nftType: { booster: {} }, // Use the variant name as key for enum
                         quantity: boosterQty,
@@ -221,7 +221,7 @@ describe.skip('Purchase', () => {
                     recipient: provider.wallet.publicKey,
                     program: program_pda,
                     playerAccount: player_account_pda,
-                    collectorPack: collector_pack_pda,
+                    mysteryBox: mystery_box,
                     bank: bank_pda,
                     bankEscrow: user_bank_pda,
                     priceFeed: priceFeedAccount,
@@ -300,25 +300,23 @@ describe.skip('Purchase', () => {
 
             console.log(JSON.stringify(logs?.meta?.logMessages, undefined, 2));
 
-            const collectorPackPdaAfter =
-                await program.account.mysteryBoxData.fetch(
-                    collector_pack_pda
-                );
+            const mystery_box_pda_after =
+                await program.account.mysteryBoxData.fetch(mystery_box);
             console.log('randomness saved');
-            console.log(Array.from(collectorPackPdaAfter.randomness));
+            console.log(Array.from(mystery_box_pda_after.randomness));
             console.log('champions pass');
-            console.log(collectorPackPdaAfter.championsPassMintAllowance);
+            console.log(mystery_box_pda_after.championsPassMintAllowance);
             // assert.isTrue(
             //     playerInventoryAccountAfter.randomness.eq(boosterQty)
             // );
             assert.isTrue(
-                collectorPackPdaAfter.boosterMintAllowance.eq(boosterQty)
+                mystery_box_pda_after.boosterMintAllowance.eq(boosterQty)
             );
             assert.isTrue(
-                collectorPackPdaAfter.fighterMintAllowance.eq(fighterQty)
+                mystery_box_pda_after.fighterMintAllowance.eq(fighterQty)
             );
             assert.isTrue(
-                collectorPackPdaAfter.championsPassMintAllowance.eq(new BN(0))
+                mystery_box_pda_after.championsPassMintAllowance.eq(new BN(0))
             );
 
             // Test if bank PDA received the correct SOL amount
@@ -410,7 +408,7 @@ describe.skip('Purchase', () => {
             );
 
             const tx = await program.methods
-                .purchaseCollectorPack(user_bank_bump, [
+                .purchaseMysteryBox(user_bank_bump, [
                     {
                         nftType: { booster: {} }, // Use the variant name as key for enum
                         quantity: boosterQty,
@@ -532,7 +530,7 @@ describe.skip('Purchase', () => {
             );
 
             const tx = await program.methods
-                .purchaseCollectorPack(user_bank_bump, [
+                .purchaseMysteryBox(user_bank_bump, [
                     {
                         nftType: { booster: {} }, // Use the variant name as key for enum
                         quantity: boosterQty,
@@ -632,7 +630,7 @@ describe.skip('Purchase', () => {
             );
 
             const tx = await program.methods
-                .purchaseCollectorPack(user_bank_bump, [
+                .purchaseMysteryBox(user_bank_bump, [
                     {
                         nftType: { booster: {} }, // Use the variant name as key for enum
                         quantity: boosterQty,

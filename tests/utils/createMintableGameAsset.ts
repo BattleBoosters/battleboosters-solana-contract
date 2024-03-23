@@ -54,11 +54,11 @@ const createMintableGameAsset = async function (
             program.programId
         );
 
-    const [collector_pack_pda, collector_pack_bump] =
+    const [mystery_box, mystery_box_bump] =
         anchor.web3.PublicKey.findProgramAddressSync(
             [
                 Buffer.from('BattleBoosters'),
-                Buffer.from('collector'),
+                Buffer.from('mysteryBox'),
                 signer_,
                 new BN(player_account_pda_data.orderNonce).toBuffer('le', 8),
             ],
@@ -75,7 +75,7 @@ const createMintableGameAsset = async function (
             signer: signer ? signer.publicKey : provider.wallet.publicKey,
             program: program_pda,
             playerAccount: player_account_pda,
-            collectorPack: collector_pack_pda,
+            mysteryBox: mystery_box,
             rarity: rarity_pda,
             playerGameAssetLink: player_game_asset_link_pda,
             mintableGameAsset: mintable_game_asset_pda,
@@ -93,7 +93,7 @@ const createMintableGameAsset = async function (
     // console.log(JSON.stringify(logs?.meta?.logMessages, undefined, 2));
 
     return {
-        collector_pack_pda,
+        mystery_box,
         mintable_game_asset_pda,
         player_game_asset_link_pda,
         player_account_pda,

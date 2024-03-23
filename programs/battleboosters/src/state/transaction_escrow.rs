@@ -31,11 +31,11 @@ pub struct TransactionEscrow<'info> {
     #[account(
         init,
         payer = signer,
-        seeds = [MY_APP_PREFIX, COLLECTOR, recipient.key().as_ref(), player_account.order_nonce.to_le_bytes().as_ref()],
+        seeds = [MY_APP_PREFIX, MYSTERY_BOX, recipient.key().as_ref(), player_account.order_nonce.to_le_bytes().as_ref()],
         bump,
         space = 8 + 8 + 8 + 8 + 1 + 4 + 8
     )]
-    pub collector_pack: Account<'info, MysteryBoxData>,
+    pub mystery_box: Account<'info, MysteryBoxData>,
     /// CHECK: This is a PDA used as the bank
     #[account(mut, seeds = [MY_APP_PREFIX, BANK], bump = program.bank_bump)]
     pub bank: AccountInfo<'info>,
@@ -108,11 +108,11 @@ pub struct TransactionTest<'info> {
     #[account(
     init,
     payer = signer,
-    seeds = [MY_APP_PREFIX, COLLECTOR, recipient.key().as_ref(), player_account.order_nonce.to_le_bytes().as_ref()],
+    seeds = [MY_APP_PREFIX, MYSTERY_BOX, recipient.key().as_ref(), player_account.order_nonce.to_le_bytes().as_ref()],
     bump,
     space = 45
     )]
-    pub collector_pack: Account<'info, MysteryBoxData>,
+    pub mystery_box: Account<'info, MysteryBoxData>,
 
     /// The Solana System program. Used to allocate space on-chain for the randomness_request account.
     pub system_program: Program<'info, System>,

@@ -1,11 +1,13 @@
 use crate::errors::ErrorCode;
 use crate::state::event::EventLinkData;
 use crate::state::fight_card::*;
+use crate::state::mintable_game_asset::{
+    Attribute, MintableGameAssetData, MintableGameAssetLinkData, NftMetadata,
+};
 use crate::state::rarity::Stats;
 use crate::types::*;
 use anchor_lang::prelude::*;
 use sha2::{Digest, Sha256};
-use crate::state::mintable_game_asset::{Attribute, MintableGameAssetData, MintableGameAssetLinkData, NftMetadata};
 
 pub fn verify_equality(expected: &Pubkey, actual: &Pubkey) -> Result<()> {
     require!(expected == actual, ErrorCode::Unauthorized);

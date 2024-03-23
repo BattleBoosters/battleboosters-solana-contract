@@ -103,7 +103,6 @@ pub struct FightCardLinkData {
     pub is_initialized: bool,
 }
 
-
 #[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]
 pub struct SharedStrength {
     pub takedowns_attempted: u8,

@@ -1,19 +1,10 @@
 use super::mystery_box::MysteryBoxData;
 use super::program::ProgramData;
 use crate::constants::*;
-use crate::state::fight_card::FightCardData;
-use anchor_lang::prelude::*;
-
-use crate::state::event::{EventData, EventLinkData};
-use crate::state::rarity::RarityData;
-use crate::types::FighterColorSide;
-use anchor_lang::solana_program::sysvar;
-use solana_randomness_service::SimpleRandomnessV1Account;
-use solana_randomness_service::{
-    program::SolanaRandomnessService, ID as SolanaRandomnessServiceID,
-};
-use switchboard_solana::prelude::*;
 use crate::state::mintable_game_asset::{MintableGameAssetData, MintableGameAssetLinkData};
+use crate::state::rarity::RarityData;
+use anchor_lang::prelude::*;
+use switchboard_solana::prelude::*;
 
 // Struct for initializing player
 #[derive(Accounts)]
@@ -59,10 +50,10 @@ pub struct GenerateNftPreMint<'info> {
     pub player_account: Box<Account<'info, PlayerData>>,
     #[account(
     mut,
-    seeds = [MY_APP_PREFIX, COLLECTOR, signer.key().as_ref(), player_account.order_nonce.to_le_bytes().as_ref()],
+    seeds = [MY_APP_PREFIX, MYSTERY_BOX, signer.key().as_ref(), player_account.order_nonce.to_le_bytes().as_ref()],
     bump,
     )]
-    pub collector_pack: Box<Account<'info, MysteryBoxData>>,
+    pub mystery_box: Box<Account<'info, MysteryBoxData>>,
     #[account(
     mut,
     seeds = [MY_APP_PREFIX, RARITY],
@@ -107,10 +98,6 @@ pub struct PlayerData {
    TODO: UPDATE THE SPAAAAAAAAAAAAACEEEEEEEEEEEE!!!
 
 */
-
-
-
-
 
 // #[derive(Accounts)]
 // pub struct CreateEvent<'info> {
