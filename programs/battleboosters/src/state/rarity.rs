@@ -11,7 +11,7 @@ pub struct InitializeRarity<'info> {
         payer = creator,
         seeds = [MY_APP_PREFIX, RARITY],
         bump,
-        space = 8 + 140 + 50 + 50 + 50 + 5 + 5 + 1
+        space = 8 + 140 + 50 + 50 + 50 + 4 + (3 * 6) + 1
     )]
     pub rarity: Account<'info, RarityData>,
     pub system_program: Program<'info, System>,
@@ -27,10 +27,12 @@ pub struct RarityData {
     pub shield_booster: Vec<RarityBooster>,
     /// Rarity tiers for NFTs booster with associated stats
     pub points_booster: Vec<RarityBooster>,
-    /// Drop probabilities for each NFTs fighter rarity tier, represented as percentage
-    pub fighter_probabilities: Vec<u8>,
-    /// Drop probabilities for each NFTs booster rarity tier, represented as percentage
-    pub booster_probabilities: Vec<u8>,
+    /// Drop probabilities for each NFTs rarity tier, represented as percentage
+    pub probability_tiers: Vec<TierProbabilities>,
+    // /// Drop probabilities for each NFTs fighter rarity tier, represented as percentage
+    // pub fighter_probabilities: Vec<u8>,
+    // /// Drop probabilities for each NFTs booster rarity tier, represented as percentage
+    // pub booster_probabilities: Vec<u8>,
     /// This data prevent re-initialization
     pub is_initialized: bool,
 }
@@ -172,5 +174,44 @@ impl RarityFighter {
             (RarityFighter::Legendary { .. }, 4) => true,
             _ => false,
         }
+    }
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug)]
+pub enum TierProbabilities {
+    Tier1(Vec<u8>),
+    Tier2(Vec<u8>),
+    Tier3(Vec<u8>),
+}
+
+impl TierProbabilities {
+    // Returns the probability vector associated with the instance's tier.
+    pub fn get_probability_for_tier(&self) -> Vec<u8> {
+        match self {
+            TierProbabilities::Tier1(probs) => probs.clone(),
+            TierProbabilities::Tier2(probs) => probs.clone(),
+            TierProbabilities::Tier3(probs) => probs.clone(),
+        }
+    }
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, Copy)]
+pub enum TierType {
+    Tier1,
+    Tier2,
+    Tier3,
+}
+impl RarityData {
+    // Function to get probabilities for a specified tier
+    pub fn get_probability_by_tier(&self, tier_type: TierType) -> Option<TierProbabilities> {
+        for tier in &self.probability_tiers {
+            match (tier, tier_type) {
+                (TierProbabilities::Tier1(_), TierType::Tier1)
+                | (TierProbabilities::Tier2(_), TierType::Tier2)
+                | (TierProbabilities::Tier3(_), TierType::Tier3) => return Some(tier.clone()),
+                _ => continue,
+            }
+        }
+        None
     }
 }

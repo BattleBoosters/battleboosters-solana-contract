@@ -4,7 +4,7 @@ use crate::state::fight_card::*;
 use crate::state::mintable_game_asset::{
     Attribute, MintableGameAssetData, MintableGameAssetLinkData, NftMetadata,
 };
-use crate::state::rarity::Stats;
+use crate::state::rarity::{Stats, TierProbabilities};
 use crate::types::*;
 use anchor_lang::prelude::*;
 use sha2::{Digest, Sha256};
@@ -213,11 +213,13 @@ pub fn create_rng_seed(
     u64::from_le_bytes(random_result[0..8].try_into().unwrap())
 }
 
-pub fn find_rarity(rarity: Vec<u8>, random_number: u8) -> usize {
+pub fn find_rarity(tier_probabilities: TierProbabilities, random_number: u8) -> usize {
+    let probabilities = tier_probabilities.get_probability_for_tier();
+
     let mut cumulative_probs = vec![];
     let mut sum = 0;
 
-    for prob in rarity {
+    for prob in probabilities {
         sum += prob; // Sum the probabilities to make them cumulative
         cumulative_probs.push(sum.clone());
     }

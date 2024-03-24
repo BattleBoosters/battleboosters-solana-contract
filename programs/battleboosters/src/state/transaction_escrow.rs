@@ -9,6 +9,7 @@ use anchor_spl::token::{Mint, Token};
 use std::str::FromStr;
 use switchboard_solana::AggregatorAccountData;
 
+use crate::state::rarity::RarityData;
 use solana_randomness_service::program::SolanaRandomnessService;
 use switchboard_solana::prelude::*;
 
@@ -88,6 +89,13 @@ pub struct TransactionEscrow<'info> {
 
     /// The Solana Associated Token program. Used to create the TokenAccount for the randomness escrow.
     pub associated_token_program: Program<'info, AssociatedToken>,
+    /// Rarity PDA
+    #[account(
+    mut,
+    seeds = [MY_APP_PREFIX, RARITY],
+    bump,
+    )]
+    pub rarity: Account<'info, RarityData>,
 }
 
 #[derive(Accounts)]

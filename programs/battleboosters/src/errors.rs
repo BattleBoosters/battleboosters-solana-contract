@@ -53,4 +53,6 @@ pub enum ErrorCode {
     MintableAssetMintedAndUnavailable,
     #[msg("This mintable game asset link is missing")]
     MintableAssetLinkRequired,
+    #[msg("The probability tier was not found")]
+    ProbabilityTierNotFound,
 }

@@ -11,7 +11,9 @@ use crate::state::mint_nft_from_game_asset::MintNftFromGameAsset;
 use crate::state::mintable_game_asset::Attribute;
 use crate::state::player::{GenerateNftPreMint, InitializePlayer};
 use crate::state::program::InitializeProgram;
-use crate::state::rarity::{InitializeRarity, RarityBooster, RarityFighter};
+use crate::state::rarity::{
+    InitializeRarity, RarityBooster, RarityFighter, TierProbabilities, TierType,
+};
 use crate::state::switchboard_callback::ConsumeRandomness;
 use crate::state::transaction_escrow::TransactionEscrow;
 use crate::types::{
@@ -68,8 +70,7 @@ pub fn initialize_rarity(
     energy_booster: Vec<RarityBooster>,
     shield_booster: Vec<RarityBooster>,
     points_booster: Vec<RarityBooster>,
-    fighter_probabilities: Vec<u8>,
-    booster_probabilities: Vec<u8>,
+    probability_tiers: Vec<TierProbabilities>,
 ) -> Result<()> {
     let rarity = &mut ctx.accounts.rarity;
     require!(!rarity.is_initialized, ErrorCode::AlreadyInitialized);
@@ -78,8 +79,7 @@ pub fn initialize_rarity(
     rarity.energy_booster = energy_booster;
     rarity.shield_booster = shield_booster;
     rarity.points_booster = points_booster;
-    rarity.fighter_probabilities = fighter_probabilities;
-    rarity.booster_probabilities = booster_probabilities;
+    rarity.probability_tiers = probability_tiers;
     rarity.is_initialized = true;
 
     msg!("Rarity Initialized");
@@ -206,6 +206,7 @@ pub fn purchase_mystery_box(
     let bank = &mut ctx.accounts.bank;
     let bank_escrow = &mut ctx.accounts.bank_escrow;
     let signer_key = &ctx.accounts.signer.to_account_info().key();
+    let rarity = &ctx.accounts.rarity;
 
     // get result
     let val: f64 = feed.get_result()?.try_into()?;
@@ -337,6 +338,13 @@ pub fn purchase_mystery_box(
 
     // Set the collector pack to default `champion_s_pass_mint_allowance`
     mystery_box.champions_pass_mint_allowance = 0;
+
+    if let Some(probability_tier) = rarity.get_probability_by_tier(TierType::Tier1) {
+        mystery_box.probability_tier = probability_tier
+    } else {
+        return Err(ErrorCode::ProbabilityTierNotFound.into());
+    }
+
     // Increase order
     player_account.order_nonce += 1;
 
@@ -692,7 +700,7 @@ pub fn generate_mintable_game_asset(
                 create_rng_seed(&randomness, &public_key_bytes, &nonce_byte, Some(1_u8));
             let random_booster_type = (&rng_seed % 3) as usize;
             let booster_type = BoosterType::from_index(random_booster_type);
-            let rarity_index = find_rarity(rarity.booster_probabilities.clone(), random_number);
+            let rarity_index = find_rarity(mystery_box.probability_tier.clone(), random_number);
             // Get the random booster type
             let mut rarity_booster_found: Option<&RarityBooster> = None;
             if let Some(booster) = booster_type.clone() {
@@ -810,7 +818,7 @@ pub fn generate_mintable_game_asset(
 
             let random_fighter_type = (rng_seed.clone() % 8) as usize;
             let fighter_type = FighterType::from_index(random_fighter_type);
-            let rarity_index = find_rarity(rarity.fighter_probabilities.clone(), random_number);
+            let rarity_index = find_rarity(mystery_box.probability_tier.clone(), random_number);
             let rarity_fighter_found = rarity
                 .fighter
                 .iter()

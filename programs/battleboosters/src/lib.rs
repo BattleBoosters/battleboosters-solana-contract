@@ -48,8 +48,7 @@ pub mod battleboosters {
         energy_booster: Vec<RarityBooster>,
         shield_booster: Vec<RarityBooster>,
         points_booster: Vec<RarityBooster>,
-        fighter_probabilities: Vec<u8>,
-        booster_probabilities: Vec<u8>,
+        probability_tiers: Vec<TierProbabilities>,
     ) -> Result<()> {
         processor::initialize_rarity(
             ctx,
@@ -57,8 +56,7 @@ pub mod battleboosters {
             energy_booster,
             shield_booster,
             points_booster,
-            fighter_probabilities,
-            booster_probabilities,
+            probability_tiers,
         )
     }
 
