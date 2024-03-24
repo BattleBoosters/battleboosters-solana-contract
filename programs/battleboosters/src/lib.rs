@@ -133,7 +133,7 @@ pub mod battleboosters {
     }
 
     pub fn generate_mintable_game_asset(
-        ctx: Context<GenerateNftPreMint>,
+        ctx: Context<GenerateMintableGameAsset>,
         mintable_game_asset_link_nonce: u64, // used on instruction
         request: OpenRequest,
     ) -> Result<()> {
