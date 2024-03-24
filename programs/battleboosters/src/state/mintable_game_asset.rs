@@ -8,7 +8,7 @@ use solana_program::pubkey::Pubkey;
 
 #[derive(Accounts)]
 #[instruction(mintable_game_asset_link_nonce: u64)]
-pub struct GenerateMintableGameAsset<'info> {
+pub struct CreateMintableGameAsset<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
     #[account(mut, seeds = [MY_APP_PREFIX, PROGRAM_STATE], bump)]
