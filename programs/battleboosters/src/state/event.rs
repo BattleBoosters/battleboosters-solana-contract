@@ -50,7 +50,7 @@ pub struct InitializeEventLink<'info> {
     #[account(
     init,
     payer = creator,
-    space = 110,
+    space = 111,
     seeds = [MY_APP_PREFIX, EVENT, event.key().as_ref(), creator.key().as_ref()],
     bump
     )]
@@ -70,6 +70,9 @@ pub struct EventLinkData {
     pub champions_pass_pubkey: Option<Pubkey>,
     /// Tracker to link the `champions_pass` PDA
     pub champions_pass_nonce_tracker: Option<u64>,
+    /// Prevents the player to claim multiple time the rewards
+    /// If this occurs, it should close and refund the creator of the EventLink PDA?
+    pub is_consumed: bool,
     /// Prevent accidental multiple initializations of a PDA
     pub is_initialized: bool,
 }

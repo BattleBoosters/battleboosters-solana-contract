@@ -97,7 +97,7 @@ pub struct FightCardLinkData {
     /// The fighter side chosen by the player `Red Gloves` or `Blue Gloves`
     pub fighter_color_side: FighterColorSide,
     /// Prevents the calculation of points for the same fightCard multiple times
-    /// If this occurs, it should close and refund the creator of the fighCardLink PDA
+    /// If this occurs, it should close and refund the creator of the fighCardLink PDA?
     pub is_consumed: bool,
     /// Prevent accidental multiple initializations of a PDA
     pub is_initialized: bool,
