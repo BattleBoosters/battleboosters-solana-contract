@@ -251,8 +251,12 @@ describe('Initialize', () => {
                     rarity_pda
                 );
                 assert.isTrue(rarityData.isInitialized);
-                console.log('rarityData.probabilityTiers');
-                console.log(rarityData.probabilityTiers);
+                assert.deepEqual(rarityData.probabilityTiers, [
+                    { tier1: { 0: Buffer.from([43, 28, 15, 10, 4]) } },
+                    { tier2: { 0: Buffer.from([55, 25, 12, 6, 2]) } },
+                    { tier3: { 0: Buffer.from([60, 25, 10, 4, 1]) } },
+                ]);
+
                 // assert.deepEqual(
                 //     rarityData.probabilityTiers,
                 //     [

@@ -29,10 +29,6 @@ pub struct RarityData {
     pub points_booster: Vec<RarityBooster>,
     /// Drop probabilities for each NFTs rarity tier, represented as percentage
     pub probability_tiers: Vec<TierProbabilities>,
-    // /// Drop probabilities for each NFTs fighter rarity tier, represented as percentage
-    // pub fighter_probabilities: Vec<u8>,
-    // /// Drop probabilities for each NFTs booster rarity tier, represented as percentage
-    // pub booster_probabilities: Vec<u8>,
     /// This data prevent re-initialization
     pub is_initialized: bool,
 }
@@ -179,9 +175,9 @@ impl RarityFighter {
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug)]
 pub enum TierProbabilities {
-    Tier1(Vec<u8>),
-    Tier2(Vec<u8>),
-    Tier3(Vec<u8>),
+    Tier1(Vec<u8>), // Tier1 has the highest probability for minting rare mintable game assets often tied to MainCards.
+    Tier2(Vec<u8>), // Tier2 has a moderate probability for minting rare mintable game assets often tied to Prelims.
+    Tier3(Vec<u8>), // Tier3 has the lowest probability for minting rare mintable game assets often tied to Early Prelims.
 }
 
 impl TierProbabilities {
