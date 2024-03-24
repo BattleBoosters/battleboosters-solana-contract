@@ -340,7 +340,7 @@ pub fn purchase_mystery_box(
     mystery_box.champions_pass_mint_allowance = 0;
 
     if let Some(probability_tier) = rarity.get_probability_by_tier(TierType::Tier3) {
-        mystery_box.probability_tier = probability_tier
+        mystery_box.probability_tier = probability_tier;
     } else {
         return Err(ErrorCode::ProbabilityTierNotFound.into());
     }

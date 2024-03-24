@@ -94,6 +94,8 @@ describe('Mintable Game Asset', () => {
                     program: program_pda,
                     playerAccount: player_account_pda,
                     mysteryBox: mystery_box_pda,
+                    rarity: rarity_pda,
+                    systemProgram: anchor.web3.SystemProgram.programId,
                 })
                 .signers([admin_account])
                 .rpc();

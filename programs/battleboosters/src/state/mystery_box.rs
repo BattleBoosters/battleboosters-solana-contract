@@ -19,7 +19,7 @@ pub struct InitializeMysteryBox<'info> {
         payer = creator,
         seeds = [MY_APP_PREFIX, MYSTERY_BOX, player_pubkey.key().as_ref(), player_account.order_nonce.to_le_bytes().as_ref()],
         bump,
-        space = 8 + 8 + 8 + 8 + (1 + 4 + 8) + (1 + 4 + 6) + 8
+        space = 528
     )]
     pub mystery_box: Account<'info, MysteryBoxData>,
     pub system_program: Program<'info, System>,

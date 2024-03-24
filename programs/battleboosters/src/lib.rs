@@ -116,11 +116,18 @@ pub mod battleboosters {
             &ctx.accounts.program.admin_pubkey,
         )?;
         let mystery_box = &mut ctx.accounts.mystery_box;
+        let rarity = &ctx.accounts.rarity;
 
         mystery_box.randomness = Some(vec![12, 23, 34, 34, 54, 74, 94, 23]);
         mystery_box.booster_mint_allowance = booster_mint_alowance;
         mystery_box.fighter_mint_allowance = fighter_mint_allowance;
         mystery_box.champions_pass_mint_allowance = champions_pass_mint_allowance;
+        if let Some(probability_tier) = rarity.get_probability_by_tier(TierType::Tier3) {
+            mystery_box.probability_tier = probability_tier;
+        } else {
+            return Err(ErrorCode::ProbabilityTierNotFound.into());
+        }
+
         Ok(())
     }
 

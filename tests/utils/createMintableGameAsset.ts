@@ -66,6 +66,7 @@ const createMintableGameAsset = async function (
         );
 
     let signers = signer ? [signer] : [];
+
     const tx = await program.methods
         .generateMintableGameAsset(
             new BN(player_game_asset_link_nonce),
@@ -79,6 +80,7 @@ const createMintableGameAsset = async function (
             rarity: rarity_pda,
             playerGameAssetLink: player_game_asset_link_pda,
             mintableGameAsset: mintable_game_asset_pda,
+            systemProgram: anchor.web3.SystemProgram.programId,
         })
         .signers(signers)
         .rpc();

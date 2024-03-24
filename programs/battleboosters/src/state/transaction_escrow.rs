@@ -118,9 +118,16 @@ pub struct TransactionTest<'info> {
     payer = signer,
     seeds = [MY_APP_PREFIX, MYSTERY_BOX, recipient.key().as_ref(), player_account.order_nonce.to_le_bytes().as_ref()],
     bump,
-    space = 45
+    space = 128
     )]
     pub mystery_box: Account<'info, MysteryBoxData>,
+    /// Rarity PDA
+    #[account(
+    mut,
+    seeds = [MY_APP_PREFIX, RARITY],
+    bump,
+    )]
+    pub rarity: Account<'info, RarityData>,
 
     /// The Solana System program. Used to allocate space on-chain for the randomness_request account.
     pub system_program: Program<'info, System>,

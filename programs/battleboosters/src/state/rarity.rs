@@ -215,3 +215,31 @@ impl RarityData {
         None
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::state::rarity::{RarityData, TierProbabilities, TierType};
+
+    #[test]
+    fn it_works() {
+        let data: RarityData = RarityData {
+            fighter: vec![],
+            energy_booster: vec![],
+            shield_booster: vec![],
+            points_booster: vec![],
+            probability_tiers: vec![
+                TierProbabilities::Tier1(vec![1, 2, 3, 4, 6]),
+                TierProbabilities::Tier2(vec![1, 2, 3, 4, 2]),
+                TierProbabilities::Tier3(vec![1, 2, 3, 4, 1]),
+            ],
+            is_initialized: false,
+        };
+
+        let prob = data.get_probability_by_tier(TierType::Tier1);
+        let tier_probs: TierProbabilities = prob.unwrap();
+
+        assert_eq!(tier_probs.get_probability_for_tier(), vec![1, 2, 3, 4, 6]);
+
+        // println!("{:?}", tier_probs.get_probability_for_tier());
+    }
+}
