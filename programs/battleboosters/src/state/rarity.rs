@@ -16,6 +16,13 @@ pub struct InitializeRarity<'info> {
     pub rarity: Account<'info, RarityData>,
     pub system_program: Program<'info, System>,
 }
+/*
+   TODO: Create update ratity Accounts
+*/
+// #[derive(Accounts)]
+// pub struct UpdateRarity<'info> {
+//     TODO
+// }
 
 #[account]
 pub struct RarityData {
@@ -217,7 +224,7 @@ mod tests {
     use crate::state::rarity::{RarityData, TierProbabilities, TierType};
 
     #[test]
-    fn it_works() {
+    fn it_get_probability_tier() {
         let data: RarityData = RarityData {
             fighter: vec![],
             energy_booster: vec![],

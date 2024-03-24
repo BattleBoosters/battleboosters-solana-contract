@@ -43,7 +43,7 @@ const createMintableGameAsset = async function (
         ? player_account_pda_data.playerGameAssetLinkNonce
         : custom_player_game_asset_link_nonce;
 
-    const [player_game_asset_link_pda, player_game_asset_link_bump] =
+    const [mintable_game_asset_link_pda, mintable_game_asset_link_bump] =
         anchor.web3.PublicKey.findProgramAddressSync(
             [
                 Buffer.from('BattleBoosters'),
@@ -78,7 +78,7 @@ const createMintableGameAsset = async function (
             playerAccount: player_account_pda,
             mysteryBox: mystery_box,
             rarity: rarity_pda,
-            playerGameAssetLink: player_game_asset_link_pda,
+            mintableGameAssetLink: mintable_game_asset_link_pda,
             mintableGameAsset: mintable_game_asset_pda,
             systemProgram: anchor.web3.SystemProgram.programId,
         })
@@ -97,7 +97,7 @@ const createMintableGameAsset = async function (
     return {
         mystery_box,
         mintable_game_asset_pda,
-        player_game_asset_link_pda,
+        player_game_asset_link_pda: mintable_game_asset_link_pda,
         player_account_pda,
     };
 };

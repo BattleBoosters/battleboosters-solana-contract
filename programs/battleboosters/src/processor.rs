@@ -9,7 +9,8 @@ use crate::state::fight_card::{CreateFightCard, FightCardData, UpdateFightCard};
 use crate::state::join_fight_card::JoinFightCard;
 use crate::state::mint_nft_from_game_asset::MintNftFromGameAsset;
 use crate::state::mintable_game_asset::Attribute;
-use crate::state::player::{GenerateNftPreMint, InitializePlayer};
+use crate::state::mintable_game_asset::*;
+use crate::state::player::InitializePlayer;
 use crate::state::program::InitializeProgram;
 use crate::state::rarity::{
     InitializeRarity, RarityBooster, RarityFighter, TierProbabilities, TierType,
@@ -653,7 +654,7 @@ pub fn generate_mintable_game_asset(
 ) -> Result<()> {
     let program = &mut ctx.accounts.program;
     let mystery_box = &mut ctx.accounts.mystery_box;
-    let player_game_asset_link = &mut ctx.accounts.player_game_asset_link;
+    let mintable_game_asset_link = &mut ctx.accounts.mintable_game_asset_link;
     let mintable_game_asset = &mut ctx.accounts.mintable_game_asset;
     let player_account = &mut ctx.accounts.player_account;
     let signer = &ctx.accounts.signer;
@@ -664,7 +665,7 @@ pub fn generate_mintable_game_asset(
     );
 
     if mintable_game_asset_link_nonce < player_account.player_game_asset_link_nonce {
-        require!(player_game_asset_link.is_free, ErrorCode::NotFreePDA);
+        require!(mintable_game_asset_link.is_free, ErrorCode::NotFreePDA);
     } else {
         // increase the player game asset link nonce for the next game asset generation
         player_account.player_game_asset_link_nonce += 1;
@@ -972,15 +973,16 @@ pub fn generate_mintable_game_asset(
     // Establishes a linkage between the `player_game_asset_link` PDA
     // and the nonce of the `mintable_game_asset`,
     // facilitating indexed seed access.
-    player_game_asset_link.mintable_game_asset_nonce_tracker =
+    mintable_game_asset_link.mintable_game_asset_nonce_tracker =
         program.mintable_game_asset_nonce.clone();
     // Save the Public key of the `mintable_game_asset` PDA for direct linkage
-    player_game_asset_link.mintable_game_asset_pubkey = mintable_game_asset.to_account_info().key();
+    mintable_game_asset_link.mintable_game_asset_pubkey =
+        mintable_game_asset.to_account_info().key();
     // Updates the global state to track the current amount of created `mintable_game_asset` instances.
     program.mintable_game_asset_nonce += 1;
     // Assigns the player_game_asset_link as the owner of the mintable asset,
     // ensuring ownership until the user decides to mint it.
-    mintable_game_asset.owner = Some(player_game_asset_link.to_account_info().key());
+    mintable_game_asset.owner = Some(mintable_game_asset_link.to_account_info().key());
 
     Ok(())
 }

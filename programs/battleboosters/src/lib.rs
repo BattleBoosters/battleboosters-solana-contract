@@ -9,7 +9,8 @@ mod utils;
 
 use crate::state::{
     create_spl_nft::*, event::*, fight_card::*, join_fight_card::*, mint_nft_from_game_asset::*,
-    player::*, program::*, rarity::*, switchboard_callback::*, transaction_escrow::*,
+    mintable_game_asset::*, player::*, program::*, rarity::*, switchboard_callback::*,
+    transaction_escrow::*,
 };
 
 use crate::types::*;

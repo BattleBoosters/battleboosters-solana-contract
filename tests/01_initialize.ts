@@ -257,15 +257,6 @@ describe('Initialize', () => {
                     { tier3: { 0: Buffer.from([60, 25, 10, 4, 1]) } },
                 ]);
 
-                // assert.deepEqual(
-                //     rarityData.probabilityTiers,
-                //     [
-                //         { tier1: [43, 28, 15, 10, 4]}, // MainCard
-                //         { tier2: [55, 25, 12, 6, 2]}, // Prelims
-                //         { tier3: [60, 25, 10, 4, 1]} // Early Prelims
-                //     ]
-                // );
-
                 assert.deepEqual(rarityData.energyBooster, [
                     {
                         common: {

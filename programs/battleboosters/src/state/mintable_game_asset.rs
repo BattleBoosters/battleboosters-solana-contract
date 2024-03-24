@@ -1,6 +1,56 @@
+use crate::constants::*;
+use crate::state::mystery_box::MysteryBoxData;
+use crate::state::player::PlayerData;
+use crate::state::rarity::RarityData;
 use anchor_lang::prelude::*;
 use anchor_lang::{account, AnchorDeserialize, AnchorSerialize};
 use solana_program::pubkey::Pubkey;
+
+#[derive(Accounts)]
+#[instruction(mintable_game_asset_link_nonce: u64)]
+pub struct GenerateNftPreMint<'info> {
+    #[account(mut)]
+    pub signer: Signer<'info>,
+    #[account(mut, seeds = [MY_APP_PREFIX, PROGRAM_STATE], bump)]
+    pub program: Account<'info, crate::state::program::ProgramData>,
+    #[account(
+    mut,
+    seeds = [MY_APP_PREFIX, PLAYER, signer.key().as_ref()],
+    bump,
+    )]
+    pub player_account: Box<Account<'info, PlayerData>>,
+    #[account(
+    mut,
+    seeds = [MY_APP_PREFIX, MYSTERY_BOX, signer.key().as_ref(), player_account.order_nonce.to_le_bytes().as_ref()],
+    bump,
+    )]
+    pub mystery_box: Box<Account<'info, MysteryBoxData>>,
+    #[account(
+    mut,
+    seeds = [MY_APP_PREFIX, RARITY],
+    bump,
+    )]
+    pub rarity: Option<Box<Account<'info, RarityData>>>,
+    #[account(
+    init,
+    payer = signer,
+    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, program.mintable_game_asset_nonce.to_le_bytes().as_ref()],
+    space = 8 + 1 + 1 + 32 + (4 + 20) + (4 + 100) + (4 + 100) + (4 + 100) + (4 + 100) + (4 + 480),
+    bump
+    )]
+    pub mintable_game_asset: Box<Account<'info, MintableGameAssetData>>,
+
+    #[account(
+    init_if_needed,
+    payer = signer,
+    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, mintable_game_asset_link_nonce.to_le_bytes().as_ref(), signer.key().as_ref()],
+    space = 8 + 32 + 8 + 1,
+    bump,
+    )]
+    pub mintable_game_asset_link: Box<Account<'info, MintableGameAssetLinkData>>,
+
+    pub system_program: Program<'info, System>,
+}
 
 #[account]
 pub struct MintableGameAssetData {
