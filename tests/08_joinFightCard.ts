@@ -103,12 +103,30 @@ describe('Join fight card', () => {
                 program.programId
             );
 
+        const event_pda_data = await program.account.eventData.fetch(
+            event_account
+        );
+
+        const [rank_pda, rank_pda_bump] =
+            anchor.web3.PublicKey.findProgramAddressSync(
+                [
+                    Buffer.from('BattleBoosters'),
+                    Buffer.from('rank'),
+                    event_account.toBuffer(),
+                    new BN(event_pda_data.rankNonce).toBuffer('le', 8),
+                    //admin_account.publicKey.toBuffer()
+                    // new BN(0).toBuffer('le', 8),
+                ],
+                program.programId
+            );
+
         const tx = await program.methods
             .initializeEventLink(new BN(0))
             .accounts({
                 creator: provider.wallet.publicKey,
                 event: event_account,
                 eventLink: event_link_account,
+                rank: rank_pda,
                 systemProgram: anchor.web3.SystemProgram.programId,
             })
             .signers([])

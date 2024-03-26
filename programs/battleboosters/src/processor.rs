@@ -89,7 +89,8 @@ pub fn initialize_rarity(
 }
 pub fn initialize_event_link(ctx: Context<InitializeEventLink>, event_nonce: u64) -> Result<()> {
     let event_link = &mut ctx.accounts.event_link;
-    let event = &ctx.accounts.event;
+    let rank = &mut ctx.accounts.rank;
+    let event = &mut ctx.accounts.event;
     require!(!event_link.is_initialized, ErrorCode::AlreadyInitialized);
 
     event_link.event_pubkey = event.to_account_info().key();
@@ -97,6 +98,8 @@ pub fn initialize_event_link(ctx: Context<InitializeEventLink>, event_nonce: u64
     event_link.champions_pass_pubkey = None;
     event_link.champions_pass_nonce_tracker = None;
     event_link.is_initialized = true;
+    rank.player_account = ctx.accounts.creator.key();
+    event.rank_nonce = event.rank_nonce.checked_add(1).unwrap();
 
     Ok(())
 }
@@ -439,6 +442,7 @@ pub fn create_new_event(
     create_event.end_date = end_date;
     create_event.tournament_type = tournament_type;
     create_event.rank_rewards = rank_reward;
+    create_event.rank_nonce = 0_u64;
 
     emit!(EventCreated {
         event_id: program.event_nonce

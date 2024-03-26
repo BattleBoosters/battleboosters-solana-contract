@@ -1,5 +1,6 @@
 use super::program::ProgramData;
 use crate::constants::*;
+use crate::state::rank::RankData;
 use crate::types::TournamentType;
 use anchor_lang::prelude::*;
 
@@ -14,7 +15,7 @@ pub struct CreateEvent<'info> {
     payer = creator,
     seeds = [MY_APP_PREFIX, EVENT, program.event_nonce.to_le_bytes().as_ref()],
     bump,
-    space = 8 + 1 + 1 + 8 + 8 + 4 + (30 * 31)
+    space = 8 + 1 + 1 + 8 + 8 + 4 + (30 * 31) + 8
     )]
     pub event: Box<Account<'info, EventData>>,
     pub system_program: Program<'info, System>,
@@ -55,6 +56,14 @@ pub struct InitializeEventLink<'info> {
     bump
     )]
     pub event_link: Box<Account<'info, EventLinkData>>,
+    #[account(
+    init,
+    payer = creator,
+    seeds = [MY_APP_PREFIX, RANK, event.key().as_ref(), event.rank_nonce.to_le_bytes().as_ref()],
+    bump,
+    space = 8 + 32 + 9 + 9
+    )]
+    pub rank: Account<'info, RankData>,
     pub system_program: Program<'info, System>,
 }
 
@@ -91,6 +100,8 @@ pub struct EventData {
     pub end_date: i64,
     /// Rank rewards for prize distribution
     pub rank_rewards: Vec<RankReward>,
+    /// Represent the current amount of player
+    pub rank_nonce: u64,
 }
 
 /*
