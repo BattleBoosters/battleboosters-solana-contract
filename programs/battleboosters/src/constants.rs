@@ -5,6 +5,7 @@ pub const FIGHT_CARD: &[u8] = b"fightCard";
 pub const RARITY: &[u8] = b"rarity";
 pub const MINT_AUTHORITY: &[u8] = b"mintAuthority";
 pub const BANK: &[u8] = b"bank";
+pub const RANK: &[u8] = b"rank";
 pub const MINT: &[u8] = b"mint";
 //pub const INVENTORY: &[u8] = b"inventory";
 pub const PLAYER: &[u8] = b"player";

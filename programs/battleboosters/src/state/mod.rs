@@ -7,6 +7,7 @@ pub mod mintable_game_asset;
 pub mod mystery_box;
 pub mod player;
 pub mod program;
+pub mod rank;
 pub mod rarity;
 pub mod switchboard_callback;
 pub mod transaction_escrow;
