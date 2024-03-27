@@ -12,3 +12,4 @@ pub mod rank;
 pub mod rarity;
 pub mod switchboard_callback;
 pub mod transaction_escrow;
+pub mod collect_rewards;
