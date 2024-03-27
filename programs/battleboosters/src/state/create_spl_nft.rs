@@ -13,7 +13,11 @@ use anchor_spl::{
 pub struct CreateSplNft<'info> {
     #[account(mut)]
     pub creator: Signer<'info>,
-    #[account(mut)]
+    #[account(
+    mut,
+    seeds = [MY_APP_PREFIX, PROGRAM_STATE],
+    bump
+    )]
     pub program: Box<Account<'info, ProgramData>>,
     /// CHECK: This is a PDA used as the mint authority
     #[account(mut, seeds = [MY_APP_PREFIX, MINT_AUTHORITY], bump = program.authority_bump)]

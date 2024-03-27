@@ -8,7 +8,11 @@ use anchor_lang::prelude::*;
 pub struct CreateEvent<'info> {
     #[account(mut)]
     pub creator: Signer<'info>,
-    #[account(mut)]
+    #[account(
+    mut,
+    seeds = [MY_APP_PREFIX, PROGRAM_STATE],
+    bump
+    )]
     pub program: Box<Account<'info, ProgramData>>,
     #[account(
     init,
@@ -26,7 +30,11 @@ pub struct CreateEvent<'info> {
 pub struct UpdateEvent<'info> {
     #[account(mut)]
     pub creator: Signer<'info>,
-    #[account(mut)]
+    #[account(
+    mut,
+    seeds = [MY_APP_PREFIX, PROGRAM_STATE],
+    bump
+    )]
     pub program: Box<Account<'info, ProgramData>>,
     #[account(
     mut,
