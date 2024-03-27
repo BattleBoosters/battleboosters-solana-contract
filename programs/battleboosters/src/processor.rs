@@ -3,6 +3,7 @@ use crate::constants::{
 };
 use crate::errors::ErrorCode;
 use crate::events::*;
+use crate::state::collect_rewards::CollectRewards;
 use crate::state::create_spl_nft::CreateSplNft;
 use crate::state::event::{CreateEvent, InitializeEventLink, RankReward, UpdateEvent};
 use crate::state::fight_card::{CreateFightCard, FightCardData, UpdateFightCard};
@@ -27,7 +28,7 @@ use crate::utils::{
     process_and_verify_game_asset_type, process_game_asset_for_action, set_fight_card_properties,
     verify_equality,
 };
-use crate::ID;
+use crate::{processor, ID};
 use anchor_lang::prelude::*;
 use mpl_token_metadata::instructions::{
     CreateV1CpiBuilder, MintV1CpiBuilder, VerifyCollectionV1CpiBuilder,
@@ -1147,6 +1148,14 @@ pub fn join_fight_card(
     fight_card_link.fighter_color_side = fighter_color_side;
     fight_card_link.is_consumed = false;
     fight_card_link.is_initialized = true;
+
+    Ok(())
+}
+
+pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
+    let rank = &mut ctx.accounts.rank;
+    let signer = &ctx.accounts.signer;
+    verify_equality(&rank.player_account.key(), &signer.key())?;
 
     Ok(())
 }

@@ -8,7 +8,7 @@ mod types;
 mod utils;
 
 use crate::state::{
-    create_spl_nft::*, event::*, fight_card::*, fighter::*, join_fight_card::*,
+    collect_rewards::*, create_spl_nft::*, event::*, fight_card::*, fighter::*, join_fight_card::*,
     mint_nft_from_game_asset::*, mintable_game_asset::*, player::*, program::*, rarity::*,
     switchboard_callback::*, transaction_escrow::*,
 };
@@ -23,6 +23,7 @@ declare_id!("5GW3wfyowgfKsKCeC2VKg6ucM4wKYX5ebZNAqvBcvTSd");
 #[program]
 pub mod battleboosters {
     use super::*;
+    use crate::state::collect_rewards::CollectRewards;
     pub fn initialize(
         ctx: Context<InitializeProgram>,
         authority_bump: u8,
@@ -261,6 +262,9 @@ pub mod battleboosters {
     /*
        TODO: Claim event reward
     */
+    pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
+        processor::collect_rewards(ctx)
+    }
 
     /*
        TODO: Deposit NFT to my collection
