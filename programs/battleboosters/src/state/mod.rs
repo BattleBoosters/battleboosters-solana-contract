@@ -1,6 +1,7 @@
 pub mod create_spl_nft;
 pub mod event;
 pub mod fight_card;
+pub mod fighter;
 pub mod join_fight_card;
 pub mod mint_nft_from_game_asset;
 pub mod mintable_game_asset;
@@ -11,4 +12,3 @@ pub mod rank;
 pub mod rarity;
 pub mod switchboard_callback;
 pub mod transaction_escrow;
-pub mod fighters;

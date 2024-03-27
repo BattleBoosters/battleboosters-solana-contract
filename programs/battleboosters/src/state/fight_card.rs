@@ -22,7 +22,7 @@ pub struct CreateFightCard<'info> {
     payer = creator,
     seeds = [MY_APP_PREFIX, FIGHT_CARD, event.key().as_ref(), event.fight_card_nonce.to_le_bytes().as_ref()],
     bump,
-    space = 8 + 32 + 8 + 1 + (1 + (24 * 2) ) + (1 + (24 * 2) ) + 9 + 2 + 2 + 50
+    space = 8 + 32 + 8 + 1 + (1 + (24 * 4) ) + (1 + (24 * 4) ) + 9 + 2 + 2 + 50
     )]
     pub fight_card: Account<'info, FightCardData>,
     pub system_program: Program<'info, System>,
@@ -105,38 +105,38 @@ pub struct FightCardLinkData {
 
 #[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]
 pub struct SharedStrength {
-    pub takedowns_attempted: u16,
-    pub takedowns_landed: u16,
-    pub sig_clinch_head_attempted: u16,
-    pub sig_clinch_head_landed: u16,
-    pub sig_clinch_body_attempted: u16,
-    pub sig_clinch_body_landed: u16,
-    pub sig_clinch_leg_attempted: u16,
-    pub sig_clinch_leg_landed: u16,
+    pub takedowns_attempted: u32,
+    pub takedowns_landed: u32,
+    pub sig_clinch_head_attempted: u32,
+    pub sig_clinch_head_landed: u32,
+    pub sig_clinch_body_attempted: u32,
+    pub sig_clinch_body_landed: u32,
+    pub sig_clinch_leg_attempted: u32,
+    pub sig_clinch_leg_landed: u32,
     pub striking_strength: StrikingStrength,
     pub grappling_strength: GrapplingStrength,
 }
 #[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]
 pub struct StrikingStrength {
-    pub knockdowns: u16,
-    pub sig_distance_head_attempted: u16,
-    pub sig_distance_head_landed: u16,
-    pub sig_distance_body_attempted: u16,
-    pub sig_distance_body_landed: u16,
-    pub sig_distance_leg_attempted: u16,
-    pub sig_distance_leg_landed: u16,
+    pub knockdowns: u32,
+    pub sig_distance_head_attempted: u32,
+    pub sig_distance_head_landed: u32,
+    pub sig_distance_body_attempted: u32,
+    pub sig_distance_body_landed: u32,
+    pub sig_distance_leg_attempted: u32,
+    pub sig_distance_leg_landed: u32,
 }
 #[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]
 pub struct GrapplingStrength {
-    pub reversals: u16,
-    pub submissions: u16,
-    pub seconds_in_control: u16,
-    pub sig_ground_head_strikes_attempted: u16,
-    pub sig_ground_head_strikes_landed: u16,
-    pub sig_ground_body_strikes_attempted: u16,
-    pub sig_ground_body_strikes_landed: u16,
-    pub sig_ground_leg_strikes_attempted: u16,
-    pub sig_ground_leg_strikes_landed: u16,
+    pub reversals: u32,
+    pub submissions: u32,
+    pub seconds_in_control: u32,
+    pub sig_ground_head_strikes_attempted: u32,
+    pub sig_ground_head_strikes_landed: u32,
+    pub sig_ground_body_strikes_attempted: u32,
+    pub sig_ground_body_strikes_landed: u32,
+    pub sig_ground_leg_strikes_attempted: u32,
+    pub sig_ground_leg_strikes_landed: u32,
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]

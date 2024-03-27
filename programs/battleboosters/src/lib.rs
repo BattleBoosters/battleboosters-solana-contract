@@ -8,9 +8,9 @@ mod types;
 mod utils;
 
 use crate::state::{
-    create_spl_nft::*, event::*, fight_card::*, join_fight_card::*, mint_nft_from_game_asset::*,
-    mintable_game_asset::*, player::*, program::*, rarity::*, switchboard_callback::*,
-    transaction_escrow::*,
+    create_spl_nft::*, event::*, fight_card::*, fighter::*, join_fight_card::*,
+    mint_nft_from_game_asset::*, mintable_game_asset::*, player::*, program::*, rarity::*,
+    switchboard_callback::*, transaction_escrow::*,
 };
 
 use crate::types::*;
@@ -84,6 +84,21 @@ pub mod battleboosters {
         fees: u16,
     ) -> Result<()> {
         processor::create_nft_collection(ctx, collection_id, collection_name, symbol, uri, fees)
+    }
+    pub fn create_fighter(
+        ctx: Context<CreateFighter>,
+        fighter_type: FighterType,
+        shared_strength: SharedStrength,
+    ) -> Result<()> {
+        processor::create_fighter(ctx, fighter_type, shared_strength)
+    }
+
+    pub fn update_fighter(
+        ctx: Context<CreateFighter>,
+        fighter_type: FighterType,
+        shared_strength: SharedStrength,
+    ) -> Result<()> {
+        processor::update_fighter(ctx, fighter_type, shared_strength)
     }
 
     pub fn purchase_mystery_box(

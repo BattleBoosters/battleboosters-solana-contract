@@ -5,7 +5,8 @@ use crate::errors::ErrorCode;
 use crate::events::*;
 use crate::state::create_spl_nft::CreateSplNft;
 use crate::state::event::{CreateEvent, InitializeEventLink, RankReward, UpdateEvent};
-use crate::state::fight_card::{CreateFightCard, FightCardData, UpdateFightCard};
+use crate::state::fight_card::{CreateFightCard, FightCardData, SharedStrength, UpdateFightCard};
+use crate::state::fighter::CreateFighter;
 use crate::state::join_fight_card::JoinFightCard;
 use crate::state::mint_nft_from_game_asset::MintNftFromGameAsset;
 use crate::state::mintable_game_asset::Attribute;
@@ -198,6 +199,37 @@ pub fn create_nft_collection(
 
     Ok(())
 }
+
+pub fn create_fighter(
+    ctx: Context<CreateFighter>,
+    fighter_type: FighterType,
+    shared_strength: SharedStrength,
+) -> Result<()> {
+    let program = &ctx.accounts.program;
+    verify_equality(&ctx.accounts.creator.key(), &program.admin_pubkey)?;
+
+    let fighter = &mut ctx.accounts.fighter;
+    fighter.fighter_type = fighter_type;
+    fighter.shared_strength = shared_strength;
+
+    Ok(())
+}
+
+pub fn update_fighter(
+    ctx: Context<CreateFighter>,
+    fighter_type: FighterType,
+    shared_strength: SharedStrength,
+) -> Result<()> {
+    let program = &ctx.accounts.program;
+    verify_equality(&ctx.accounts.creator.key(), &program.admin_pubkey)?;
+
+    let fighter = &mut ctx.accounts.fighter;
+    fighter.fighter_type = fighter_type;
+    fighter.shared_strength = shared_strength;
+
+    Ok(())
+}
+
 pub fn purchase_mystery_box(
     ctx: Context<TransactionEscrow>,
     bank_escrow_bump: u8,

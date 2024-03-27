@@ -3,6 +3,7 @@ pub const PROGRAM_STATE: &[u8] = b"program";
 pub const EVENT: &[u8] = b"event";
 pub const FIGHT_CARD: &[u8] = b"fightCard";
 pub const RARITY: &[u8] = b"rarity";
+pub const FIGHTER: &[u8] = b"FIGHTER";
 pub const MINT_AUTHORITY: &[u8] = b"mintAuthority";
 pub const BANK: &[u8] = b"bank";
 pub const RANK: &[u8] = b"rank";

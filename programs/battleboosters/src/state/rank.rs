@@ -1,5 +1,3 @@
-use crate::constants::*;
-use crate::state::event::EventData;
 use anchor_lang::prelude::*;
 /*
    TODO: Create rank tier reward account
