@@ -131,6 +131,14 @@ describe('Join fight card', () => {
             })
             .signers([])
             .rpc();
+
+        const rank_pda_data = await program.account.rankData.fetch(
+            rank_pda
+        );
+
+        assert.deepEqual(rank_pda_data.playerAccount, provider.wallet.publicKey)
+        assert.equal(rank_pda_data.rank, null)
+        assert.equal(rank_pda_data.totalPoints, null)
     });
 
     it('Should join a new fight card', async () => {
