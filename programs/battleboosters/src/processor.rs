@@ -101,6 +101,9 @@ pub fn initialize_event_link(ctx: Context<InitializeEventLink>, event_nonce: u64
     event_link.champions_pass_nonce_tracker = None;
     event_link.is_initialized = true;
     rank.player_account = ctx.accounts.creator.key();
+    rank.total_points = None;
+    rank.rank = None;
+    rank.is_consumed = false;
     event.rank_nonce = event.rank_nonce.checked_add(1).unwrap();
 
     Ok(())
@@ -1155,7 +1158,44 @@ pub fn join_fight_card(
 pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
     let rank = &mut ctx.accounts.rank;
     let signer = &ctx.accounts.signer;
+    let event = &ctx.accounts.event;
+    let player_account = &mut ctx.accounts.player_account;
+    let mystery_box = &mut ctx.accounts.mystery_box;
     verify_equality(&rank.player_account.key(), &signer.key())?;
+    if rank.total_points.is_none() {
+        return Err(ErrorCode::RankPointsIsNone.into());
+    }
 
+    if let Some(player_rank) = rank.rank {
+        let rank_rewards = event.rank_rewards.iter().find(|rank_reward| {
+            rank_reward.start_rank <= player_rank
+                && match rank_reward.end_rank {
+                    Some(end_rank) => player_rank <= end_rank,
+                    None => true, // If end_rank is None, any rank above start_rank qualifies
+                }
+        });
+        if let Some(reward) = rank_rewards {
+            // Found a rank reward that matches the player's rank
+            // Do something with the reward
+            /*
+               TODO: - Request a randomness to the event
+                     - Add probability tier into the event
+            */
+
+            // mystery_box.probability_tier
+            mystery_box.booster_mint_allowance = reward.booster_amount as u64;
+            mystery_box.fighter_mint_allowance = reward.fighter_amount as u64;
+            mystery_box.champions_pass_mint_allowance = reward.champions_pass_amount as u64;
+
+            /*
+               TODO: Request a randomness here ?
+            */
+            mystery_box.randomness = None;
+        }
+    } else {
+        return Err(ErrorCode::RankIsNone.into());
+    }
+
+    player_account.order_nonce += 1;
     Ok(())
 }

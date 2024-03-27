@@ -36,4 +36,5 @@ pub struct RankData {
     pub player_account: Pubkey,
     pub rank: Option<u64>,
     pub total_points: Option<u64>,
+    pub is_consumed: bool,
 }

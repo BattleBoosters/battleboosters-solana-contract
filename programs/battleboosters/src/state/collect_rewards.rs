@@ -1,10 +1,13 @@
 use super::program::ProgramData;
 use crate::constants::*;
+use crate::state::event::EventData;
+use crate::state::mystery_box::MysteryBoxData;
+use crate::state::player::PlayerData;
 use crate::state::rank::RankData;
 use anchor_lang::prelude::*;
 
 #[derive(Accounts)]
-#[instruction(event_pubkey: Pubkey, rank_nonce: u64)]
+#[instruction(event_nonce: u64, rank_nonce: u64)]
 pub struct CollectRewards<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -19,9 +22,29 @@ pub struct CollectRewards<'info> {
     pub bank: AccountInfo<'info>,
     #[account(
     mut,
-    seeds = [MY_APP_PREFIX, RANK, event_pubkey.as_ref(), rank_nonce.to_le_bytes().as_ref()],
+    seeds = [MY_APP_PREFIX, EVENT, event_nonce.to_le_bytes().as_ref()],
+    bump
+    )]
+    pub event: Box<Account<'info, EventData>>,
+    #[account(
+    mut,
+    seeds = [MY_APP_PREFIX, RANK, event.key().as_ref(), rank_nonce.to_le_bytes().as_ref()],
     bump
     )]
     pub rank: Account<'info, RankData>,
+    #[account(
+    mut,
+    seeds = [MY_APP_PREFIX, PLAYER, rank.player_account.key().as_ref()],
+    bump,
+    )]
+    pub player_account: Account<'info, PlayerData>,
+    #[account(
+    init,
+    payer = signer,
+    seeds = [MY_APP_PREFIX, MYSTERY_BOX, rank.player_account.key().as_ref(), player_account.order_nonce.to_le_bytes().as_ref()],
+    bump,
+    space = 128
+    )]
+    pub mystery_box: Account<'info, MysteryBoxData>,
     pub system_program: Program<'info, System>,
 }

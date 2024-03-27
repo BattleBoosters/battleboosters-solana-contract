@@ -55,4 +55,8 @@ pub enum ErrorCode {
     MintableAssetLinkRequired,
     #[msg("The probability tier was not found")]
     ProbabilityTierNotFound,
+    #[msg("Rank point is required")]
+    RankPointsIsNone,
+    #[msg("Rank is required")]
+    RankIsNone,
 }
