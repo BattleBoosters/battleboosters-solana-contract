@@ -1232,7 +1232,6 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
             let transfer_instruction = system_instruction::transfer(
                 &bank.key(),
                 &player_account.key(),
-                // Withdraw the full balance
                 total_lamports, // Amount in lamports to transfer
             );
 
