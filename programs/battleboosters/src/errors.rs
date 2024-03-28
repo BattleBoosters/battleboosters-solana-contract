@@ -33,6 +33,8 @@ pub enum ErrorCode {
     NotEnoughAllowance,
     #[msg("The event has already started")]
     EventAlreadyStarted,
+    #[msg("The event is still in progress. Please try again after it concludes on approximately")]
+    EventStillRunning,
     #[msg("Attach rarity account to this transaction")]
     RarityAccountRequired,
     #[msg("Fight card link already has a game asset, or game asset nonce is missing")]
@@ -59,4 +61,10 @@ pub enum ErrorCode {
     RankPointsIsNone,
     #[msg("Rank is required")]
     RankIsNone,
+    #[msg("The requested operation has already been consumed")]
+    ConsumedAlready,
+    #[msg(
+        "Randomness is required to collect your reward. Please request randomness and try again."
+    )]
+    RandomnessIsNone,
 }

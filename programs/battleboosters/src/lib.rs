@@ -8,9 +8,9 @@ mod types;
 mod utils;
 
 use crate::state::{
-    collect_rewards::*, create_spl_nft::*, event::*, fight_card::*, fighter::*, join_fight_card::*,
-    mint_nft_from_game_asset::*, mintable_game_asset::*, player::*, program::*, rarity::*,
-    switchboard_callback::*, transaction_escrow::*,
+    collect_rewards::*, create_spl_nft::*, event::*, event_request_randomness::*, fight_card::*,
+    fighter::*, join_fight_card::*, mint_nft_from_game_asset::*, mintable_game_asset::*, player::*,
+    program::*, rarity::*, switchboard_callback::*, transaction_escrow::*,
 };
 
 use crate::types::*;
@@ -24,6 +24,8 @@ declare_id!("5GW3wfyowgfKsKCeC2VKg6ucM4wKYX5ebZNAqvBcvTSd");
 pub mod battleboosters {
     use super::*;
     use crate::state::collect_rewards::CollectRewards;
+    use crate::state::event_request_randomness::EventRequestRandomness;
+
     pub fn initialize(
         ctx: Context<InitializeProgram>,
         authority_bump: u8,
@@ -162,12 +164,12 @@ pub mod battleboosters {
         TODO: This method will come after the release of the game
         TODO: Withdraw NFT from my collection
     */
-    pub fn mint_nft_from_game_asset(
-        ctx: Context<MintNftFromGameAsset>,
-        //requests: Vec<PurchaseRequest>,
-    ) -> Result<()> {
-        processor::mint_nft_from_game_asset(ctx)
-    }
+    // pub fn mint_nft_from_game_asset(
+    //     ctx: Context<MintNftFromGameAsset>,
+    //     //requests: Vec<PurchaseRequest>,
+    // ) -> Result<()> {
+    //     processor::mint_nft_from_game_asset(ctx)
+    // }
 
     pub fn create_new_event(
         ctx: Context<CreateEvent>,
@@ -260,10 +262,24 @@ pub mod battleboosters {
     */
 
     /*
-       TODO: Claim event reward
+       TODO: Request randomness for the event
     */
     pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
         processor::collect_rewards(ctx)
+    }
+
+    pub fn event_request_randomness(
+        ctx: Context<EventRequestRandomness>,
+        event_nonce: u64,
+    ) -> Result<()> {
+        processor::event_request_randomness(ctx, event_nonce)
+    }
+    pub fn consume_randomness_event(
+        ctx: Context<ConsumeRandomnessEvent>,
+        event_nonce: u64,
+        result: Vec<u8>,
+    ) -> Result<()> {
+        processor::consume_randomness_event(ctx, event_nonce, result)
     }
 
     /*

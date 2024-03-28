@@ -4,6 +4,7 @@ use crate::state::event::EventData;
 use crate::state::mystery_box::MysteryBoxData;
 use crate::state::player::PlayerData;
 use crate::state::rank::RankData;
+use crate::state::rarity::RarityData;
 use anchor_lang::prelude::*;
 
 #[derive(Accounts)]
@@ -46,5 +47,12 @@ pub struct CollectRewards<'info> {
     space = 128
     )]
     pub mystery_box: Account<'info, MysteryBoxData>,
+    #[account(
+    mut,
+    seeds = [MY_APP_PREFIX, RARITY],
+    bump,
+    )]
+    pub rarity: Account<'info, RarityData>,
+
     pub system_program: Program<'info, System>,
 }
