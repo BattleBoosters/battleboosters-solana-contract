@@ -160,17 +160,6 @@ pub mod battleboosters {
         processor::generate_mintable_game_asset(ctx, mintable_game_asset_link_nonce, request)
     }
 
-    /*
-        TODO: This method will come after the release of the game
-        TODO: Withdraw NFT from my collection
-    */
-    // pub fn mint_nft_from_game_asset(
-    //     ctx: Context<MintNftFromGameAsset>,
-    //     //requests: Vec<PurchaseRequest>,
-    // ) -> Result<()> {
-    //     processor::mint_nft_from_game_asset(ctx)
-    // }
-
     pub fn create_new_event(
         ctx: Context<CreateEvent>,
         start_date: i64,
@@ -254,16 +243,9 @@ pub mod battleboosters {
     }
 
     /*
-       TODO: Create a ranking rewards system for events
+       TODO: Admin resolve ranking, Calculate points
     */
 
-    /*
-       TODO: Admin resolve ranking
-    */
-
-    /*
-       TODO: Request randomness for the event
-    */
     pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
         processor::collect_rewards(ctx)
     }
@@ -285,4 +267,15 @@ pub mod battleboosters {
     /*
        TODO: Deposit NFT to my collection
     */
+
+    /*
+        TODO: This method will come after the release of the game
+        TODO: Withdraw NFT from my collection
+    */
+    // pub fn mint_nft_from_game_asset(
+    //     ctx: Context<MintNftFromGameAsset>,
+    //     //requests: Vec<PurchaseRequest>,
+    // ) -> Result<()> {
+    //     processor::mint_nft_from_game_asset(ctx)
+    // }
 }

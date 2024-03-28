@@ -1,5 +1,6 @@
 pub mod collect_rewards;
 pub mod create_spl_nft;
+pub mod determine_ranking_points;
 pub mod event;
 pub mod event_request_randomness;
 pub mod fight_card;

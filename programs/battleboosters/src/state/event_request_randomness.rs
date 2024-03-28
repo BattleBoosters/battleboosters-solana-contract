@@ -1,6 +1,3 @@
-/*
-   TODO: request randomness for an event at the end of the events only allowed.
-*/
 use crate::constants::*;
 use crate::state::event::EventData;
 use crate::state::program::ProgramData;
