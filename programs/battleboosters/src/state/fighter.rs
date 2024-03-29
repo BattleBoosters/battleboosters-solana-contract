@@ -19,7 +19,7 @@ pub struct CreateFighter<'info> {
     payer = creator,
     seeds = [MY_APP_PREFIX, FIGHTER, &[fighter_type.clone() as u8]],
     bump,
-    space = 8 + 2 + (1 + (72 * 4) ) + (1 + (72 * 4) ) + 50
+    space = 8 + 2 + (1 + (87 * 4) ) + 50
     )]
     pub fighter: Account<'info, FighterData>,
     pub system_program: Program<'info, System>,
