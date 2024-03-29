@@ -8,7 +8,7 @@ use crate::state::create_spl_nft::CreateSplNft;
 use crate::state::event::{CreateEvent, InitializeEventLink, RankReward, UpdateEvent};
 use crate::state::event_request_randomness::EventRequestRandomness;
 use crate::state::fight_card::{CreateFightCard, FightCardData, UpdateFightCard};
-use crate::state::fighter::{CreateFighter, DefensiveMetrics, OffensiveMetrics};
+use crate::state::fighter::{CreateFighter, FightMetrics};
 use crate::state::join_fight_card::JoinFightCard;
 use crate::state::mint_nft_from_game_asset::MintNftFromGameAsset;
 use crate::state::mintable_game_asset::Attribute;
@@ -208,32 +208,28 @@ pub fn create_nft_collection(
 pub fn create_fighter(
     ctx: Context<CreateFighter>,
     fighter_type: FighterType,
-    offensive_metrics: OffensiveMetrics,
-    defensive_metrics: DefensiveMetrics,
+    fight_metrics: FightMetrics,
 ) -> Result<()> {
     let program = &ctx.accounts.program;
     verify_equality(&ctx.accounts.creator.key(), &program.admin_pubkey)?;
 
     let fighter = &mut ctx.accounts.fighter;
     fighter.fighter_type = fighter_type;
-    fighter.offensive_metrics = offensive_metrics;
-    fighter.defensive_metrics = defensive_metrics;
+    fighter.fight_metrics = fight_metrics;
     Ok(())
 }
 
 pub fn update_fighter(
     ctx: Context<CreateFighter>,
     fighter_type: FighterType,
-    offensive_metrics: OffensiveMetrics,
-    defensive_metrics: DefensiveMetrics,
+    fight_metrics: FightMetrics,
 ) -> Result<()> {
     let program = &ctx.accounts.program;
     verify_equality(&ctx.accounts.creator.key(), &program.admin_pubkey)?;
 
     let fighter = &mut ctx.accounts.fighter;
     fighter.fighter_type = fighter_type;
-    fighter.offensive_metrics = offensive_metrics;
-    fighter.defensive_metrics = defensive_metrics;
+    fighter.fight_metrics = fight_metrics;
 
     Ok(())
 }

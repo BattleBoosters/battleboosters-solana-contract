@@ -1,6 +1,7 @@
 use super::event::EventData;
 use super::program::ProgramData;
 use crate::constants::*;
+use crate::state::fighter::Metrics;
 use crate::types::FighterColorSide;
 use anchor_lang::prelude::*;
 
@@ -115,6 +116,7 @@ pub struct FightCardLinkData {
 pub struct SharedStrength {
     pub takedowns_attempted: u16,
     pub takedowns_landed: u16,
+    pub takedowns_slam: u16,
     pub sig_clinch_head_strikes_attempted: u16,
     pub sig_clinch_head_strikes_landed: u16,
     pub sig_clinch_body_strikes_attempted: u16,
@@ -145,6 +147,10 @@ pub struct GrapplingStrength {
     pub sig_ground_body_strikes_landed: u16,
     pub sig_ground_leg_strikes_attempted: u16,
     pub sig_ground_leg_strikes_landed: u16,
+    pub advance_to_half_guard: u16,
+    pub advance_to_slide: u16,
+    pub advance_to_mount: u16,
+    pub advance_to_back: u16,
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]

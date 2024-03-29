@@ -91,19 +91,17 @@ pub mod battleboosters {
     pub fn create_fighter(
         ctx: Context<CreateFighter>,
         fighter_type: FighterType,
-        offensive_metrics: OffensiveMetrics,
-        defensive_metrics: DefensiveMetrics,
+        fight_metrics: FightMetrics,
     ) -> Result<()> {
-        processor::create_fighter(ctx, fighter_type, offensive_metrics, defensive_metrics)
+        processor::create_fighter(ctx, fighter_type, fight_metrics)
     }
 
     pub fn update_fighter(
         ctx: Context<CreateFighter>,
         fighter_type: FighterType,
-        offensive_metrics: OffensiveMetrics,
-        defensive_metrics: DefensiveMetrics,
+        fight_metrics: FightMetrics,
     ) -> Result<()> {
-        processor::update_fighter(ctx, fighter_type, offensive_metrics, defensive_metrics)
+        processor::update_fighter(ctx, fighter_type, fight_metrics)
     }
 
     pub fn purchase_mystery_box(

@@ -45,6 +45,7 @@ describe('fighter', () => {
                 {
                     takedownsAttempted: { points: 0, energy: 1, damage: 50 },
                     takedownsLanded: { points: 0, energy: 1, damage: 50 },
+                    takedownsSlam: { points: 0, energy: 1, damage: 50 },
                     sigClinchHeadStrikesAttempted: {
                         points: 0,
                         energy: 1,
@@ -139,104 +140,22 @@ describe('fighter', () => {
                         energy: 1,
                         damage: 50,
                     },
-                },
-                {
-                    takedownsDodged: { points: 0, energy: 1, damage: 50 },
-                    takedownsReceived: { points: 0, energy: 1, damage: 50 },
-                    sigClinchHeadStrikesDodged: {
+                    advanceToHalfGuard: {
                         points: 0,
                         energy: 1,
                         damage: 50,
                     },
-                    sigClinchHeadStrikesReceived: {
+                    advanceToSlide: {
                         points: 0,
                         energy: 1,
                         damage: 50,
                     },
-                    sigClinchBodyStrikesDodged: {
+                    advanceToMount: {
                         points: 0,
                         energy: 1,
                         damage: 50,
                     },
-                    sigClinchBodyStrikesReceived: {
-                        points: 0,
-                        energy: 1,
-                        damage: 50,
-                    },
-                    sigClinchLegStrikesDodged: {
-                        points: 0,
-                        energy: 1,
-                        damage: 50,
-                    },
-                    sigClinchLegStrikesReceived: {
-                        points: 0,
-                        energy: 1,
-                        damage: 50,
-                    },
-                    knockdownsReceived: { points: 0, energy: 1, damage: 50 },
-                    sigDistanceHeadStrikesDodged: {
-                        points: 0,
-                        energy: 1,
-                        damage: 50,
-                    },
-                    sigDistanceHeadStrikesReceived: {
-                        points: 0,
-                        energy: 1,
-                        damage: 50,
-                    },
-                    sigDistanceBodyStrikesDodged: {
-                        points: 0,
-                        energy: 1,
-                        damage: 50,
-                    },
-                    sigDistanceBodyStrikesReceived: {
-                        points: 0,
-                        energy: 1,
-                        damage: 50,
-                    },
-                    sigDistanceLegStrikesDodged: {
-                        points: 0,
-                        energy: 1,
-                        damage: 50,
-                    },
-                    sigDistanceLegStrikesReceived: {
-                        points: 0,
-                        energy: 1,
-                        damage: 50,
-                    },
-                    reversalsReceived: { points: 0, energy: 1, damage: 50 },
-                    submissionsReceived: { points: 0, energy: 1, damage: 50 },
-                    secondsInControlsReceived: {
-                        points: 0,
-                        energy: 1,
-                        damage: 50,
-                    },
-                    sigGroundHeadStrikesDodged: {
-                        points: 0,
-                        energy: 1,
-                        damage: 50,
-                    },
-                    sigGroundHeadStrikesReceived: {
-                        points: 0,
-                        energy: 1,
-                        damage: 50,
-                    },
-                    sigGroundBodyStrikesDodged: {
-                        points: 0,
-                        energy: 1,
-                        damage: 50,
-                    },
-                    sigGroundBodyStrikesReceived: {
-                        points: 0,
-                        energy: 1,
-                        damage: 50,
-                    },
-                    sigGroundLegStrikesDodged: {
-                        points: 0,
-                        energy: 1,
-                        damage: 50,
-                    },
-                    sigGroundLegStrikesReceived: {
+                    advanceToBack: {
                         points: 0,
                         energy: 1,
                         damage: 50,
@@ -265,8 +184,8 @@ describe('fighter', () => {
             fighter_pda
         );
         console.log('knockdown points');
-        console.log(fighter_pda_data.offensiveMetrics.knockdowns);
-        console.log(fighter_pda_data.defensiveMetrics.takedownsReceived);
+        console.log(fighter_pda_data.fightMetrics.knockdowns);
+        console.log(fighter_pda_data.fightMetrics.takedownsAttempted);
         console.log(fighter_pda_data.fighterType);
     });
 });

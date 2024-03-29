@@ -48,8 +48,7 @@ pub struct UpdateFighter<'info> {
 #[account]
 pub struct FighterData {
     pub fighter_type: FighterType,
-    pub offensive_metrics: OffensiveMetrics,
-    pub defensive_metrics: DefensiveMetrics,
+    pub fight_metrics: FightMetrics,
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]
@@ -59,10 +58,11 @@ pub struct Metrics {
     damage: u32,
 }
 #[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]
-pub struct OffensiveMetrics {
+pub struct FightMetrics {
     // Shared skills
     pub takedowns_attempted: Metrics,
     pub takedowns_landed: Metrics,
+    pub takedowns_slam: Metrics,
     pub sig_clinch_head_strikes_attempted: Metrics,
     pub sig_clinch_head_strikes_landed: Metrics,
     pub sig_clinch_body_strikes_attempted: Metrics,
@@ -87,34 +87,8 @@ pub struct OffensiveMetrics {
     pub sig_ground_body_strikes_landed: Metrics,
     pub sig_ground_leg_strikes_attempted: Metrics,
     pub sig_ground_leg_strikes_landed: Metrics,
-}
-
-#[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]
-pub struct DefensiveMetrics {
-    pub takedowns_dodged: Metrics,
-    pub takedowns_received: Metrics,
-    pub sig_clinch_head_strikes_dodged: Metrics,
-    pub sig_clinch_head_strikes_received: Metrics,
-    pub sig_clinch_body_strikes_dodged: Metrics,
-    pub sig_clinch_body_strikes_received: Metrics,
-    pub sig_clinch_leg_strikes_dodged: Metrics,
-    pub sig_clinch_leg_strikes_received: Metrics,
-
-    pub knockdowns_received: Metrics,
-    pub sig_distance_head_strikes_dodged: Metrics,
-    pub sig_distance_head_strikes_received: Metrics,
-    pub sig_distance_body_strikes_dodged: Metrics,
-    pub sig_distance_body_strikes_received: Metrics,
-    pub sig_distance_leg_strikes_dodged: Metrics,
-    pub sig_distance_leg_strikes_received: Metrics,
-
-    pub reversals_received: Metrics,
-    pub submissions_received: Metrics,
-    pub seconds_in_controls_received: Metrics,
-    pub sig_ground_head_strikes_dodged: Metrics,
-    pub sig_ground_head_strikes_received: Metrics,
-    pub sig_ground_body_strikes_dodged: Metrics,
-    pub sig_ground_body_strikes_received: Metrics,
-    pub sig_ground_leg_strikes_dodged: Metrics,
-    pub sig_ground_leg_strikes_received: Metrics,
+    pub advance_to_half_guard: Metrics,
+    pub advance_to_slide: Metrics,
+    pub advance_to_mount: Metrics,
+    pub advance_to_back: Metrics,
 }
