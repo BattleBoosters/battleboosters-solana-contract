@@ -1332,6 +1332,8 @@ pub fn determine_ranking_points(
     ctx: Context<DetermineRankingPoints>,
     rank_nonce: u64,
     event_nonce: u64,
+    fight_card_nonce: u64,
+    mintable_game_asset_link_nonce: u64,
 ) -> Result<()> {
     let clock = Clock::get().unwrap();
     let current_blockchain_timestamp = clock.unix_timestamp;
