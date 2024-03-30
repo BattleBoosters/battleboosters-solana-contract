@@ -8,9 +8,10 @@ mod types;
 mod utils;
 
 use crate::state::{
-    collect_rewards::*, create_spl_nft::*, event::*, event_request_randomness::*, fight_card::*,
-    fighter::*, join_fight_card::*, mint_nft_from_game_asset::*, mintable_game_asset::*, player::*,
-    program::*, rarity::*, switchboard_callback::*, transaction_escrow::*,
+    collect_rewards::*, create_spl_nft::*, determine_ranking_points::*, event::*,
+    event_request_randomness::*, fight_card::*, fighter::*, join_fight_card::*,
+    mint_nft_from_game_asset::*, mintable_game_asset::*, player::*, program::*, rarity::*,
+    switchboard_callback::*, transaction_escrow::*,
 };
 
 use crate::types::*;
@@ -24,6 +25,7 @@ declare_id!("5GW3wfyowgfKsKCeC2VKg6ucM4wKYX5ebZNAqvBcvTSd");
 pub mod battleboosters {
     use super::*;
     use crate::state::collect_rewards::CollectRewards;
+    use crate::state::determine_ranking_points::DetermineRankingPoints;
     use crate::state::event_request_randomness::EventRequestRandomness;
 
     pub fn initialize(
@@ -260,6 +262,14 @@ pub mod battleboosters {
         result: Vec<u8>,
     ) -> Result<()> {
         processor::consume_randomness_event(ctx, event_nonce, result)
+    }
+
+    pub fn determine_ranking_points(
+        ctx: Context<DetermineRankingPoints>,
+        rank_nonce: u64,
+        event_nonce: u64,
+    ) -> Result<()> {
+        processor::determine_ranking_points(ctx, rank_nonce, event_nonce)
     }
 
     /*

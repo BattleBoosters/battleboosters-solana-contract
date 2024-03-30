@@ -5,6 +5,7 @@ use crate::errors::ErrorCode;
 use crate::events::*;
 use crate::state::collect_rewards::CollectRewards;
 use crate::state::create_spl_nft::CreateSplNft;
+use crate::state::determine_ranking_points::DetermineRankingPoints;
 use crate::state::event::{CreateEvent, InitializeEventLink, RankReward, UpdateEvent};
 use crate::state::event_request_randomness::EventRequestRandomness;
 use crate::state::fight_card::{CreateFightCard, FightCardData, UpdateFightCard};
@@ -29,7 +30,7 @@ use crate::utils::{
     process_and_verify_game_asset_type, process_game_asset_for_action, set_fight_card_properties,
     verify_equality,
 };
-use crate::ID;
+use crate::{processor, ID};
 use anchor_lang::prelude::*;
 use mpl_token_metadata::instructions::{
     CreateV1CpiBuilder, MintV1CpiBuilder, VerifyCollectionV1CpiBuilder,
@@ -1324,5 +1325,36 @@ pub fn consume_randomness_event(
     let event = &mut ctx.accounts.event;
     event.randomness = Some(result);
 
+    Ok(())
+}
+
+pub fn determine_ranking_points(
+    ctx: Context<DetermineRankingPoints>,
+    rank_nonce: u64,
+    event_nonce: u64,
+) -> Result<()> {
+    let clock = Clock::get().unwrap();
+    let current_blockchain_timestamp = clock.unix_timestamp;
+    let event = &ctx.accounts.event;
+    let fight_card = &ctx.accounts.fight_card;
+    let fight_card_link = &mut ctx.accounts.fight_card_link;
+    let rank = &ctx.accounts.rank;
+    let fighter_mintable_game_asset = &mut ctx.accounts.mintable_game_asset;
+    let fighter_mintable_game_asset_link = &mut ctx.accounts.mintable_game_asset_link;
+
+    /*
+       TODO: Check the event end date is inferior to now
+           Increase the rank.points
+    */
+
+    require!(!fight_card_link.is_consumed, ErrorCode::ConsumedAlready);
+
+    match fight_card_link.fighter_color_side {
+        FighterColorSide::FighterBlue => {}
+        FighterColorSide::FighterRed => {}
+    }
+
+    fighter_mintable_game_asset.is_locked = false;
+    fight_card_link.is_consumed = true;
     Ok(())
 }
