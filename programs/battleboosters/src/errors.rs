@@ -67,4 +67,6 @@ pub enum ErrorCode {
         "Randomness is required to collect your reward. Please request randomness and try again."
     )]
     RandomnessIsNone,
+    #[msg("Failed to parse value")]
+    FailedToParseValue,
 }

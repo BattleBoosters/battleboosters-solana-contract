@@ -41,6 +41,7 @@ use solana_program::program::invoke_signed;
 use solana_program::system_instruction;
 use solana_randomness_service::TransactionOptions;
 use switchboard_solana::get_ixn_discriminator;
+use switchboard_solana::rust_decimal::prelude::Zero;
 
 pub fn initialize(
     ctx: Context<InitializeProgram>,
@@ -1346,26 +1347,129 @@ pub fn determine_ranking_points(
     let fighter_mintable_game_asset_link = &mut ctx.accounts.fighter_asset_link;
     let points_mintable_game_asset = &mut ctx.accounts.points_booster_asset;
     let shield_mintable_game_asset = &mut ctx.accounts.shield_booster_asset;
+    let fighting_style_metrics = &ctx.accounts.fighter;
 
     verify_equality(
         &fighter_mintable_game_asset.to_account_info().key(),
         &fighter_mintable_game_asset_link.mintable_game_asset_pubkey,
     )?;
-
-    /*
-       TODO: Check the event end date is inferior to now
-           Increase the rank.points
-    */
     require!(
         !event.end_date < current_blockchain_timestamp,
         ErrorCode::EventStillRunning
     );
     require!(!fight_card_link.is_consumed, ErrorCode::ConsumedAlready);
 
+    let mut points_value = 0_u32;
+    // Get the points metadata
+    if let Some(points) = points_mintable_game_asset {
+        if let Some(attribute) = points
+            .metadata
+            .attributes
+            .iter()
+            .find(|x| x.trait_type == "Value")
+        {
+            points_value = attribute.value.parse::<u32>().unwrap();
+        }
+    }
+    let mut shield_value = 0_u32;
+    // Get the shield metadata
+    if let Some(shield) = shield_mintable_game_asset {
+        if let Some(attribute) = shield
+            .metadata
+            .attributes
+            .iter()
+            .find(|x| x.trait_type == "Value")
+        {
+            shield_value = attribute.value.parse::<u32>().unwrap();
+        }
+    }
+
+    let power_value = if let Some(attribute) = fighter_mintable_game_asset
+        .metadata
+        .attributes
+        .iter()
+        .find(|x| x.trait_type == "Power")
+    {
+        attribute.value.parse::<u32>().unwrap()
+    } else {
+        0_32
+    };
+
+    let lifespan_value = if let Some(attribute) = fighter_mintable_game_asset
+        .metadata
+        .attributes
+        .iter()
+        .find(|x| x.trait_type == "Lifespan")
+    {
+        attribute.value.parse::<u32>().unwrap()
+    } else {
+        0_32
+    };
+
+    if let Some(attribute) = fighter_mintable_game_asset
+        .metadata
+        .attributes
+        .iter()
+        .find(|x| x.trait_type == "Fighter Type")
+    {
+        let fighter_type = FighterType::from_name(&attribute.value).unwrap();
+        require!(
+            fighting_style_metrics.fighter_type == fighter_type,
+            ErrorCode::Unauthorized
+        );
+    }
+
+    let mut points_value = 0_u32;
+    let mut damage_value = 0_u32;
+    let fighter_blue = fight_card.fighter_blue.clone().unwrap();
+    let fighter_red = fight_card.fighter_red.clone().unwrap();
+
     match fight_card_link.fighter_color_side {
-        FighterColorSide::FighterBlue => {}
+        FighterColorSide::FighterBlue => {
+            // If color side blue multiply by the metrics and sum the points
+            points_value += fighting_style_metrics
+                .fight_metrics
+                .takedowns_attempted
+                .points
+                .checked_mul(fighter_blue.takedowns_attempted as u32)
+                .unwrap();
+            // If color side blue multiply by the metrics and sum the damage made by the fighter red to the fighter blue
+            damage_value += fighting_style_metrics
+                .fight_metrics
+                .takedowns_attempted
+                .damage
+                .checked_mul(fighter_red.takedowns_attempted as u32)
+                .unwrap();
+        }
         FighterColorSide::FighterRed => {}
     }
+
+    /*
+       TODO: Apply Damage to the fighter mintable asset
+    */
+    // reduce lifespan
+    if let Some(lifespan_attribute) = fighter_mintable_game_asset
+        .metadata
+        .attributes
+        .iter_mut()
+        .find(|x| x.trait_type == "Lifespan")
+    {
+        if let Ok(life_span_value) = lifespan_attribute.value.parse::<u32>() {
+            // Calculate the new lifespan, ensuring it doesn't underflow
+            let new_lifespan_value = life_span_value.checked_sub(damage_value).unwrap_or(0);
+            // Assign the new value back to the attribute
+            lifespan_attribute.value = new_lifespan_value.to_string();
+
+            if new_lifespan_value == 0 {
+                // Burn the metadata of the game asset
+                fighter_mintable_game_asset.is_burned = true;
+                // Free the space of the game asset link
+                fighter_mintable_game_asset_link.is_free = true;
+            }
+        } else {
+            return Err(ErrorCode::FailedToParseValue.into());
+        }
+    };
 
     fighter_mintable_game_asset.is_locked = false;
     fight_card_link.is_consumed = true;

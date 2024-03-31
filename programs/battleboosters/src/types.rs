@@ -93,7 +93,7 @@ impl FighterCategory {
     }
 }
 
-#[derive(Clone, Debug, AnchorSerialize, AnchorDeserialize)]
+#[derive(Clone, Debug, AnchorSerialize, AnchorDeserialize, PartialEq)]
 pub enum FighterType {
     Boxer,
     MuayThai,

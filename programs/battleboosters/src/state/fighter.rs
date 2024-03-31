@@ -53,9 +53,9 @@ pub struct FighterData {
 
 #[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]
 pub struct Metrics {
-    points: u32,
-    energy: u32,
-    damage: u32,
+    pub points: u32,
+    pub energy: u32,
+    pub damage: u32,
 }
 #[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]
 pub struct FightMetrics {

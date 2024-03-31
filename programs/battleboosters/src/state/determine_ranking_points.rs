@@ -4,14 +4,16 @@
 use crate::constants::*;
 use crate::state::event::EventData;
 use crate::state::fight_card::{FightCardData, FightCardLinkData};
+use crate::state::fighter::FighterData;
 use crate::state::mintable_game_asset::{MintableGameAssetData, MintableGameAssetLinkData};
 use crate::state::player::PlayerData;
 use crate::state::rank::RankData;
+use crate::types::FighterType;
 use anchor_lang::prelude::*;
 use switchboard_solana::prelude::*;
 
 #[derive(Accounts)]
-#[instruction(rank_nonce: u64, event_nonce: u64, fight_card_nonce: u64, fighter_asset_link_nonce: u64)]
+#[instruction(rank_nonce: u64, event_nonce: u64, fight_card_nonce: u64, fighter_asset_link_nonce: u64, fighter_type: FighterType)]
 pub struct DetermineRankingPoints<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -78,4 +80,11 @@ pub struct DetermineRankingPoints<'info> {
     bump
     )]
     pub shield_booster_asset: Option<Box<Account<'info, MintableGameAssetData>>>,
+
+    #[account(
+    mut,
+    seeds = [MY_APP_PREFIX, FIGHTER, &[fighter_type.clone() as u8]],
+    bump,
+    )]
+    pub fighter: Account<'info, FighterData>,
 }
