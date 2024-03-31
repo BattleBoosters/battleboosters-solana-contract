@@ -11,7 +11,7 @@ use anchor_lang::prelude::*;
 use switchboard_solana::prelude::*;
 
 #[derive(Accounts)]
-#[instruction(rank_nonce: u64, event_nonce: u64, fight_card_nonce: u64, mintable_game_asset_link_nonce: u64)]
+#[instruction(rank_nonce: u64, event_nonce: u64, fight_card_nonce: u64, fighter_asset_link_nonce: u64)]
 pub struct DetermineRankingPoints<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -56,12 +56,26 @@ pub struct DetermineRankingPoints<'info> {
     seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, fight_card_link.fight_card_nonce_tracker.to_le_bytes().as_ref()],
     bump
     )]
-    pub mintable_game_asset: Box<Account<'info, MintableGameAssetData>>,
+    pub fighter_asset: Box<Account<'info, MintableGameAssetData>>,
 
     #[account(
     mut,
-    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, mintable_game_asset_link_nonce.to_le_bytes().as_ref(), signer.key().as_ref()],
+    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, fighter_asset_link_nonce.to_le_bytes().as_ref(), signer.key().as_ref()],
     bump,
     )]
-    pub mintable_game_asset_link: Box<Account<'info, MintableGameAssetLinkData>>,
+    pub fighter_asset_link: Box<Account<'info, MintableGameAssetLinkData>>,
+
+    #[account(
+    mut,
+    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, fight_card_link.points_booster_nonce_tracker.unwrap().to_le_bytes().as_ref()],
+    bump
+    )]
+    pub points_booster_asset: Option<Box<Account<'info, MintableGameAssetData>>>,
+
+    #[account(
+    mut,
+    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, fight_card_link.shield_booster_nonce_tracker.unwrap().to_le_bytes().as_ref()],
+    bump
+    )]
+    pub shield_booster_asset: Option<Box<Account<'info, MintableGameAssetData>>>,
 }

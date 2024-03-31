@@ -1330,25 +1330,36 @@ pub fn consume_randomness_event(
 
 pub fn determine_ranking_points(
     ctx: Context<DetermineRankingPoints>,
-    rank_nonce: u64,
-    event_nonce: u64,
-    fight_card_nonce: u64,
-    mintable_game_asset_link_nonce: u64,
+    _rank_nonce: u64,
+    _event_nonce: u64,
+    _fight_card_nonce: u64,
+    _fighter_asset_link_nonce: u64,
 ) -> Result<()> {
     let clock = Clock::get().unwrap();
     let current_blockchain_timestamp = clock.unix_timestamp;
     let event = &ctx.accounts.event;
+
     let fight_card = &ctx.accounts.fight_card;
     let fight_card_link = &mut ctx.accounts.fight_card_link;
     let rank = &ctx.accounts.rank;
-    let fighter_mintable_game_asset = &mut ctx.accounts.mintable_game_asset;
-    let fighter_mintable_game_asset_link = &mut ctx.accounts.mintable_game_asset_link;
+    let fighter_mintable_game_asset = &mut ctx.accounts.fighter_asset;
+    let fighter_mintable_game_asset_link = &mut ctx.accounts.fighter_asset_link;
+    let points_mintable_game_asset = &mut ctx.accounts.points_booster_asset;
+    let shield_mintable_game_asset = &mut ctx.accounts.shield_booster_asset;
+
+    verify_equality(
+        &fighter_mintable_game_asset.to_account_info().key(),
+        &fighter_mintable_game_asset_link.mintable_game_asset_pubkey,
+    )?;
 
     /*
        TODO: Check the event end date is inferior to now
            Increase the rank.points
     */
-
+    require!(
+        !event.end_date < current_blockchain_timestamp,
+        ErrorCode::EventStillRunning
+    );
     require!(!fight_card_link.is_consumed, ErrorCode::ConsumedAlready);
 
     match fight_card_link.fighter_color_side {
