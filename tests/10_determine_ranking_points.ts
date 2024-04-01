@@ -1,12 +1,12 @@
-import * as anchor from "@coral-xyz/anchor";
-import {BN, Program} from "@coral-xyz/anchor";
-import account_init from "./utils/initAccounts";
+import * as anchor from '@coral-xyz/anchor';
+import { BN, Program } from '@coral-xyz/anchor';
+import account_init from './utils/initAccounts';
 import { Battleboosters } from '../target/types/battleboosters';
-import {updateFightCard} from "./utils/createUpdateFightCard";
-import {updateEvent} from "./utils/createUpdateEvent";
-import {sleep} from "@switchboard-xyz/common";
+import { updateFightCard } from './utils/createUpdateFightCard';
+import { updateEvent } from './utils/createUpdateEvent';
+import { sleep } from '@switchboard-xyz/common';
 
-describe("Determine ranking points",  () =>{
+describe('Determine ranking points', () => {
     const provider = anchor.AnchorProvider.env();
 
     anchor.setProvider(provider);
@@ -37,7 +37,7 @@ describe("Determine ranking points",  () =>{
                 0,
                 0,
                 0,
-                {mainCard: {}},
+                { mainCard: {} },
                 [
                     {
                         startRank: new BN(1),
@@ -56,26 +56,25 @@ describe("Determine ranking points",  () =>{
                         championsPassAmount: 1,
                     },
                 ]
-                )
-
+            );
 
             let fighterBlue = {
                 takedownsAttempted: 2,
                 takedownsLanded: 0,
                 takedownsSlam: 1,
                 sigClinchHeadStrikesAttempted: 3,
-                sigClinchHeadStrikesLanded:0,
+                sigClinchHeadStrikesLanded: 0,
                 sigClinchBodyStrikesAttempted: 3,
-                sigClinchBodyStrikesLanded:0,
+                sigClinchBodyStrikesLanded: 0,
                 sigClinchLegStrikesAttempted: 3,
-                sigClinchLegStrikesLanded:0,
+                sigClinchLegStrikesLanded: 0,
                 sigGroundHeadStrikesAttempted: 3,
-                sigGroundHeadStrikesLanded:0,
+                sigGroundHeadStrikesLanded: 0,
                 sigGroundBodyStrikesAttempted: 3,
-                sigGroundBodyStrikesLanded:0,
+                sigGroundBodyStrikesLanded: 0,
                 sigGroundLegStrikesAttempted: 3,
-                sigGroundLegStrikesLanded:0,
-                strikingStrength:{
+                sigGroundLegStrikesLanded: 0,
+                strikingStrength: {
                     knockdowns: 1,
                     sigDistanceHeadStrikesAttempted: 0,
                     sigDistanceHeadStrikesLanded: 0,
@@ -84,32 +83,32 @@ describe("Determine ranking points",  () =>{
                     sigDistanceLegStrikesAttempted: 1,
                     sigDistanceLegStrikesLanded: 1,
                 },
-                grapplingStrength:{
+                grapplingStrength: {
                     submissions: 1,
                     secondsInControl: 10,
                     advanceToHalfGuard: 1000,
                     advanceToSlide: 1,
                     advanceToMount: 2,
                     advanceToBack: 0,
-                }
-            }
+                },
+            };
             let fighterRed = {
                 takedownsAttempted: 2,
                 takedownsLanded: 0,
                 takedownsSlam: 1,
                 sigClinchHeadStrikesAttempted: 3,
-                sigClinchHeadStrikesLanded:0,
+                sigClinchHeadStrikesLanded: 0,
                 sigClinchBodyStrikesAttempted: 3,
-                sigClinchBodyStrikesLanded:0,
+                sigClinchBodyStrikesLanded: 0,
                 sigClinchLegStrikesAttempted: 3,
-                sigClinchLegStrikesLanded:0,
+                sigClinchLegStrikesLanded: 0,
                 sigGroundHeadStrikesAttempted: 3,
-                sigGroundHeadStrikesLanded:0,
+                sigGroundHeadStrikesLanded: 0,
                 sigGroundBodyStrikesAttempted: 3,
-                sigGroundBodyStrikesLanded:0,
+                sigGroundBodyStrikesLanded: 0,
                 sigGroundLegStrikesAttempted: 3,
-                sigGroundLegStrikesLanded:0,
-                strikingStrength:{
+                sigGroundLegStrikesLanded: 0,
+                strikingStrength: {
                     knockdowns: 1,
                     sigDistanceHeadStrikesAttempted: 0,
                     sigDistanceHeadStrikesLanded: 0,
@@ -118,16 +117,16 @@ describe("Determine ranking points",  () =>{
                     sigDistanceLegStrikesAttempted: 1,
                     sigDistanceLegStrikesLanded: 1,
                 },
-                grapplingStrength:{
+                grapplingStrength: {
                     submissions: 1,
                     secondsInControl: 10,
                     advanceToHalfGuard: 1000,
                     advanceToSlide: 1,
                     advanceToMount: 2,
                     advanceToBack: 0,
-                }
-            }
-            let {fight_card_account} = await updateFightCard(
+                },
+            };
+            let { fight_card_account } = await updateFightCard(
                 provider,
                 program,
                 admin_account,
@@ -138,22 +137,22 @@ describe("Determine ranking points",  () =>{
                 fighterBlue,
                 fighterRed,
                 new BN(200),
-                {koTko:{}},
-                {fighterBlue:{}},
+                { koTko: {} },
+                { fighterBlue: {} }
             );
-            let fight_card_data = await program.account.fightCardData.fetch(fight_card_account)
-            console.log("fight_card_data.fighterBlue")
-            console.log(fight_card_data.fighterBlue)
-            console.log(fight_card_data.result)
-            console.log(fight_card_data.winner)
-        }catch (e) {
-            console.log(e)
+            let fight_card_data = await program.account.fightCardData.fetch(
+                fight_card_account
+            );
+            console.log('fight_card_data.fighterBlue');
+            console.log(fight_card_data.fighterBlue);
+            console.log(fight_card_data.result);
+            console.log(fight_card_data.winner);
+        } catch (e) {
+            console.log(e);
         }
+    });
 
-
-    })
-
-    it("should return correct ranking points", async () => {
+    it('should return correct ranking points', async () => {
         // Test code here
 
         const [event_account, event_account_bump] =
@@ -202,16 +201,17 @@ describe("Determine ranking points",  () =>{
                 program.programId
             );
 
-        const [fighter_mintable_game_asset_pda, fighter_mintable_game_asset_bump] =
-            anchor.web3.PublicKey.findProgramAddressSync(
-                [
-                    Buffer.from('BattleBoosters'),
-                    Buffer.from('mintableGameAsset'),
-                    new BN(0).toBuffer('le', 8),
-                ],
-                program.programId
-            );
-
+        const [
+            fighter_mintable_game_asset_pda,
+            fighter_mintable_game_asset_bump,
+        ] = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from('BattleBoosters'),
+                Buffer.from('mintableGameAsset'),
+                new BN(0).toBuffer('le', 8),
+            ],
+            program.programId
+        );
 
         const [
             fighter_mintable_game_asset_link_pda,
@@ -236,27 +236,32 @@ describe("Determine ranking points",  () =>{
             program.programId
         );
 
-        const [
-            rank_pda,
-            rank_pda_bump,
-        ] = anchor.web3.PublicKey.findProgramAddressSync(
-            [
-                Buffer.from('BattleBoosters'),
-                Buffer.from('rank'),
-                event_account.toBuffer(),
-                new BN(0).toBuffer('le', 8),
-                //admin_account.publicKey.toBuffer(),
-            ],
-            program.programId
-        );
+        const [rank_pda, rank_pda_bump] =
+            anchor.web3.PublicKey.findProgramAddressSync(
+                [
+                    Buffer.from('BattleBoosters'),
+                    Buffer.from('rank'),
+                    event_account.toBuffer(),
+                    new BN(0).toBuffer('le', 8),
+                    //admin_account.publicKey.toBuffer(),
+                ],
+                program.programId
+            );
 
         try {
-            let tx = await program.methods.determineRankingPoints(new BN(0), new BN(0), new BN(0), new BN(0), {brazilianJiuJitsu:{}})
+            let tx = await program.methods
+                .determineRankingPoints(
+                    new BN(0),
+                    new BN(0),
+                    new BN(0),
+                    new BN(0),
+                    { brazilianJiuJitsu: {} }
+                )
                 .accounts({
                     signer: provider.wallet.publicKey,
                     event: event_account,
                     rank: rank_pda,
-                    playerAccount:player_account_pda,
+                    playerAccount: player_account_pda,
                     fightCard: fight_card_account,
                     fightCardLink: fight_card_link_account,
                     fighterAsset: fighter_mintable_game_asset_pda,
@@ -266,7 +271,7 @@ describe("Determine ranking points",  () =>{
                     fighter: fighter_pda,
                 })
                 .signers([])
-                .rpc()
+                .rpc();
 
             await sleep(2000);
             const logs = await provider.connection.getParsedTransaction(
@@ -276,15 +281,12 @@ describe("Determine ranking points",  () =>{
 
             console.log(JSON.stringify(logs?.meta?.logMessages, undefined, 2));
 
-
             let rank_data = await program.account.rankData.fetch(rank_pda);
-            console.log(rank_data.totalPoints.toString())
-            console.log(rank_data.isConsumed)
-        }catch (e) {
-            console.log("issue")
-            console.log(e)
+            console.log(rank_data.totalPoints.toString());
+            console.log(rank_data.isConsumed);
+        } catch (e) {
+            console.log('issue');
+            console.log(e);
         }
-
-
     });
-})
+});

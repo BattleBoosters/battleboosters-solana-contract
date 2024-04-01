@@ -83,7 +83,7 @@ const updateFightCard = async function (
     fighterRed,
     fightDuration,
     result,
-    winner,
+    winner
 ) {
     const [event_account, event_account_bump] =
         anchor.web3.PublicKey.findProgramAddressSync(
@@ -114,7 +114,7 @@ const updateFightCard = async function (
         fighterRed,
         fightDuration,
         result,
-        winner
+        winner,
     };
 
     const tx = await program.methods

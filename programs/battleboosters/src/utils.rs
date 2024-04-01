@@ -175,16 +175,16 @@ pub fn set_fight_card_properties(fight_card: &mut FightCardData, params: &FightC
     fight_card.event_pubkey = params.event_pubkey;
     fight_card.event_nonce_tracker = params.event_nonce_tracker.clone();
     fight_card.title_fight = params.title_fight.clone();
-    
-    if let Some(result) = params.result.clone(){
+
+    if let Some(result) = params.result.clone() {
         fight_card.result = Some(result);
-    }else { 
-        fight_card.result = None; 
+    } else {
+        fight_card.result = None;
     }
-    
+
     if let Some(winner) = params.winner.clone() {
         fight_card.winner = Some(winner);
-    }else {
+    } else {
         fight_card.winner = None;
     }
 

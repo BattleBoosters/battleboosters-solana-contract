@@ -146,7 +146,7 @@ describe('fighter', () => {
                         damage: 50,
                     },
                     advanceToSlide: {
-                        points:67,
+                        points: 67,
                         energy: 1,
                         damage: 50,
                     },

@@ -1335,7 +1335,7 @@ pub fn determine_ranking_points(
     _event_nonce: u64,
     _fight_card_nonce: u8,
     _fighter_asset_link_nonce: u64,
-    _fighter_type: FighterType
+    _fighter_type: FighterType,
 ) -> Result<()> {
     let clock = Clock::get().unwrap();
     let current_blockchain_timestamp = clock.unix_timestamp;
@@ -1389,13 +1389,13 @@ pub fn determine_ranking_points(
 
     let (points_value, damage_value) = match fight_card_link.fighter_color_side {
         /*
-            TODO: Add Points in case the fight is finished before duration or the round end
-                Extra points multiplier for big perf
-                Add grappler bonus for finishing in submission or penality if finishing in striker
-                Add it also for stricker
-                Do a ratio attempted and landed to calculate the points ratio
+           TODO: Add Points in case the fight is finished before duration or the round end
+               Extra points multiplier for big perf
+               Add grappler bonus for finishing in submission or penality if finishing in striker
+               Add it also for stricker
+               Do a ratio attempted and landed to calculate the points ratio
 
-         */
+        */
         FighterColorSide::FighterBlue => metrics_calculation(
             &fighter_blue,
             &fighter_red,
@@ -1424,9 +1424,9 @@ pub fn determine_ranking_points(
         .find(|x| x.trait_type == "Lifespan")
     {
         if let Ok(life_span_value) = lifespan_attribute.value.parse::<u32>() {
-            /* 
-                TODO: Fix this should fail is shield_multiplier is 0 
-             */
+            /*
+               TODO: Fix this should fail is shield_multiplier is 0
+            */
             let life_span_value_plus_shield =
                 ((shield_multiplier / 100_u32) as f32 * life_span_value as f32).round() as u32;
             // Calculate the new lifespan, ensuring it doesn't underflow
@@ -1457,10 +1457,10 @@ pub fn determine_ranking_points(
     msg!("points: {:?}", points_value);
     let new_points_value = if points_multiplier != 0 {
         ((points_multiplier / 100u32) as f32 * points_value as f32).round() as u32
-    }else{
+    } else {
         points_value
     };
-        
+
     // Set new point value
     rank.total_points = Some(new_points_value as u64);
 
