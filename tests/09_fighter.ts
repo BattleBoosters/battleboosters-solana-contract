@@ -34,129 +34,129 @@ describe('fighter', () => {
             [
                 Buffer.from('BattleBoosters'),
                 Buffer.from('fighter'),
-                Buffer.from([0]),
+                Buffer.from([6]),
             ],
             program.programId
         );
 
         let tx = await program.methods
             .createFighter(
-                { boxer: {} },
+                { brazilianJiuJitsu: {} },
                 {
-                    takedownsAttempted: { points: 0, energy: 1, damage: 50 },
-                    takedownsLanded: { points: 0, energy: 1, damage: 50 },
-                    takedownsSlam: { points: 0, energy: 1, damage: 50 },
+                    takedownsAttempted: { points: 10, energy: 1, damage: 50 },
+                    takedownsLanded: { points: 4, energy: 1, damage: 50 },
+                    takedownsSlam: { points: 5, energy: 1, damage: 50 },
                     sigClinchHeadStrikesAttempted: {
-                        points: 0,
+                        points: 1,
                         energy: 1,
                         damage: 50,
                     },
                     sigClinchHeadStrikesLanded: {
-                        points: 0,
+                        points: 6,
                         energy: 1,
                         damage: 50,
                     },
                     sigClinchBodyStrikesAttempted: {
-                        points: 0,
+                        points: 7,
                         energy: 1,
                         damage: 50,
                     },
                     sigClinchBodyStrikesLanded: {
-                        points: 0,
+                        points: 5,
                         energy: 1,
                         damage: 50,
                     },
                     sigClinchLegStrikesAttempted: {
-                        points: 0,
+                        points: 6,
                         energy: 1,
                         damage: 50,
                     },
                     sigClinchLegStrikesLanded: {
-                        points: 0,
+                        points: 5,
                         energy: 1,
                         damage: 50,
                     },
                     knockdowns: { points: 100, energy: 1, damage: 0 },
                     sigDistanceHeadStrikesAttempted: {
-                        points: 0,
+                        points: 56,
                         energy: 1,
                         damage: 50,
                     },
                     sigDistanceHeadStrikesLanded: {
-                        points: 0,
+                        points: 6,
                         energy: 1,
                         damage: 50,
                     },
                     sigDistanceBodyStrikesAttempted: {
-                        points: 0,
+                        points: 6,
                         energy: 1,
                         damage: 50,
                     },
                     sigDistanceBodyStrikesLanded: {
-                        points: 0,
+                        points: 6,
                         energy: 1,
                         damage: 50,
                     },
                     sigDistanceLegStrikesAttempted: {
-                        points: 0,
+                        points: 5,
                         energy: 1,
                         damage: 50,
                     },
                     sigDistanceLegStrikesLanded: {
-                        points: 0,
+                        points: 2,
                         energy: 1,
                         damage: 50,
                     },
-                    reversals: { points: 0, energy: 1, damage: 50 },
-                    submissions: { points: 0, energy: 1, damage: 50 },
-                    secondsInControl: { points: 0, energy: 1, damage: 50 },
+                    reversals: { points: 1, energy: 1, damage: 50 },
+                    submissions: { points: 4, energy: 1, damage: 50 },
+                    secondsInControl: { points: 6, energy: 1, damage: 50 },
                     sigGroundHeadStrikesAttempted: {
-                        points: 0,
+                        points: 1,
                         energy: 1,
                         damage: 50,
                     },
                     sigGroundHeadStrikesLanded: {
-                        points: 0,
+                        points: 5,
                         energy: 1,
                         damage: 50,
                     },
                     sigGroundBodyStrikesAttempted: {
-                        points: 0,
+                        points: 7,
                         energy: 1,
                         damage: 50,
                     },
                     sigGroundBodyStrikesLanded: {
-                        points: 0,
+                        points: 9,
                         energy: 1,
                         damage: 50,
                     },
                     sigGroundLegStrikesAttempted: {
-                        points: 0,
+                        points: 12,
                         energy: 1,
                         damage: 50,
                     },
                     sigGroundLegStrikesLanded: {
-                        points: 0,
+                        points: 43,
                         energy: 1,
                         damage: 50,
                     },
                     advanceToHalfGuard: {
-                        points: 0,
+                        points: 45,
                         energy: 1,
                         damage: 50,
                     },
                     advanceToSlide: {
-                        points: 0,
+                        points:67,
                         energy: 1,
                         damage: 50,
                     },
                     advanceToMount: {
-                        points: 0,
+                        points: 56,
                         energy: 1,
                         damage: 50,
                     },
                     advanceToBack: {
-                        points: 0,
+                        points: 56,
                         energy: 1,
                         damage: 50,
                     },
@@ -172,20 +172,20 @@ describe('fighter', () => {
             .rpc();
 
         console.log(tx);
-        await sleep(2000);
-        const logs = await provider.connection.getParsedTransaction(
-            tx,
-            'confirmed'
-        );
-
-        console.log(JSON.stringify(logs?.meta?.logMessages, undefined, 2));
-
-        let fighter_pda_data = await program.account.fighterData.fetch(
-            fighter_pda
-        );
-        console.log('knockdown points');
-        console.log(fighter_pda_data.fightMetrics.knockdowns);
-        console.log(fighter_pda_data.fightMetrics.takedownsAttempted);
-        console.log(fighter_pda_data.fighterType);
+        // await sleep(2000);
+        // const logs = await provider.connection.getParsedTransaction(
+        //     tx,
+        //     'confirmed'
+        // );
+        //
+        // console.log(JSON.stringify(logs?.meta?.logMessages, undefined, 2));
+        //
+        // let fighter_pda_data = await program.account.fighterData.fetch(
+        //     fighter_pda
+        // );
+        // console.log('knockdown points');
+        // console.log(fighter_pda_data.fightMetrics.knockdowns);
+        // console.log(fighter_pda_data.fightMetrics.takedownsAttempted);
+        // console.log(fighter_pda_data.fighterType);
     });
 });

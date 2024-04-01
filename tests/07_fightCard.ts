@@ -75,6 +75,7 @@ describe('Create fight card', () => {
     });
 
     it('Should update fight card from main card to prelims', async () => {
+
         const { fight_card_account, event_account } = await updateFightCard(
             provider,
             program,
@@ -82,7 +83,12 @@ describe('Create fight card', () => {
             program_pda,
             0,
             false,
-            0
+            0,
+            null,
+            null,
+            null,
+           null,
+            null,
         );
 
         const eventAccount = await program.account.eventData.fetch(
@@ -114,7 +120,12 @@ describe('Create fight card', () => {
                 program_pda,
                 0,
                 false,
-                0
+                0,
+                null,
+                null,
+                null,
+                null,
+                null,
             );
         } catch (e) {
             assert.include(e.message, 'Unauthorized access attempt');

@@ -175,25 +175,35 @@ pub fn set_fight_card_properties(fight_card: &mut FightCardData, params: &FightC
     fight_card.event_pubkey = params.event_pubkey;
     fight_card.event_nonce_tracker = params.event_nonce_tracker.clone();
     fight_card.title_fight = params.title_fight.clone();
-    fight_card.result = None;
-    fight_card.winner = None;
+    
+    if let Some(result) = params.result.clone(){
+        fight_card.result = Some(result);
+    }else { 
+        fight_card.result = None; 
+    }
+    
+    if let Some(winner) = params.winner.clone() {
+        fight_card.winner = Some(winner);
+    }else {
+        fight_card.winner = None;
+    }
 
     if let Some(fight_duration) = params.fight_duration.clone() {
         fight_card.fight_duration = Some(fight_duration);
     } else {
-        fight_card.fight_duration = None
+        fight_card.fight_duration = None;
     }
 
     if let Some(fight_stats_fighter_1) = params.fighter_blue.clone() {
         fight_card.fighter_blue = Some(fight_stats_fighter_1);
     } else {
-        fight_card.fighter_blue = None
+        fight_card.fighter_blue = None;
     }
 
     if let Some(fight_stats_fighter_2) = params.fighter_red.clone() {
         fight_card.fighter_red = Some(fight_stats_fighter_2);
     } else {
-        fight_card.fighter_red = None
+        fight_card.fighter_red = None;
     }
 }
 

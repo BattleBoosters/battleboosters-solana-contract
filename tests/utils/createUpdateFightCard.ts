@@ -9,7 +9,7 @@ const createFightCard = async function (
     admin_account,
     program_pda,
     event_nonce,
-    is_title_fight
+    is_title_fight: boolean
 ) {
     const [event_account, event_account_bump] =
         anchor.web3.PublicKey.findProgramAddressSync(
@@ -78,7 +78,12 @@ const updateFightCard = async function (
     program_pda,
     event_nonce,
     is_title_fight,
-    fight_card_nonce
+    fight_card_nonce,
+    fighterBlue,
+    fighterRed,
+    fightDuration,
+    result,
+    winner,
 ) {
     const [event_account, event_account_bump] =
         anchor.web3.PublicKey.findProgramAddressSync(
@@ -105,11 +110,11 @@ const updateFightCard = async function (
         eventPubkey: event_account,
         eventNonceTracker: new BN(event_nonce),
         titleFight: is_title_fight,
-        fighterBlue: null,
-        fighterRed: null,
-        fightDuration: null,
-        result: null,
-        winner: null,
+        fighterBlue,
+        fighterRed,
+        fightDuration,
+        result,
+        winner
     };
 
     const tx = await program.methods

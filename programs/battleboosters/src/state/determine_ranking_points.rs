@@ -13,7 +13,7 @@ use anchor_lang::prelude::*;
 use switchboard_solana::prelude::*;
 
 #[derive(Accounts)]
-#[instruction(rank_nonce: u64, event_nonce: u64, fight_card_nonce: u64, fighter_asset_link_nonce: u64, fighter_type: FighterType)]
+#[instruction(rank_nonce: u64, event_nonce: u64, fight_card_nonce: u8, fighter_asset_link_nonce: u64, fighter_type: FighterType)]
 pub struct DetermineRankingPoints<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -55,7 +55,7 @@ pub struct DetermineRankingPoints<'info> {
 
     #[account(
     mut,
-    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, fight_card_link.fight_card_nonce_tracker.to_le_bytes().as_ref()],
+    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, fight_card_link.fighter_nonce_tracker.unwrap().to_le_bytes().as_ref()],
     // close = signer,
     // constraint = fighter_asset.is_burned,
     bump

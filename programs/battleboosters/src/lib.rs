@@ -268,8 +268,9 @@ pub mod battleboosters {
         ctx: Context<DetermineRankingPoints>,
         rank_nonce: u64,
         event_nonce: u64,
-        fight_card_nonce: u64,
+        fight_card_nonce: u8,
         mintable_game_asset_link_nonce: u64,
+        fighter_type: FighterType
     ) -> Result<()> {
         processor::determine_ranking_points(
             ctx,
@@ -277,6 +278,7 @@ pub mod battleboosters {
             event_nonce,
             fight_card_nonce,
             mintable_game_asset_link_nonce,
+            fighter_type
         )
     }
 
