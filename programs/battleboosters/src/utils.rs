@@ -1,6 +1,7 @@
 use crate::errors::ErrorCode;
 use crate::state::event::EventLinkData;
 use crate::state::fight_card::*;
+use crate::state::fighter::*;
 use crate::state::mintable_game_asset::{
     Attribute, MintableGameAssetData, MintableGameAssetLinkData, NftMetadata,
 };
@@ -254,6 +255,190 @@ pub fn create_nft_metadata(
     }
 }
 
+fn collect_fields<'a>(
+    fight_metrics: &'a FightMetrics,
+    shared_strength: &'a SharedStrength,
+) -> [(&'a Metrics, &'a u16); 29] {
+    [
+        // Shared strength
+        (
+            &fight_metrics.takedowns_attempted,
+            &shared_strength.takedowns_attempted,
+        ),
+        (
+            &fight_metrics.takedowns_landed,
+            &shared_strength.takedowns_landed,
+        ),
+        (
+            &fight_metrics.takedowns_slam,
+            &shared_strength.takedowns_slam,
+        ),
+        (
+            &fight_metrics.sig_clinch_head_strikes_attempted,
+            &shared_strength.sig_clinch_head_strikes_attempted,
+        ),
+        (
+            &fight_metrics.sig_clinch_head_strikes_landed,
+            &shared_strength.sig_clinch_head_strikes_landed,
+        ),
+        (
+            &fight_metrics.sig_clinch_body_strikes_attempted,
+            &shared_strength.sig_clinch_body_strikes_attempted,
+        ),
+        (
+            &fight_metrics.sig_clinch_body_strikes_landed,
+            &shared_strength.sig_clinch_body_strikes_landed,
+        ),
+        (
+            &fight_metrics.sig_clinch_leg_strikes_attempted,
+            &shared_strength.sig_clinch_leg_strikes_attempted,
+        ),
+        (
+            &fight_metrics.sig_clinch_leg_strikes_landed,
+            &shared_strength.sig_clinch_leg_strikes_landed,
+        ),
+        (
+            &fight_metrics.sig_ground_head_strikes_attempted,
+            &shared_strength.sig_ground_head_strikes_attempted,
+        ),
+        (
+            &fight_metrics.sig_ground_head_strikes_landed,
+            &shared_strength.sig_ground_head_strikes_landed,
+        ),
+        (
+            &fight_metrics.sig_ground_body_strikes_attempted,
+            &shared_strength.sig_ground_body_strikes_attempted,
+        ),
+        (
+            &fight_metrics.sig_ground_body_strikes_landed,
+            &shared_strength.sig_ground_body_strikes_landed,
+        ),
+        (
+            &fight_metrics.sig_ground_leg_strikes_attempted,
+            &shared_strength.sig_ground_leg_strikes_attempted,
+        ),
+        (
+            &fight_metrics.sig_ground_leg_strikes_landed,
+            &shared_strength.sig_ground_leg_strikes_landed,
+        ),
+        // Striker strength
+        (
+            &fight_metrics.knockdowns,
+            &shared_strength.striking_strength.knockdowns,
+        ),
+        (
+            &fight_metrics.sig_distance_head_strikes_attempted,
+            &shared_strength
+                .striking_strength
+                .sig_distance_head_strikes_attempted,
+        ),
+        (
+            &fight_metrics.sig_distance_head_strikes_landed,
+            &shared_strength
+                .striking_strength
+                .sig_distance_head_strikes_landed,
+        ),
+        (
+            &fight_metrics.sig_distance_body_strikes_attempted,
+            &shared_strength
+                .striking_strength
+                .sig_distance_body_strikes_attempted,
+        ),
+        (
+            &fight_metrics.sig_distance_body_strikes_landed,
+            &shared_strength
+                .striking_strength
+                .sig_distance_body_strikes_landed,
+        ),
+        (
+            &fight_metrics.sig_distance_leg_strikes_attempted,
+            &shared_strength
+                .striking_strength
+                .sig_distance_leg_strikes_attempted,
+        ),
+        (
+            &fight_metrics.sig_distance_leg_strikes_landed,
+            &shared_strength
+                .striking_strength
+                .sig_distance_leg_strikes_landed,
+        ),
+        // Grappler strength
+        (
+            &fight_metrics.submissions,
+            &shared_strength.grappling_strength.submissions,
+        ),
+        (
+            &fight_metrics.reversals,
+            &shared_strength.grappling_strength.reversals,
+        ),
+        (
+            &fight_metrics.seconds_in_control,
+            &shared_strength.grappling_strength.seconds_in_control,
+        ),
+        (
+            &fight_metrics.advance_to_half_guard,
+            &shared_strength.grappling_strength.advance_to_half_guard,
+        ),
+        (
+            &fight_metrics.advance_to_slide,
+            &shared_strength.grappling_strength.advance_to_slide,
+        ),
+        (
+            &fight_metrics.advance_to_mount,
+            &shared_strength.grappling_strength.advance_to_mount,
+        ),
+        (
+            &fight_metrics.advance_to_back,
+            &shared_strength.grappling_strength.advance_to_back,
+        ),
+    ]
+}
+fn calculate_shared_strength(
+    fight_metrics: u32,
+    power_multiplier: f32,
+    shared_strength: f32,
+) -> u32 {
+    fight_metrics
+        .checked_mul((power_multiplier * shared_strength).round() as u32)
+        .unwrap()
+}
+pub fn metrics_calculation(
+    fighter_chosen: &SharedStrength,
+    fighter_opponent: &SharedStrength,
+    fight_metrics: &FightMetrics,
+    power_multiplier: f32,
+) -> (u32, u32) {
+    let fighter_chosen_arr = collect_fields(fight_metrics, fighter_chosen);
+    let fighter_opponent_arr = collect_fields(fight_metrics, fighter_opponent);
+
+    // Calculate Points
+    let points_value = fighter_chosen_arr
+        .iter()
+        .fold(0_u32, |acc, (metric, &fighter_metric)| {
+            acc + calculate_shared_strength(metric.points, power_multiplier, fighter_metric as f32)
+        });
+
+    // Calculate Damage
+    let damage_value = fighter_opponent_arr
+        .iter()
+        .fold(0_u32, |acc, (metric, &fighter_metric)| {
+            acc + calculate_shared_strength(metric.damage, power_multiplier, fighter_metric as f32)
+        });
+
+    (points_value, damage_value)
+}
+
+pub fn asset_metadata_value(asset_metadata: &NftMetadata, trait_type: String) -> u32 {
+    let mut asset_multiplier = 0_u32;
+    if let Some(attribute) = asset_metadata
+        .attributes
+        .iter()
+        .find(|x| x.trait_type == trait_type)
+    {
+        asset_multiplier = attribute.value.parse::<u32>().unwrap();
+    }
+    asset_multiplier
+}
 // pub fn check_unique_nft_types(purchase_requests: Option<Vec<PurchaseRequest>>) -> bool {
 //     if let Some(requests) = purchase_requests {
 //         let mut booster_found = false;

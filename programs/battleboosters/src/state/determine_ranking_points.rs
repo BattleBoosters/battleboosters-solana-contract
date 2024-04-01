@@ -56,6 +56,8 @@ pub struct DetermineRankingPoints<'info> {
     #[account(
     mut,
     seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, fight_card_link.fight_card_nonce_tracker.to_le_bytes().as_ref()],
+    // close = signer,
+    // constraint = fighter_asset.is_burned,
     bump
     )]
     pub fighter_asset: Box<Account<'info, MintableGameAssetData>>,
