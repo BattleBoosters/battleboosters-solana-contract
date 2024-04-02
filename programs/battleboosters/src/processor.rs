@@ -1374,7 +1374,7 @@ pub fn determine_ranking_points(
     }
     msg!("Pointstest");
 
-    let mut points_multiplier = 0_u32;
+    let mut points_multiplier = 1_u32;
     // Get the points metadata
     if let Some(points) = points_mintable_game_asset {
         points_multiplier = asset_metadata_value(&points.metadata, "value".to_string());
@@ -1382,8 +1382,9 @@ pub fn determine_ranking_points(
 
     let power_multiplier =
         asset_metadata_value(&fighter_mintable_game_asset.metadata, "Power".to_string());
-    let power_multiplier_float = (power_multiplier / 100u32) as f32;
-
+    let power_multiplier_float = power_multiplier as f32 / 100.0;
+    msg!("power_multiplier: {:?}", power_multiplier);
+    msg!("power_multiplier_float: {:?}", power_multiplier_float);
     let fighter_blue = fight_card.fighter_blue.clone().unwrap();
     let fighter_red = fight_card.fighter_red.clone().unwrap();
 
@@ -1410,7 +1411,7 @@ pub fn determine_ranking_points(
         ),
     };
 
-    let mut shield_multiplier = 0_u32;
+    let mut shield_multiplier = 1_u32;
     // Get the shield metadata
     if let Some(shield) = shield_mintable_game_asset {
         shield_multiplier = asset_metadata_value(&shield.metadata, "Value".to_string());
@@ -1428,7 +1429,8 @@ pub fn determine_ranking_points(
                TODO: Fix this should fail is shield_multiplier is 0
             */
             let life_span_value_plus_shield =
-                ((shield_multiplier / 100_u32) as f32 * life_span_value as f32).round() as u32;
+                ((shield_multiplier as f32 / 100.0) * life_span_value as f32).round() as u32;
+            msg!("lifespan: {}, lifespan plus shield: {}", life_span_value, life_span_value_plus_shield);
             // Calculate the new lifespan, ensuring it doesn't underflow
             let life_span_after_damage = life_span_value_plus_shield
                 .checked_sub(damage_value)
@@ -1453,10 +1455,10 @@ pub fn determine_ranking_points(
             return Err(ErrorCode::FailedToParseValue.into());
         }
     };
-
+    msg!("damage: {:?}", damage_value);
     msg!("points: {:?}", points_value);
     let new_points_value = if points_multiplier != 0 {
-        ((points_multiplier / 100u32) as f32 * points_value as f32).round() as u32
+        ((points_multiplier as f32 / 100.0) * points_value as f32).round() as u32
     } else {
         points_value
     };

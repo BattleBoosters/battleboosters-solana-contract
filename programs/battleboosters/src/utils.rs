@@ -432,7 +432,7 @@ pub fn metrics_calculation(
     let damage_value = fighter_opponent_arr
         .iter()
         .fold(0_u32, |acc, (metric, &fighter_metric)| {
-            acc + calculate_shared_strength(metric.damage, power_multiplier, fighter_metric as f32)
+            acc + calculate_shared_strength(metric.damage, 1.0, fighter_metric as f32)
         });
 
     (points_value, damage_value)
