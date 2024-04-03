@@ -230,7 +230,7 @@ describe('Join fight card', () => {
         );
         assert.equal(player_account_pda_data.isInitialized, true);
         assert.deepEqual(
-            player_account_pda_data.orderNonce.eq(new BN(0)),
+            player_account_pda_data.orderNonce.eq(new BN(1)),
             true
         );
         assert.deepEqual(

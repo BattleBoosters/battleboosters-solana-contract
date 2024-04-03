@@ -72,6 +72,8 @@ describe('Mintable Game Asset', () => {
 
             const player_account_pda_data =
                 await program.account.playerData.fetch(player_account_pda);
+            console.log('player_account_pda_data.orderNonce');
+            console.log(player_account_pda_data.orderNonce);
             const [mystery_box_pda, mystery_box_bump] =
                 anchor.web3.PublicKey.findProgramAddressSync(
                     [
@@ -135,7 +137,8 @@ describe('Mintable Game Asset', () => {
                 },
                 rarity_pda,
                 null,
-                ''
+                '',
+                0
             );
 
             const mystery_box_pda_data =
@@ -242,7 +245,8 @@ describe('Mintable Game Asset', () => {
                 },
                 rarity_pda,
                 null,
-                ''
+                '',
+                0
             );
             const mystery_box_pda_data =
                 await program.account.mysteryBoxData.fetch(mystery_box);
@@ -344,9 +348,11 @@ describe('Mintable Game Asset', () => {
                 },
                 rarity_pda,
                 null,
-                ''
+                '',
+                0
             );
         } catch (e) {
+            console.log(e);
             assert.include(
                 e.message,
                 'Not enough allowance to generate mintable game asset'
@@ -370,7 +376,8 @@ describe('Mintable Game Asset', () => {
                 },
                 rarity_pda,
                 null,
-                ''
+                '',
+                0
             );
             const mystery_box_pda_data =
                 await program.account.mysteryBoxData.fetch(mystery_box);
@@ -455,7 +462,8 @@ describe('Mintable Game Asset', () => {
                 },
                 rarity_pda,
                 1,
-                ''
+                '',
+                0
             );
         } catch (e) {
             assert.include(
@@ -476,7 +484,8 @@ describe('Mintable Game Asset', () => {
                 },
                 rarity_pda,
                 10,
-                ''
+                '',
+                0
             );
         } catch (e) {
             assert.include(

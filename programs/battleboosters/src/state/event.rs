@@ -69,9 +69,9 @@ pub struct InitializeEventLink<'info> {
     payer = creator,
     seeds = [MY_APP_PREFIX, RANK, event.key().as_ref(), event.rank_nonce.to_le_bytes().as_ref()],
     bump,
-    space = 8 + 32 + 9 + 9
+    space = 8 + 33 + 9 + 50
     )]
-    pub rank: Account<'info, RankData>,
+    pub rank: Box<Account<'info, RankData>>,
     pub system_program: Program<'info, System>,
 }
 

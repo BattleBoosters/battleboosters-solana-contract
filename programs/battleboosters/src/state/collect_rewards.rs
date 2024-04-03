@@ -19,7 +19,7 @@ pub struct CollectRewards<'info> {
     )]
     pub program: Box<Account<'info, ProgramData>>,
     /// CHECK: This is a PDA used as the bank
-    #[account(mut, seeds = [MY_APP_PREFIX, BANK], bump = program.bank_bump)]
+    #[account(mut, seeds = [MY_APP_PREFIX, BANK], bump)]
     pub bank: AccountInfo<'info>,
     #[account(
     mut,

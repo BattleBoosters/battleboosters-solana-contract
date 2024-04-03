@@ -9,6 +9,7 @@ use anchor_spl::token::{Mint, Token};
 use std::str::FromStr;
 use switchboard_solana::AggregatorAccountData;
 
+use crate::state::event::EventData;
 use crate::state::rarity::RarityData;
 use solana_randomness_service::program::SolanaRandomnessService;
 use switchboard_solana::prelude::*;
@@ -34,7 +35,7 @@ pub struct TransactionEscrow<'info> {
         payer = signer,
         seeds = [MY_APP_PREFIX, MYSTERY_BOX, recipient.key().as_ref(), player_account.order_nonce.to_le_bytes().as_ref()],
         bump,
-        space = 8 + 8 + 8 + 8 + 1 + 4 + 8
+        space = 128
     )]
     pub mystery_box: Account<'info, MysteryBoxData>,
     /// CHECK: This is a PDA used as the bank
@@ -131,4 +132,19 @@ pub struct TransactionTest<'info> {
 
     /// The Solana System program. Used to allocate space on-chain for the randomness_request account.
     pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+#[instruction(event_nonce: u64)]
+pub struct TransactionTest2<'info> {
+    #[account(mut)]
+    pub signer: Signer<'info>,
+    #[account(mut, seeds = [MY_APP_PREFIX, PROGRAM_STATE], bump, constraint = signer.key == &program.admin_pubkey)]
+    pub program: Account<'info, ProgramData>,
+    #[account(
+    mut,
+    seeds = [MY_APP_PREFIX, EVENT, event_nonce.to_le_bytes().as_ref()],
+    bump
+    )]
+    pub event: Box<Account<'info, EventData>>,
 }

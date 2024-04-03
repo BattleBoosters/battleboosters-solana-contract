@@ -16,6 +16,7 @@ use crate::state::mintable_game_asset::Attribute;
 use crate::state::mintable_game_asset::*;
 use crate::state::player::InitializePlayer;
 use crate::state::program::InitializeProgram;
+use crate::state::rank::UpdateRank;
 use crate::state::rarity::{
     InitializeRarity, RarityBooster, RarityFighter, TierProbabilities, TierType,
 };
@@ -103,7 +104,7 @@ pub fn initialize_event_link(ctx: Context<InitializeEventLink>, event_nonce: u64
     event_link.champions_pass_pubkey = None;
     event_link.champions_pass_nonce_tracker = None;
     event_link.is_initialized = true;
-    rank.player_account = ctx.accounts.creator.key();
+    rank.player_account = ctx.accounts.creator.to_account_info().key();
     rank.total_points = None;
     rank.rank = None;
     rank.is_consumed = false;
@@ -690,9 +691,10 @@ pub fn mint_nft_from_game_asset(
     Ok(())
 }
 
-pub fn generate_mintable_game_asset(
+pub fn create_mintable_game_asset(
     ctx: Context<CreateMintableGameAsset>,
     mintable_game_asset_link_nonce: u64, // used on instruction
+    _mystery_box_nonce: u64,             // used on instruction
     request: OpenRequest,
 ) -> Result<()> {
     let program = &mut ctx.accounts.program;
@@ -1155,7 +1157,11 @@ pub fn join_fight_card(
     Ok(())
 }
 
-pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
+pub fn collect_rewards(
+    ctx: Context<CollectRewards>,
+    _event_nonce: u64,
+    _rank_nonce: u64,
+) -> Result<()> {
     let clock = Clock::get().unwrap();
     let current_blockchain_timestamp = clock.unix_timestamp;
     let program = &ctx.accounts.program;
@@ -1166,7 +1172,7 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
     let rarity = &ctx.accounts.rarity;
     let bank = &mut ctx.accounts.bank;
 
-    verify_equality(&rank.player_account.key(), &player_account.key())?;
+    //verify_equality(&rank.player_account.key(), &player_account.key())?;
     require!(
         event.end_date < current_blockchain_timestamp,
         ErrorCode::EventStillRunning
@@ -1329,6 +1335,22 @@ pub fn consume_randomness_event(
     Ok(())
 }
 
+pub fn admin_update_rank(
+    ctx: Context<UpdateRank>,
+    _event_nonce: u64, // Used in instruction
+    _rank_nonce: u64,  // Used in instruction
+    ranking: u64,
+) -> Result<()> {
+    let signer = &ctx.accounts.signer;
+    let program = &ctx.accounts.program;
+    let rank = &mut ctx.accounts.rank;
+
+    verify_equality(&program.admin_pubkey, &signer.to_account_info().key())?;
+    rank.rank = Some(ranking);
+
+    Ok(())
+}
+
 pub fn determine_ranking_points(
     ctx: Context<DetermineRankingPoints>,
     _rank_nonce: u64,
@@ -1430,7 +1452,11 @@ pub fn determine_ranking_points(
             */
             let life_span_value_plus_shield =
                 ((shield_multiplier as f32 / 100.0) * life_span_value as f32).round() as u32;
-            msg!("lifespan: {}, lifespan plus shield: {}", life_span_value, life_span_value_plus_shield);
+            msg!(
+                "lifespan: {}, lifespan plus shield: {}",
+                life_span_value,
+                life_span_value_plus_shield
+            );
             // Calculate the new lifespan, ensuring it doesn't underflow
             let life_span_after_damage = life_span_value_plus_shield
                 .checked_sub(damage_value)

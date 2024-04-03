@@ -17,7 +17,7 @@ pub struct InitializeMysteryBox<'info> {
     #[account(
         init,
         payer = creator,
-        seeds = [MY_APP_PREFIX, MYSTERY_BOX, player_pubkey.key().as_ref(), player_account.order_nonce.to_le_bytes().as_ref()],
+        seeds = [MY_APP_PREFIX, MYSTERY_BOX, player_pubkey.as_ref(), player_account.order_nonce.to_le_bytes().as_ref()],
         bump,
         space = 128
     )]

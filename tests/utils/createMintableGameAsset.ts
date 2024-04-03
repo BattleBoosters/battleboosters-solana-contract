@@ -9,7 +9,8 @@ const createMintableGameAsset = async function (
     variant,
     rarity_pda,
     custom_player_game_asset_link_nonce,
-    signer
+    signer,
+    mystery_box_nonce_nonce
 ) {
     let signer_ = signer
         ? signer.publicKey.toBuffer()
@@ -60,7 +61,7 @@ const createMintableGameAsset = async function (
                 Buffer.from('BattleBoosters'),
                 Buffer.from('mysteryBox'),
                 signer_,
-                new BN(player_account_pda_data.orderNonce).toBuffer('le', 8),
+                new BN(mystery_box_nonce_nonce).toBuffer('le', 8),
             ],
             program.programId
         );
@@ -68,8 +69,9 @@ const createMintableGameAsset = async function (
     let signers = signer ? [signer] : [];
 
     const tx = await program.methods
-        .generateMintableGameAsset(
+        .createMintableGameAsset(
             new BN(player_game_asset_link_nonce),
+            new BN(mystery_box_nonce_nonce),
             variant
         )
         .accounts({

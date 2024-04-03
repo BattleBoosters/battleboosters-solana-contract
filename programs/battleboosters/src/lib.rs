@@ -10,7 +10,7 @@ mod utils;
 use crate::state::{
     collect_rewards::*, create_spl_nft::*, determine_ranking_points::*, event::*,
     event_request_randomness::*, fight_card::*, fighter::*, join_fight_card::*,
-    mint_nft_from_game_asset::*, mintable_game_asset::*, player::*, program::*, rarity::*,
+    mint_nft_from_game_asset::*, mintable_game_asset::*, player::*, program::*, rank::*, rarity::*,
     switchboard_callback::*, transaction_escrow::*,
 };
 
@@ -27,6 +27,7 @@ pub mod battleboosters {
     use crate::state::collect_rewards::CollectRewards;
     use crate::state::determine_ranking_points::DetermineRankingPoints;
     use crate::state::event_request_randomness::EventRequestRandomness;
+    use crate::state::rank::UpdateRank;
 
     pub fn initialize(
         ctx: Context<InitializeProgram>,
@@ -138,7 +139,7 @@ pub mod battleboosters {
         )?;
         let mystery_box = &mut ctx.accounts.mystery_box;
         let rarity = &ctx.accounts.rarity;
-
+        let player = &mut ctx.accounts.player_account;
         mystery_box.randomness = Some(vec![12, 23, 34, 34, 54, 74, 94, 23]);
         mystery_box.booster_mint_allowance = booster_mint_alowance;
         mystery_box.fighter_mint_allowance = fighter_mint_allowance;
@@ -148,16 +149,30 @@ pub mod battleboosters {
         } else {
             return Err(ErrorCode::ProbabilityTierNotFound.into());
         }
+        player.order_nonce += 1;
 
         Ok(())
     }
+    // TODO: REMOVE BEFORE MAINNET LAUNCH
+    /// ONLY FOR TEST PURPOSE
+    pub fn admin_set_randomness(ctx: Context<TransactionTest2>, event_nonce: u64) -> Result<()> {
+        let event = &mut ctx.accounts.event;
+        event.randomness = Some(vec![12, 23, 34, 34, 54, 74, 94, 23]);
+        Ok(())
+    }
 
-    pub fn generate_mintable_game_asset(
+    pub fn create_mintable_game_asset(
         ctx: Context<CreateMintableGameAsset>,
         mintable_game_asset_link_nonce: u64, // used on instruction
+        mystery_box_nonce: u64,
         request: OpenRequest,
     ) -> Result<()> {
-        processor::generate_mintable_game_asset(ctx, mintable_game_asset_link_nonce, request)
+        processor::create_mintable_game_asset(
+            ctx,
+            mintable_game_asset_link_nonce,
+            mystery_box_nonce,
+            request,
+        )
     }
 
     pub fn create_new_event(
@@ -246,8 +261,12 @@ pub mod battleboosters {
        TODO: Admin resolve ranking, Calculate points
     */
 
-    pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
-        processor::collect_rewards(ctx)
+    pub fn collect_rewards(
+        ctx: Context<CollectRewards>,
+        event_nonce: u64,
+        rank_nonce: u64,
+    ) -> Result<()> {
+        processor::collect_rewards(ctx, event_nonce, rank_nonce)
     }
 
     pub fn event_request_randomness(
@@ -262,6 +281,15 @@ pub mod battleboosters {
         result: Vec<u8>,
     ) -> Result<()> {
         processor::consume_randomness_event(ctx, event_nonce, result)
+    }
+
+    pub fn admin_update_rank(
+        ctx: Context<UpdateRank>,
+        event_nonce: u64, // Used in instruction
+        rank_nonce: u64,  // Used in instruction
+        ranking: u64,
+    ) -> Result<()> {
+        processor::admin_update_rank(ctx, event_nonce, rank_nonce, ranking)
     }
 
     pub fn determine_ranking_points(

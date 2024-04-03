@@ -7,7 +7,7 @@ use anchor_lang::{account, AnchorDeserialize, AnchorSerialize};
 use solana_program::pubkey::Pubkey;
 
 #[derive(Accounts)]
-#[instruction(mintable_game_asset_link_nonce: u64)]
+#[instruction(mintable_game_asset_link_nonce: u64, mystery_box_nonce: u64)]
 pub struct CreateMintableGameAsset<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -21,7 +21,7 @@ pub struct CreateMintableGameAsset<'info> {
     pub player_account: Box<Account<'info, PlayerData>>,
     #[account(
     mut,
-    seeds = [MY_APP_PREFIX, MYSTERY_BOX, signer.key().as_ref(), player_account.order_nonce.to_le_bytes().as_ref()],
+    seeds = [MY_APP_PREFIX, MYSTERY_BOX, signer.key().as_ref(), mystery_box_nonce.to_le_bytes().as_ref()],
     bump,
     )]
     pub mystery_box: Box<Account<'info, MysteryBoxData>>,
