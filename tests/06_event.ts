@@ -53,6 +53,14 @@ describe('Create event', () => {
                         boosterAmount: 5,
                         championsPassAmount: 1,
                     },
+                    {
+                        startRank: new BN(30),
+                        endRank: null,
+                        prizeAmount: new BN(0),
+                        fighterAmount: 1,
+                        boosterAmount: 1,
+                        championsPassAmount: 0,
+                    },
                 ]
             );
 

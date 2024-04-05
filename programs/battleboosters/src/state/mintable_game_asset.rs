@@ -1,6 +1,7 @@
 use crate::constants::*;
 use crate::state::mystery_box::MysteryBoxData;
 use crate::state::player::PlayerData;
+use crate::state::program::ProgramData;
 use crate::state::rarity::RarityData;
 use anchor_lang::prelude::*;
 use anchor_lang::{account, AnchorDeserialize, AnchorSerialize};
@@ -12,7 +13,7 @@ pub struct CreateMintableGameAsset<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
     #[account(mut, seeds = [MY_APP_PREFIX, PROGRAM_STATE], bump)]
-    pub program: Account<'info, crate::state::program::ProgramData>,
+    pub program: Box<Account<'info, ProgramData>>,
     #[account(
     mut,
     seeds = [MY_APP_PREFIX, PLAYER, signer.key().as_ref()],

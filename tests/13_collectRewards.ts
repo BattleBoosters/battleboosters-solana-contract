@@ -5,6 +5,7 @@ import { Battleboosters } from '../target/types/battleboosters';
 import { updateFightCard } from './utils/createUpdateFightCard';
 import { updateEvent } from './utils/createUpdateEvent';
 import { sleep } from '@switchboard-xyz/common';
+import { assert } from 'chai';
 
 describe('Collect Rewards', () => {
     const provider = anchor.AnchorProvider.env();
@@ -112,6 +113,22 @@ describe('Collect Rewards', () => {
             );
 
             console.log(JSON.stringify(logs?.meta?.logMessages, undefined, 2));
+
+            let rank_data = await program.account.rankData.fetch(rank_pda);
+            assert.isTrue(rank_data.isConsumed);
+            let mystery_box_data = await program.account.mysteryBoxData.fetch(
+                mystery_box_pda
+            );
+            console.log('mystery_box_data.boosterMintAllowance');
+            console.log(mystery_box_data.boosterMintAllowance);
+            console.log('mystery_box_data.fighterMintAllowance');
+            console.log(mystery_box_data.fighterMintAllowance);
+            console.log('mystery_box_data.championsPassMintAllowance');
+            console.log(mystery_box_data.championsPassMintAllowance);
+            console.log('mystery_box_data.probabilityTier');
+            console.log(mystery_box_data.probabilityTier);
+            console.log('mystery_box_data.randomness');
+            console.log(mystery_box_data.randomness);
 
             // let event_data = await program.account.eventData.fetch(event_account);
             // console.log(event_data.randomness);

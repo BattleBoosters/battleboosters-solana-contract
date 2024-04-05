@@ -28,8 +28,8 @@ pub struct InitializeRarity<'info> {
 pub struct RarityData {
     /// Rarity tiers for NFTs fighter with associated stats
     pub fighter: Vec<RarityFighter>,
-    /// Rarity tiers for NFTs booster with associated stats
-    pub energy_booster: Vec<RarityBooster>,
+    ///// Rarity tiers for NFTs booster with associated stats
+    //pub energy_booster: Vec<RarityBooster>,
     /// Rarity tiers for NFTs booster with associated stats
     pub shield_booster: Vec<RarityBooster>,
     /// Rarity tiers for NFTs booster with associated stats
@@ -49,27 +49,27 @@ pub struct Stats {
 #[derive(Clone, Debug, AnchorSerialize, AnchorDeserialize)]
 pub enum RarityFighter {
     Common {
-        energy: Stats,
+        //energy: Stats,
         power: Stats,
         lifespan: Stats,
     },
     Uncommon {
-        energy: Stats,
+        //energy: Stats,
         power: Stats,
         lifespan: Stats,
     },
     Rare {
-        energy: Stats,
+        //energy: Stats,
         power: Stats,
         lifespan: Stats,
     },
     Epic {
-        energy: Stats,
+        //energy: Stats,
         power: Stats,
         lifespan: Stats,
     },
     Legendary {
-        energy: Stats,
+        //energy: Stats,
         power: Stats,
         lifespan: Stats,
     },
@@ -227,7 +227,7 @@ mod tests {
     fn it_get_probability_tier() {
         let data: RarityData = RarityData {
             fighter: vec![],
-            energy_booster: vec![],
+            //energy_booster: vec![],
             shield_booster: vec![],
             points_booster: vec![],
             probability_tiers: vec![

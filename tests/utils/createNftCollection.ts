@@ -61,9 +61,9 @@ const createNftCollection = async function (
 
     const tx = await program.methods
         .createNftCollection(
-            { energy: {} },
-            'Energy Booster',
-            'EB',
+            { shield: {} },
+            'Shield Booster',
+            'SB',
             'https://battleboosters.com/metadata',
             500 // 5% royalty
         )

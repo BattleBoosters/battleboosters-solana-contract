@@ -3,11 +3,11 @@ use std::fmt;
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, Debug, PartialEq)]
 pub enum CollectionType {
-    Energy = 0,
-    Shield = 1,
-    Points = 2,
-    Fighter = 3,
-    ChampionsPass = 4,
+    Shield = 0,
+    Points = 1,
+    Fighter = 2,
+    ChampionsPass = 3,
+    //Energy = 4,
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Debug)]
@@ -32,7 +32,7 @@ pub enum NftType {
 pub enum BoosterType {
     Points,
     Shield,
-    Energy,
+    //Energy,
 }
 
 impl fmt::Display for BoosterType {
@@ -40,7 +40,7 @@ impl fmt::Display for BoosterType {
         let variant_str = match self {
             BoosterType::Points => "Points",
             BoosterType::Shield => "Shield",
-            BoosterType::Energy => "Energy",
+            //BoosterType::Energy => "Energy",
         };
         write!(f, "{}", variant_str)
     }
@@ -51,7 +51,7 @@ impl BoosterType {
         match index {
             0 => Some(BoosterType::Points),
             1 => Some(BoosterType::Shield),
-            2 => Some(BoosterType::Energy),
+            //2 => Some(BoosterType::Energy),
             _ => None, // Return None if the index is out of bounds
         }
     }
@@ -60,7 +60,7 @@ impl BoosterType {
         match index {
             "Points" => Some(BoosterType::Points),
             "Shield" => Some(BoosterType::Shield),
-            "Energy" => Some(BoosterType::Energy),
+            //"Energy" => Some(BoosterType::Energy),
             _ => None, // Return None if the index is out of bounds
         }
     }

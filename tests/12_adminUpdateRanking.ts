@@ -54,7 +54,7 @@ describe('Admin update player ranking', () => {
 
         try {
             let tx = await program.methods
-                .adminUpdateRank(new BN(0), new BN(0), new BN(1))
+                .adminUpdateRank(new BN(0), new BN(0), new BN(100))
                 .accounts({
                     signer: admin_account.publicKey,
                     event: event_account,

@@ -134,18 +134,18 @@ pub fn process_and_verify_game_asset_type(
                         fight_card_link.shield_booster_nonce_tracker =
                             Some(game_asset_nonce.unwrap().clone());
                     }
-                    Some(BoosterType::Energy) => {
-                        require!(
-                            fight_card_link.energy_booster_used.is_none()
-                                && fight_card_link.energy_booster_nonce_tracker.is_none()
-                                && game_asset_nonce.is_some(),
-                            ErrorCode::FightCardLinkedToGameAsset
-                        );
-                        fight_card_link.energy_booster_used =
-                            Some(mintable_asset.to_account_info().key());
-                        fight_card_link.energy_booster_nonce_tracker =
-                            Some(game_asset_nonce.unwrap().clone());
-                    }
+                    // Some(BoosterType::Energy) => {
+                    //     require!(
+                    //         fight_card_link.energy_booster_used.is_none()
+                    //             && fight_card_link.energy_booster_nonce_tracker.is_none()
+                    //             && game_asset_nonce.is_some(),
+                    //         ErrorCode::FightCardLinkedToGameAsset
+                    //     );
+                    //     fight_card_link.energy_booster_used =
+                    //         Some(mintable_asset.to_account_info().key());
+                    //     fight_card_link.energy_booster_nonce_tracker =
+                    //         Some(game_asset_nonce.unwrap().clone());
+                    // }
                     _ => return Err(ErrorCode::BoosterTypeNotFound.into()),
                 },
                 "Champions Pass Type" => match require_tournament_type {

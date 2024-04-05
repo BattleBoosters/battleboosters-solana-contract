@@ -39,7 +39,7 @@ pub struct MintNftFromGameAsset<'info> {
     /// CHECK: This is a energy minter PDA
     #[account(
     mut,
-    seeds = [MY_APP_PREFIX, MINT, &[CollectionType::Energy as u8]],
+    seeds = [MY_APP_PREFIX, MINT, &[CollectionType::Shield as u8]],
     bump
     )]
     pub energy_minter: Box<Account<'info, Mint>>,

@@ -118,67 +118,67 @@ describe('Initialize', () => {
                         [
                             {
                                 common: {
-                                    energy: { min: 100, max: 150 },
+                                    //energy: { min: 100, max: 150 },
                                     power: { min: 100, max: 150 },
                                     lifespan: { min: 100, max: 150 },
                                 },
                             },
                             {
                                 uncommon: {
-                                    energy: { min: 150, max: 200 },
+                                    //energy: { min: 150, max: 200 },
                                     power: { min: 150, max: 200 },
                                     lifespan: { min: 150, max: 200 },
                                 },
                             },
                             {
                                 rare: {
-                                    energy: { min: 200, max: 250 },
+                                    //energy: { min: 200, max: 250 },
                                     power: { min: 200, max: 250 },
                                     lifespan: { min: 200, max: 250 },
                                 },
                             },
                             {
                                 epic: {
-                                    energy: { min: 250, max: 300 },
+                                    //energy: { min: 250, max: 300 },
                                     power: { min: 250, max: 300 },
                                     lifespan: { min: 250, max: 300 },
                                 },
                             },
                             {
                                 legendary: {
-                                    energy: { min: 300, max: 350 },
+                                    //energy: { min: 300, max: 350 },
                                     power: { min: 300, max: 350 },
                                     lifespan: { min: 300, max: 350 },
                                 },
                             },
                         ],
-                        [
-                            {
-                                common: {
-                                    value: { min: 100, max: 150 },
-                                },
-                            },
-                            {
-                                uncommon: {
-                                    value: { min: 150, max: 200 },
-                                },
-                            },
-                            {
-                                rare: {
-                                    value: { min: 200, max: 250 },
-                                },
-                            },
-                            {
-                                epic: {
-                                    value: { min: 250, max: 300 },
-                                },
-                            },
-                            {
-                                legendary: {
-                                    value: { min: 300, max: 350 },
-                                },
-                            },
-                        ],
+                        // [
+                        //     {
+                        //         common: {
+                        //             value: { min: 100, max: 150 },
+                        //         },
+                        //     },
+                        //     {
+                        //         uncommon: {
+                        //             value: { min: 150, max: 200 },
+                        //         },
+                        //     },
+                        //     {
+                        //         rare: {
+                        //             value: { min: 200, max: 250 },
+                        //         },
+                        //     },
+                        //     {
+                        //         epic: {
+                        //             value: { min: 250, max: 300 },
+                        //         },
+                        //     },
+                        //     {
+                        //         legendary: {
+                        //             value: { min: 300, max: 350 },
+                        //         },
+                        //     },
+                        // ],
                         [
                             {
                                 common: {
@@ -257,65 +257,65 @@ describe('Initialize', () => {
                     { tier3: { 0: Buffer.from([60, 25, 10, 4, 1]) } },
                 ]);
 
-                assert.deepEqual(rarityData.energyBooster, [
-                    {
-                        common: {
-                            value: { min: 100, max: 150 },
-                        },
-                    },
-                    {
-                        uncommon: {
-                            value: { min: 150, max: 200 },
-                        },
-                    },
-                    {
-                        rare: {
-                            value: { min: 200, max: 250 },
-                        },
-                    },
-                    {
-                        epic: {
-                            value: { min: 250, max: 300 },
-                        },
-                    },
-                    {
-                        legendary: {
-                            value: { min: 300, max: 350 },
-                        },
-                    },
-                ]);
+                // assert.deepEqual(rarityData.energyBooster, [
+                //     {
+                //         common: {
+                //             value: { min: 100, max: 150 },
+                //         },
+                //     },
+                //     {
+                //         uncommon: {
+                //             value: { min: 150, max: 200 },
+                //         },
+                //     },
+                //     {
+                //         rare: {
+                //             value: { min: 200, max: 250 },
+                //         },
+                //     },
+                //     {
+                //         epic: {
+                //             value: { min: 250, max: 300 },
+                //         },
+                //     },
+                //     {
+                //         legendary: {
+                //             value: { min: 300, max: 350 },
+                //         },
+                //     },
+                // ]);
                 assert.deepEqual(rarityData.fighter, [
                     {
                         common: {
-                            energy: { min: 100, max: 150 },
+                            //energy: { min: 100, max: 150 },
                             power: { min: 100, max: 150 },
                             lifespan: { min: 100, max: 150 },
                         },
                     },
                     {
                         uncommon: {
-                            energy: { min: 150, max: 200 },
+                            //energy: { min: 150, max: 200 },
                             power: { min: 150, max: 200 },
                             lifespan: { min: 150, max: 200 },
                         },
                     },
                     {
                         rare: {
-                            energy: { min: 200, max: 250 },
+                            //energy: { min: 200, max: 250 },
                             power: { min: 200, max: 250 },
                             lifespan: { min: 200, max: 250 },
                         },
                     },
                     {
                         epic: {
-                            energy: { min: 250, max: 300 },
+                            //energy: { min: 250, max: 300 },
                             power: { min: 250, max: 300 },
                             lifespan: { min: 250, max: 300 },
                         },
                     },
                     {
                         legendary: {
-                            energy: { min: 300, max: 350 },
+                            //energy: { min: 300, max: 350 },
                             power: { min: 300, max: 350 },
                             lifespan: { min: 300, max: 350 },
                         },

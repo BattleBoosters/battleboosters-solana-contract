@@ -52,7 +52,7 @@ pub mod battleboosters {
     pub fn initialize_rarity(
         ctx: Context<InitializeRarity>,
         fighter: Vec<RarityFighter>,
-        energy_booster: Vec<RarityBooster>,
+        //energy_booster: Vec<RarityBooster>,
         shield_booster: Vec<RarityBooster>,
         points_booster: Vec<RarityBooster>,
         probability_tiers: Vec<TierProbabilities>,
@@ -60,7 +60,7 @@ pub mod battleboosters {
         processor::initialize_rarity(
             ctx,
             fighter,
-            energy_booster,
+            //energy_booster,
             shield_booster,
             points_booster,
             probability_tiers,

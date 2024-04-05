@@ -31,7 +31,7 @@ use crate::utils::{
     metrics_calculation, process_and_verify_game_asset_type, process_game_asset_for_action,
     set_fight_card_properties, verify_equality,
 };
-use crate::{processor, ID};
+use crate::ID;
 use anchor_lang::prelude::*;
 use mpl_token_metadata::instructions::{
     CreateV1CpiBuilder, MintV1CpiBuilder, VerifyCollectionV1CpiBuilder,
@@ -74,7 +74,7 @@ pub fn initialize(
 pub fn initialize_rarity(
     ctx: Context<InitializeRarity>,
     fighter: Vec<RarityFighter>,
-    energy_booster: Vec<RarityBooster>,
+    //energy_booster: Vec<RarityBooster>,
     shield_booster: Vec<RarityBooster>,
     points_booster: Vec<RarityBooster>,
     probability_tiers: Vec<TierProbabilities>,
@@ -83,7 +83,7 @@ pub fn initialize_rarity(
     require!(!rarity.is_initialized, ErrorCode::AlreadyInitialized);
 
     rarity.fighter = fighter;
-    rarity.energy_booster = energy_booster;
+    //rarity.energy_booster = energy_booster;
     rarity.shield_booster = shield_booster;
     rarity.points_booster = points_booster;
     rarity.probability_tiers = probability_tiers;
@@ -744,7 +744,7 @@ pub fn create_mintable_game_asset(
 
             let rng_seed_1 =
                 create_rng_seed(&randomness, &public_key_bytes, &nonce_byte, Some(1_u8));
-            let random_booster_type = (&rng_seed % 3) as usize;
+            let random_booster_type = (&rng_seed % 2) as usize;
             let booster_type = BoosterType::from_index(random_booster_type);
             let rarity_index = find_rarity(mystery_box.probability_tier.clone(), random_number);
             // Get the random booster type
@@ -762,13 +762,12 @@ pub fn create_mintable_game_asset(
                             .shield_booster
                             .iter()
                             .find(|r| r.matches_index(rarity_index));
-                    }
-                    BoosterType::Energy => {
-                        rarity_booster_found = rarity
-                            .energy_booster
-                            .iter()
-                            .find(|r| r.matches_index(rarity_index));
-                    }
+                    } // BoosterType::Energy => {
+                      //     rarity_booster_found = rarity
+                      //         .energy_booster
+                      //         .iter()
+                      //         .find(|r| r.matches_index(rarity_index));
+                      // }
                 }
             }
 
@@ -823,8 +822,10 @@ pub fn create_mintable_game_asset(
                 return Err(ErrorCode::NoMatchingRarityFound.into());
             }
 
-            mystery_box.booster_mint_allowance =
-                mystery_box.booster_mint_allowance.checked_sub(1).unwrap();
+            mystery_box.booster_mint_allowance = mystery_box
+                .booster_mint_allowance
+                .checked_sub(1)
+                .unwrap_or(0);
             msg!("GOOD");
         }
         NftType::Fighter => {
@@ -872,55 +873,55 @@ pub fn create_mintable_game_asset(
 
             if let Some(rarity_fighter) = rarity_fighter_found.clone() {
                 let (
-                    scaled_random_number_energy,
+                    //scaled_random_number_energy,
                     scaled_random_number_power,
                     scaled_random_number_lifespan,
                 ) = match rarity_fighter {
                     RarityFighter::Common {
-                        energy,
+                        //energy,
                         power,
                         lifespan,
                     } => {
                         //msg!("Common value min: {} and max: {}  ", value.min, value.max);
                         (
-                            find_scaled_rarity(energy, rng_seed_1),
+                            //find_scaled_rarity(energy, rng_seed_1),
                             find_scaled_rarity(power, rng_seed_2),
                             find_scaled_rarity(lifespan, rng_seed_3),
                         )
                     }
                     RarityFighter::Uncommon {
-                        energy,
+                        //energy,
                         power,
                         lifespan,
                     } => (
-                        find_scaled_rarity(energy, rng_seed_1),
+                        //find_scaled_rarity(energy, rng_seed_1),
                         find_scaled_rarity(power, rng_seed_2),
                         find_scaled_rarity(lifespan, rng_seed_3),
                     ),
                     RarityFighter::Rare {
-                        energy,
+                        //energy,
                         power,
                         lifespan,
                     } => (
-                        find_scaled_rarity(energy, rng_seed_1),
+                        //find_scaled_rarity(energy, rng_seed_1),
                         find_scaled_rarity(power, rng_seed_2),
                         find_scaled_rarity(lifespan, rng_seed_3),
                     ),
                     RarityFighter::Epic {
-                        energy,
+                        //energy,
                         power,
                         lifespan,
                     } => (
-                        find_scaled_rarity(energy, rng_seed_1),
+                        //find_scaled_rarity(energy, rng_seed_1),
                         find_scaled_rarity(power, rng_seed_2),
                         find_scaled_rarity(lifespan, rng_seed_3),
                     ),
                     RarityFighter::Legendary {
-                        energy,
+                        //energy,
                         power,
                         lifespan,
                     } => (
-                        find_scaled_rarity(energy, rng_seed_1),
+                        //find_scaled_rarity(energy, rng_seed_1),
                         find_scaled_rarity(power, rng_seed_2),
                         find_scaled_rarity(lifespan, rng_seed_3),
                     ),
@@ -939,10 +940,10 @@ pub fn create_mintable_game_asset(
                         trait_type: "Rarity".to_string(),
                         value: rarity_fighter_found.unwrap().to_string(),
                     },
-                    Attribute {
-                        trait_type: "Energy".to_string(),
-                        value: scaled_random_number_energy.to_string(),
-                    },
+                    // Attribute {
+                    //     trait_type: "Energy".to_string(),
+                    //     value: scaled_random_number_energy.to_string(),
+                    // },
                     Attribute {
                         trait_type: "Power".to_string(),
                         value: scaled_random_number_power.to_string(),
@@ -965,9 +966,10 @@ pub fn create_mintable_game_asset(
                     None,
                     attributes,
                 );
-                mystery_box.fighter_mint_allowance =
-                    mystery_box.fighter_mint_allowance.checked_sub(1).unwrap();
-
+                mystery_box.fighter_mint_allowance = mystery_box
+                    .fighter_mint_allowance
+                    .checked_sub(1)
+                    .unwrap_or(0);
                 msg!("{:?}", mintable_game_asset.metadata);
             } else {
                 // Handle case where no matching rarity was found
@@ -1011,7 +1013,7 @@ pub fn create_mintable_game_asset(
             mystery_box.champions_pass_mint_allowance = mystery_box
                 .champions_pass_mint_allowance
                 .checked_sub(1)
-                .unwrap();
+                .unwrap_or(0);
         }
     }
 
