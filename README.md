@@ -11,7 +11,7 @@ Alice, a dedicated player of BattleBoosters, is eager for the upcoming MMA-theme
 * **Strategic Booster Use:** To increase her potential rewards and protect her fighter, Alice strategically applies a Points Booster and a Shield Booster, respectively enhancing the points "Bob" could earn and prolonging his in-game NFT fighter lifespan.
 * **Match Anticipation and Simulation:** As the real MMA event plays out, BattleBoosters' sophisticated simulation factors in Alice’s strategic choices, translating "Bob's" real-world performance into the game.
 * **Simulation Results and Rewards:** Victory in the simulation reflects Alice's thoughtful strategy, and her ranking in the tournament is determined. With a strong performance, Alice qualifies for in-game rewards.
-* **Reward Collection:** Post-tournament, Alice claims her rewards, which include exclusive assets and boosters for future use, from the platform.
+* **Reward Collection:** Post-tournament, Alice claims her rewards, which include SOL cryptocurrency, exclusive assets and boosters for future use, from the platform.
 
 **Key Features**
 
