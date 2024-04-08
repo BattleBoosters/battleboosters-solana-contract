@@ -39,7 +39,7 @@ pub struct TransactionEscrow<'info> {
     )]
     pub mystery_box: Account<'info, MysteryBoxData>,
     /// CHECK: This is a PDA used as the bank
-    #[account(mut, seeds = [MY_APP_PREFIX, BANK], bump = program.bank_bump)]
+    #[account(mut, seeds = [MY_APP_PREFIX, BANK], bump)]
     pub bank: AccountInfo<'info>,
     /// CHECK: This is a PDA used as the bank
     #[account(mut, seeds = [MY_APP_PREFIX, BANK, signer.key().as_ref()], bump)]

@@ -69,4 +69,8 @@ pub enum ErrorCode {
     RandomnessIsNone,
     #[msg("Failed to parse value")]
     FailedToParseValue,
+    #[msg("Champion's pass asset is missing")]
+    MissingChampionsPassAsset,
+    #[msg("Champion's pass link is missing")]
+    MissingChampionsPassLink,
 }

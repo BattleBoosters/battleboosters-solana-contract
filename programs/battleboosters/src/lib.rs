@@ -19,7 +19,7 @@ use crate::utils::*;
 
 use errors::ErrorCode;
 
-declare_id!("5GW3wfyowgfKsKCeC2VKg6ucM4wKYX5ebZNAqvBcvTSd");
+declare_id!("9JyF2qTLYfEyy7UVSPVNCQQgUD4AQ5u5gVdGmAZu7cPA");
 
 #[program]
 pub mod battleboosters {
@@ -77,8 +77,15 @@ pub mod battleboosters {
     pub fn initialize_event_link(
         ctx: Context<InitializeEventLink>,
         event_nonce: u64,
+        champions_pass_asset_nonce: Option<u64>,
+        champions_pass_link_nonce: Option<u64>,
     ) -> Result<()> {
-        processor::initialize_event_link(ctx, event_nonce)
+        processor::initialize_event_link(
+            ctx,
+            event_nonce,
+            champions_pass_asset_nonce,
+            champions_pass_link_nonce,
+        )
     }
 
     pub fn create_nft_collection(

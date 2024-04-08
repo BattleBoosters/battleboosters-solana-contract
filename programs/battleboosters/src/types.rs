@@ -172,7 +172,7 @@ impl FighterType {
     }
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]
+#[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone, PartialEq)]
 pub enum TournamentType {
     MainCard,
     Prelims,

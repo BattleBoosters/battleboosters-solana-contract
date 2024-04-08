@@ -93,21 +93,61 @@ pub fn initialize_rarity(
 
     Ok(())
 }
-pub fn initialize_event_link(ctx: Context<InitializeEventLink>, event_nonce: u64) -> Result<()> {
+pub fn initialize_event_link(
+    ctx: Context<InitializeEventLink>,
+    event_nonce: u64,
+    _champions_pass_asset_nonce: Option<u64>,
+    _champions_pass_link_nonce: Option<u64>,
+) -> Result<()> {
     let event_link = &mut ctx.accounts.event_link;
     let rank = &mut ctx.accounts.rank;
     let event = &mut ctx.accounts.event;
+
     require!(!event_link.is_initialized, ErrorCode::AlreadyInitialized);
 
+    let (champions_pass_pubkey, champions_pass_nonce_tracker) =
+        if event.tournament_type == TournamentType::MainCard {
+            let champions_pass_asset = ctx
+                .accounts
+                .champions_pass_asset
+                .as_mut()
+                .ok_or(ErrorCode::MissingChampionsPassAsset)?;
+            let champions_pass_link = ctx
+                .accounts
+                .champions_pass_link
+                .as_mut()
+                .ok_or(ErrorCode::MissingChampionsPassLink)?;
+
+            verify_equality(
+                &champions_pass_asset.to_account_info().key(),
+                &champions_pass_link.mintable_game_asset_pubkey,
+            )?;
+
+            champions_pass_asset.owner = None;
+            champions_pass_asset.is_burned = true;
+            champions_pass_link.is_free = true;
+            (
+                Some(champions_pass_link.mintable_game_asset_pubkey),
+                Some(champions_pass_link.mintable_game_asset_nonce_tracker),
+            )
+        } else {
+            (None, None)
+        };
+
+    // Configure event link
     event_link.event_pubkey = event.to_account_info().key();
     event_link.event_nonce_tracker = event_nonce;
-    event_link.champions_pass_pubkey = None;
-    event_link.champions_pass_nonce_tracker = None;
+    event_link.champions_pass_pubkey = champions_pass_pubkey;
+    event_link.champions_pass_nonce_tracker = champions_pass_nonce_tracker;
     event_link.is_initialized = true;
+
+    // Configure rank
     rank.player_account = ctx.accounts.creator.to_account_info().key();
     rank.total_points = None;
     rank.rank = None;
     rank.is_consumed = false;
+
+    // Update event nonce safely
     event.rank_nonce = event.rank_nonce.checked_add(1).unwrap();
 
     Ok(())
@@ -1057,6 +1097,9 @@ pub fn join_fight_card(
     let fight_card = &ctx.accounts.fight_card;
     let fight_card_link = &mut ctx.accounts.fight_card_link;
     let event_link = &mut ctx.accounts.event_link;
+    /*
+       TODO: Move the champions pass to Create Event Link for simplicity and inscription.
+    */
     let champions_pass_asset = &ctx.accounts.champions_pass_asset;
 
     require!(
