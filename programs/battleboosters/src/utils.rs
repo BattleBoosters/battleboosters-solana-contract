@@ -148,22 +148,7 @@ pub fn process_and_verify_game_asset_type(
                     // }
                     _ => return Err(ErrorCode::BoosterTypeNotFound.into()),
                 },
-                "Champions Pass Type" => match require_tournament_type {
-                    Some(TournamentType::MainCard) => {
-                        require!(
-                            event_link.champions_pass_pubkey.is_none()
-                                && event_link.champions_pass_nonce_tracker.is_none()
-                                && game_asset_nonce.is_some(),
-                            ErrorCode::EventLinkedToGameAsset
-                        );
-
-                        event_link.champions_pass_pubkey =
-                            Some(mintable_asset.to_account_info().key());
-                        event_link.champions_pass_nonce_tracker =
-                            Some(game_asset_nonce.unwrap().clone())
-                    }
-                    _ => return Err(ErrorCode::NonMainCardEvent.into()),
-                },
+                "Champions Pass Type" => return Err(ErrorCode::Unauthorized.into()),
                 _ => {}
             }
         }

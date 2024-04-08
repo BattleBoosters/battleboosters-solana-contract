@@ -1082,12 +1082,10 @@ pub fn join_fight_card(
     energy_booster_asset_nonce: Option<u64>, // Used in instruction
     shield_booster_asset_nonce: Option<u64>, // Used in instruction
     points_booster_asset_nonce: Option<u64>, // Used in instruction
-    champions_pass_asset_nonce: Option<u64>, // Used in instruction
     _fighter_link_nonce: u64,                // Used in instruction
     _energy_booster_link_nonce: Option<u64>, // Used in instruction
     _shield_booster_link_nonce: Option<u64>, // Used in instruction
     _points_booster_link_nonce: Option<u64>, // Used in instruction
-    _champions_pass_link_nonce: Option<u64>, // Used in instruction
     fighter_color_side: FighterColorSide,
 ) -> Result<()> {
     let clock = Clock::get().unwrap();
@@ -1097,10 +1095,6 @@ pub fn join_fight_card(
     let fight_card = &ctx.accounts.fight_card;
     let fight_card_link = &mut ctx.accounts.fight_card_link;
     let event_link = &mut ctx.accounts.event_link;
-    /*
-       TODO: Move the champions pass to Create Event Link for simplicity and inscription.
-    */
-    let champions_pass_asset = &ctx.accounts.champions_pass_asset;
 
     require!(
         !fight_card_link.is_initialized,
@@ -1164,34 +1158,10 @@ pub fn join_fight_card(
         points_booster_asset_nonce,
     )?;
 
-    process_game_asset_for_action(
-        champions_pass_asset.clone().as_mut(),
-        ctx.accounts.champions_pass_link.as_mut(),
-        true,
-    )?;
-
-    process_and_verify_game_asset_type(
-        champions_pass_asset.as_ref(),
-        fight_card_link,
-        event_link,
-        Some(&event.tournament_type),
-        champions_pass_asset_nonce.clone(),
-    )?;
-
     require!(
         fight_card_link.fighter_used.is_some() && fight_card_link.fighter_nonce_tracker.is_some(),
         ErrorCode::FightCardLinkedToGameAsset
     );
-    match event.tournament_type {
-        TournamentType::MainCard => {
-            require!(
-                event_link.champions_pass_pubkey.is_some()
-                    && event_link.champions_pass_nonce_tracker.is_some(),
-                ErrorCode::EventLinkedToGameAsset
-            );
-        }
-        _ => {}
-    }
 
     fight_card_link.fight_card_pubkey = fight_card.to_account_info().key();
     fight_card_link.fight_card_nonce_tracker = fight_card_nonce;

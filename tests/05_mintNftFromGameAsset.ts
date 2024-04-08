@@ -220,7 +220,7 @@ describe.skip('Collector pack', () => {
         );
 
         try {
-            const tx = await program.methods.
+            const tx = await program.methods
                 .mintCollectorPack()
                 .accounts({
                     creator: admin_account.publicKey,

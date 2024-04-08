@@ -14,12 +14,10 @@ fighter_asset_nonce: u64,
 energy_booster_asset_nonce: Option<u64>,
 shield_booster_asset_nonce: Option<u64>,
 points_booster_asset_nonce: Option<u64>,
-champions_pass_asset_nonce: Option<u64>,
 fighter_link_nonce: u64,
 energy_booster_link_nonce: Option<u64>,
 shield_booster_link_nonce: Option<u64>,
 points_booster_link_nonce: Option<u64>,
-champions_pass_link_nonce: Option<u64>,
 )]
 pub struct JoinFightCard<'info> {
     #[account(mut)]
@@ -61,14 +59,6 @@ pub struct JoinFightCard<'info> {
     bump
     )]
     pub points_booster_asset: Option<Box<Account<'info, MintableGameAssetData>>>,
-    #[account(
-    mut,
-    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, champions_pass_asset_nonce.unwrap().to_le_bytes().as_ref()],
-    // constraint = points_booster_asset.as_ref().is_burned == true,
-    // close = signer,
-    bump
-    )]
-    pub champions_pass_asset: Option<Box<Account<'info, MintableGameAssetData>>>,
 
     #[account(
     mut,
@@ -94,12 +84,6 @@ pub struct JoinFightCard<'info> {
     bump
     )]
     pub points_booster_link: Option<Box<Account<'info, MintableGameAssetLinkData>>>,
-    #[account(
-    mut,
-    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, champions_pass_link_nonce.unwrap().to_le_bytes().as_ref(), signer.key().as_ref()],
-    bump
-    )]
-    pub champions_pass_link: Option<Box<Account<'info, MintableGameAssetLinkData>>>,
 
     #[account(
     mut,

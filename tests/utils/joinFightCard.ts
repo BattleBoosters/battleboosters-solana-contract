@@ -60,9 +60,7 @@ const joinFightCard = async function (
     shield_mintable_asset_nonce = null,
     shield_mintable_asset_link_nonce = null,
     points_mintable_asset_nonce = null,
-    points_mintable_asset_link_nonce = null,
-    champions_pass_mintable_asset_nonce = null,
-    champions_pass_mintable_asset_link_nonce = null
+    points_mintable_asset_link_nonce = null
 ) {
     const [event_account, event_account_bump] =
         anchor.web3.PublicKey.findProgramAddressSync(
@@ -159,15 +157,6 @@ const joinFightCard = async function (
         points_mintable_asset_nonce,
         points_mintable_asset_link_nonce
     );
-    const [
-        champions_pass_mintable_game_asset_pda,
-        champions_pass_mintable_game_asset_link_pda,
-    ] = findProgramAddressSync(
-        provider,
-        program,
-        champions_pass_mintable_asset_nonce,
-        champions_pass_mintable_asset_link_nonce
-    );
 
     const tx = await program.methods
         .joinFightCard(
@@ -183,9 +172,6 @@ const joinFightCard = async function (
             points_mintable_asset_nonce
                 ? new BN(points_mintable_asset_nonce)
                 : null,
-            champions_pass_mintable_asset_nonce
-                ? new BN(champions_pass_mintable_asset_nonce)
-                : null,
             new BN(fighter_mintable_asset_link_nonce),
             energy_mintable_asset_link_nonce
                 ? new BN(energy_mintable_asset_link_nonce)
@@ -195,9 +181,6 @@ const joinFightCard = async function (
                 : null,
             points_mintable_asset_link_nonce
                 ? new BN(points_mintable_asset_link_nonce)
-                : null,
-            champions_pass_mintable_asset_link_nonce
-                ? new BN(champions_pass_mintable_asset_link_nonce)
                 : null,
             fighterColorSide
         )
@@ -209,11 +192,9 @@ const joinFightCard = async function (
             energyBoosterAsset: energy_mintable_game_asset_pda,
             shieldBoosterAsset: shield_mintable_game_asset_pda,
             pointsBoosterAsset: points_mintable_game_asset_pda,
-            championsPassAsset: champions_pass_mintable_game_asset_pda,
             energyBoosterLink: energy_mintable_game_asset_link_pda,
             shieldBoosterLink: shield_mintable_game_asset_link_pda,
             pointsBoosterLink: points_mintable_game_asset_link_pda,
-            championsPassLink: champions_pass_mintable_game_asset_link_pda,
             fightCard: fight_card_account,
             fightCardLink: fight_card_link_account,
             eventLink: event_link_account,

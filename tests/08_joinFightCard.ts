@@ -120,13 +120,36 @@ describe('Join fight card', () => {
                 program.programId
             );
 
+        const [mintable_game_asset_pda, mintable_game_asset_bump] =
+            anchor.web3.PublicKey.findProgramAddressSync(
+                [
+                    Buffer.from('BattleBoosters'),
+                    Buffer.from('mintableGameAsset'),
+                    new BN(0).toBuffer('le', 8),
+                ],
+                program.programId
+            );
+        const [mintable_game_asset_link_pda, mintable_game_asset_link_bump] =
+            anchor.web3.PublicKey.findProgramAddressSync(
+                [
+                    Buffer.from('BattleBoosters'),
+                    Buffer.from('mintableGameAsset'),
+                    new BN(0).toBuffer('le', 8),
+                    provider.wallet.publicKey.toBuffer(),
+                    //admin_account.publicKey.toBuffer(),
+                ],
+                program.programId
+            );
+
         const tx = await program.methods
-            .initializeEventLink(new BN(0))
+            .initializeEventLink(new BN(0), null, null)
             .accounts({
                 creator: provider.wallet.publicKey,
                 event: event_account,
                 eventLink: event_link_account,
                 rank: rank_pda,
+                championsPassLink: null,
+                championsPassAsset: null,
                 systemProgram: anchor.web3.SystemProgram.programId,
             })
             .signers([])

@@ -238,12 +238,10 @@ pub mod battleboosters {
         energy_booster_asset_nonce: Option<u64>, // Used in instruction
         shield_booster_asset_nonce: Option<u64>, // Used in instruction
         points_booster_asset_nonce: Option<u64>, // Used in instruction
-        champions_pass_asset_nonce: Option<u64>, // Used in instruction
         fighter_link_nonce: u64,                 // Used in instruction
         energy_booster_link_nonce: Option<u64>,  // Used in instruction
         shield_booster_link_nonce: Option<u64>,  // Used in instruction
         points_booster_link_nonce: Option<u64>,  // Used in instruction
-        champions_pass_link_nonce: Option<u64>,  // Used in instruction
         fighter_color_side: FighterColorSide,
     ) -> Result<()> {
         processor::join_fight_card(
@@ -254,12 +252,10 @@ pub mod battleboosters {
             energy_booster_asset_nonce,
             shield_booster_asset_nonce,
             points_booster_asset_nonce,
-            champions_pass_asset_nonce,
             fighter_link_nonce,
             energy_booster_link_nonce,
             shield_booster_link_nonce,
             points_booster_link_nonce,
-            champions_pass_link_nonce,
             fighter_color_side,
         )
     }
