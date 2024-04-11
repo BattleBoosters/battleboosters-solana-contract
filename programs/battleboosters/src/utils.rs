@@ -235,7 +235,7 @@ pub fn find_scaled_rarity(value: &Stats, rng_seed: u64) -> u32 {
 pub fn create_nft_metadata(
     name: String,
     description: String,
-    image: String,
+    image: Option<String>,
     animation_url: Option<String>,
     external_url: Option<String>,
     attributes: Vec<Attribute>,

@@ -12,7 +12,7 @@ pub const MINT: &[u8] = b"mint";
 pub const PLAYER: &[u8] = b"player";
 pub const MYSTERY_BOX: &[u8] = b"mysteryBox";
 pub const MINTABLE_GAME_ASSET: &[u8] = b"mintableGameAsset";
-pub const METADATA_OFF_CHAIN_URI: &str = "https://battleboosters.com/metadata";
+pub const METADATA_OFF_CHAIN_URI: &str = "https://battleboosters.com/api/metadata";
 // pub const NFT_NAME: &str = "Fighter";
 
 /// Switchboard

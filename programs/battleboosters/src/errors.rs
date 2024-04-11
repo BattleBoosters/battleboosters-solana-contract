@@ -73,4 +73,6 @@ pub enum ErrorCode {
     MissingChampionsPassAsset,
     #[msg("Champion's pass link is missing")]
     MissingChampionsPassLink,
+    #[msg("Randomness already revealed")]
+    RandomnessAlreadyRevealed,
 }

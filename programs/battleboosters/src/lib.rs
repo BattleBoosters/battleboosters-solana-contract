@@ -8,10 +8,9 @@ mod types;
 mod utils;
 
 use crate::state::{
-    collect_rewards::*, create_spl_nft::*, determine_ranking_points::*, event::*,
-    event_request_randomness::*, fight_card::*, fighter::*, join_fight_card::*,
-    mint_nft_from_game_asset::*, mintable_game_asset::*, player::*, program::*, rank::*, rarity::*,
-    switchboard_callback::*, transaction_escrow::*,
+    collect_rewards::*, create_spl_nft::*, determine_ranking_points::*, event::*, fight_card::*,
+    fighter::*, join_fight_card::*, mint_nft_from_game_asset::*, mintable_game_asset::*, player::*,
+    program::*, rank::*, rarity::*, switchboard_callback::*, transaction_escrow::*,
 };
 
 use crate::types::*;
@@ -26,7 +25,6 @@ pub mod battleboosters {
     use super::*;
     use crate::state::collect_rewards::CollectRewards;
     use crate::state::determine_ranking_points::DetermineRankingPoints;
-    use crate::state::event_request_randomness::EventRequestRandomness;
     use crate::state::rank::UpdateRank;
 
     pub fn initialize(
@@ -117,9 +115,10 @@ pub mod battleboosters {
     pub fn purchase_mystery_box(
         ctx: Context<TransactionEscrow>,
         bank_escrow_bump: u8,
+        randomness_account: Pubkey,
         requests: Vec<PurchaseRequest>,
     ) -> Result<()> {
-        processor::purchase_mystery_box(ctx, bank_escrow_bump, requests)
+        processor::purchase_mystery_box(ctx, bank_escrow_bump, randomness_account, requests)
     }
 
     pub fn consume_randomness(
@@ -272,12 +271,12 @@ pub mod battleboosters {
         processor::collect_rewards(ctx, event_nonce, rank_nonce)
     }
 
-    pub fn event_request_randomness(
-        ctx: Context<EventRequestRandomness>,
-        event_nonce: u64,
-    ) -> Result<()> {
-        processor::event_request_randomness(ctx, event_nonce)
-    }
+    // pub fn event_request_randomness(
+    //     ctx: Context<EventRequestRandomness>,
+    //     event_nonce: u64,
+    // ) -> Result<()> {
+    //     processor::event_request_randomness(ctx, event_nonce)
+    // }
     pub fn consume_randomness_event(
         ctx: Context<ConsumeRandomnessEvent>,
         event_nonce: u64,

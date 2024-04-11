@@ -7,7 +7,6 @@ use crate::state::collect_rewards::CollectRewards;
 use crate::state::create_spl_nft::CreateSplNft;
 use crate::state::determine_ranking_points::DetermineRankingPoints;
 use crate::state::event::{CreateEvent, InitializeEventLink, RankReward, UpdateEvent};
-use crate::state::event_request_randomness::EventRequestRandomness;
 use crate::state::fight_card::{CreateFightCard, FightCardData, UpdateFightCard};
 use crate::state::fighter::{CreateFighter, FightMetrics};
 use crate::state::join_fight_card::JoinFightCard;
@@ -40,9 +39,8 @@ use mpl_token_metadata::types::{Collection, PrintSupply, TokenStandard};
 use solana_program::native_token::LAMPORTS_PER_SOL;
 use solana_program::program::invoke_signed;
 use solana_program::system_instruction;
-use solana_randomness_service::TransactionOptions;
+use switchboard_on_demand::accounts::RandomnessAccountData;
 use switchboard_solana::get_ixn_discriminator;
-use switchboard_solana::rust_decimal::prelude::Zero;
 
 pub fn initialize(
     ctx: Context<InitializeProgram>,
@@ -280,8 +278,10 @@ pub fn update_fighter(
 pub fn purchase_mystery_box(
     ctx: Context<TransactionEscrow>,
     bank_escrow_bump: u8,
+    randomness_account: Pubkey,
     requests: Vec<PurchaseRequest>,
 ) -> Result<()> {
+    let clock = Clock::get()?;
     let program = &ctx.accounts.program;
     let feed = &ctx.accounts.price_feed.load()?;
     let mystery_box = &mut ctx.accounts.mystery_box;
@@ -366,61 +366,18 @@ pub fn purchase_mystery_box(
     )?;
     msg!("bank balance now: {}", bank.lamports());
 
-    let mut ix_data = get_ixn_discriminator("consume_randomness").to_vec();
-    ix_data.extend_from_slice(&player_account.order_nonce.to_le_bytes());
-    // ix_data.extend_from_slice(&[bank_escrow_bump.clone()]);
-    // ix_data.extend_from_slice(&total_lamports.to_le_bytes());
-
-    solana_randomness_service::cpi::simple_randomness_v1(
-        CpiContext::new(
-            ctx.accounts.randomness_service.to_account_info(),
-            solana_randomness_service::cpi::accounts::SimpleRandomnessV1Request {
-                request: ctx.accounts.randomness_request.to_account_info(),
-                escrow: ctx.accounts.randomness_escrow.to_account_info(),
-                state: ctx.accounts.randomness_state.to_account_info(),
-                mint: ctx.accounts.randomness_mint.to_account_info(),
-                payer: ctx.accounts.signer.to_account_info(),
-                system_program: ctx.accounts.system_program.to_account_info(),
-                token_program: ctx.accounts.token_program.to_account_info(),
-                associated_token_program: ctx.accounts.associated_token_program.to_account_info(),
-            },
-        ),
-        8, // Request 8 bytes of randomness
-        solana_randomness_service::Callback {
-            program_id: ID,
-            accounts: vec![
-                AccountMeta::new_readonly(
-                    ctx.accounts.randomness_state.to_account_info().key(),
-                    true,
-                )
-                .into(),
-                AccountMeta::new_readonly(
-                    ctx.accounts.randomness_request.to_account_info().key(),
-                    false,
-                )
-                .into(),
-                AccountMeta::new_readonly(ctx.accounts.recipient.to_account_info().key(), false)
-                    .into(),
-                // AccountMeta::new_readonly(
-                //     ctx.accounts.signer.to_account_info().key(),
-                //     false,
-                // )
-                //     .into(),
-                AccountMeta::new(mystery_box.to_account_info().key(), false).into(),
-                // AccountMeta::new(ctx.accounts.bank.to_account_info().key(), false).into(),
-                // AccountMeta::new(ctx.accounts.bank_escrow.to_account_info().key(), false).into(),
-                //AccountMeta::new_readonly(ctx.accounts.system_program.to_account_info().key(), false).into(),
-            ],
-            ix_data, // TODO: hardcode this discriminator [190,217,49,162,99,26,73,234]
-        },
-        Some(TransactionOptions {
-            compute_units: Some(1_000_000),
-            compute_unit_price: Some(200),
-        }),
-    )?;
+    let randomness_data =
+        RandomnessAccountData::parse(ctx.accounts.randomness_account_data.data.borrow()).unwrap();
+    if randomness_data.seed_slot != clock.slot - 1 {
+        msg!("seed_slot: {}", randomness_data.seed_slot);
+        msg!("slot: {}", clock.slot);
+        return Err(ErrorCode::RandomnessAlreadyRevealed.into());
+    }
 
     // Set the collector pack to default `champion_s_pass_mint_allowance`
     mystery_box.champions_pass_mint_allowance = 0;
+    // Set the randomness account
+    mystery_box.randomness_account = randomness_account;
 
     if let Some(probability_tier) = rarity.get_probability_by_tier(TierType::Tier3) {
         mystery_box.probability_tier = probability_tier;
@@ -737,6 +694,7 @@ pub fn create_mintable_game_asset(
     _mystery_box_nonce: u64,             // used on instruction
     request: OpenRequest,
 ) -> Result<()> {
+    let clock: Clock = Clock::get()?;
     let program = &mut ctx.accounts.program;
     let mystery_box = &mut ctx.accounts.mystery_box;
     let mintable_game_asset_link = &mut ctx.accounts.mintable_game_asset_link;
@@ -767,10 +725,18 @@ pub fn create_mintable_game_asset(
                 .rarity
                 .clone()
                 .ok_or(ErrorCode::RarityAccountRequired)?;
-            let randomness = mystery_box
-                .randomness
-                .clone()
-                .ok_or(ErrorCode::RandomnessUnavailable)?;
+            // call the switchboard on-demand parse function to get the randomness data
+            let randomness_data =
+                RandomnessAccountData::parse(ctx.accounts.randomness_account_data.data.borrow())
+                    .unwrap();
+            // call the switchboard on-demand get_value function to get the revealed random value
+            let randomness = randomness_data
+                .get_value(&clock)
+                .unwrap_or_else(|_| [0u8; 32]);
+            // let randomness = mystery_box
+            //     .randomness
+            //     .clone()
+            //     .ok_or(ErrorCode::RandomnessUnavailable)?;
             let public_key_bytes = signer.key().to_bytes();
 
             let combined_allowance = &mystery_box.booster_mint_allowance
@@ -845,13 +811,13 @@ pub fn create_mintable_game_asset(
                 mintable_game_asset.metadata = create_nft_metadata(
                     "Booster".to_string(),
                     "test".to_string(),
-                    format!(
+                    None,
+                    None,
+                    Some(format!(
                         "{}/{}",
                         METADATA_OFF_CHAIN_URI,
                         mintable_game_asset.key().to_string()
-                    ),
-                    None,
-                    None,
+                    )),
                     attributes,
                 );
 
@@ -878,10 +844,15 @@ pub fn create_mintable_game_asset(
                 .rarity
                 .clone()
                 .ok_or(ErrorCode::RarityAccountRequired)?;
-            let randomness = mystery_box
-                .randomness
-                .clone()
-                .ok_or(ErrorCode::RandomnessUnavailable)?;
+            // call the switchboard on-demand parse function to get the randomness data
+            let randomness_data =
+                RandomnessAccountData::parse(ctx.accounts.randomness_account_data.data.borrow())
+                    .unwrap();
+            // call the switchboard on-demand get_value function to get the revealed random value
+            let randomness = randomness_data
+                .get_value(&clock)
+                .unwrap_or_else(|_| [0u8; 32]);
+
             let public_key_bytes = signer.key().to_bytes();
 
             let combined_allowance = &mystery_box.booster_mint_allowance
@@ -997,13 +968,13 @@ pub fn create_mintable_game_asset(
                 mintable_game_asset.metadata = create_nft_metadata(
                     "Fighter".to_string(),
                     "test".to_string(),
-                    format!(
+                    None,
+                    None,
+                    Some(format!(
                         "{}/{}",
                         METADATA_OFF_CHAIN_URI,
                         mintable_game_asset.key().to_string()
-                    ),
-                    None,
-                    None,
+                    )),
                     attributes,
                 );
                 mystery_box.fighter_mint_allowance = mystery_box
@@ -1041,13 +1012,13 @@ pub fn create_mintable_game_asset(
             mintable_game_asset.metadata = create_nft_metadata(
                 "Champion's Pass".to_string(),
                 "test".to_string(),
-                format!(
+                None,
+                None,
+                Some(format!(
                     "{}/{}",
                     METADATA_OFF_CHAIN_URI,
                     mintable_game_asset.key().to_string()
-                ),
-                None,
-                None,
+                )),
                 attributes,
             );
             mystery_box.champions_pass_mint_allowance = mystery_box
@@ -1279,63 +1250,63 @@ pub fn collect_rewards(
     Ok(())
 }
 
-pub fn event_request_randomness(
-    ctx: Context<EventRequestRandomness>,
-    event_nonce: u64,
-) -> Result<()> {
-    let clock = Clock::get().unwrap();
-    let current_blockchain_timestamp = clock.unix_timestamp;
-    let event = &ctx.accounts.event;
-    require!(
-        event.end_date < current_blockchain_timestamp,
-        ErrorCode::EventStillRunning
-    );
-
-    let mut ix_data = get_ixn_discriminator("consume_randomness_event").to_vec();
-    ix_data.extend_from_slice(&event_nonce.to_le_bytes());
-    // ix_data.extend_from_slice(&[bank_escrow_bump.clone()]);
-    // ix_data.extend_from_slice(&total_lamports.to_le_bytes());
-
-    solana_randomness_service::cpi::simple_randomness_v1(
-        CpiContext::new(
-            ctx.accounts.randomness_service.to_account_info(),
-            solana_randomness_service::cpi::accounts::SimpleRandomnessV1Request {
-                request: ctx.accounts.randomness_request.to_account_info(),
-                escrow: ctx.accounts.randomness_escrow.to_account_info(),
-                state: ctx.accounts.randomness_state.to_account_info(),
-                mint: ctx.accounts.randomness_mint.to_account_info(),
-                payer: ctx.accounts.signer.to_account_info(),
-                system_program: ctx.accounts.system_program.to_account_info(),
-                token_program: ctx.accounts.token_program.to_account_info(),
-                associated_token_program: ctx.accounts.associated_token_program.to_account_info(),
-            },
-        ),
-        8, // Request 8 bytes of randomness
-        solana_randomness_service::Callback {
-            program_id: ID,
-            accounts: vec![
-                AccountMeta::new_readonly(
-                    ctx.accounts.randomness_state.to_account_info().key(),
-                    true,
-                )
-                .into(),
-                AccountMeta::new_readonly(
-                    ctx.accounts.randomness_request.to_account_info().key(),
-                    false,
-                )
-                .into(),
-                AccountMeta::new(event.to_account_info().key(), false).into(),
-            ],
-            ix_data, // TODO: hardcode this discriminator [190,217,49,162,99,26,73,234]
-        },
-        Some(TransactionOptions {
-            compute_units: Some(1_000_000),
-            compute_unit_price: Some(200),
-        }),
-    )?;
-
-    Ok(())
-}
+// pub fn event_request_randomness(
+//     ctx: Context<EventRequestRandomness>,
+//     event_nonce: u64,
+// ) -> Result<()> {
+//     let clock = Clock::get().unwrap();
+//     let current_blockchain_timestamp = clock.unix_timestamp;
+//     let event = &ctx.accounts.event;
+//     require!(
+//         event.end_date < current_blockchain_timestamp,
+//         ErrorCode::EventStillRunning
+//     );
+//
+//     let mut ix_data = get_ixn_discriminator("consume_randomness_event").to_vec();
+//     ix_data.extend_from_slice(&event_nonce.to_le_bytes());
+//     // ix_data.extend_from_slice(&[bank_escrow_bump.clone()]);
+//     // ix_data.extend_from_slice(&total_lamports.to_le_bytes());
+//
+//     solana_randomness_service::cpi::simple_randomness_v1(
+//         CpiContext::new(
+//             ctx.accounts.randomness_service.to_account_info(),
+//             solana_randomness_service::cpi::accounts::SimpleRandomnessV1Request {
+//                 request: ctx.accounts.randomness_request.to_account_info(),
+//                 escrow: ctx.accounts.randomness_escrow.to_account_info(),
+//                 state: ctx.accounts.randomness_state.to_account_info(),
+//                 mint: ctx.accounts.randomness_mint.to_account_info(),
+//                 payer: ctx.accounts.signer.to_account_info(),
+//                 system_program: ctx.accounts.system_program.to_account_info(),
+//                 token_program: ctx.accounts.token_program.to_account_info(),
+//                 associated_token_program: ctx.accounts.associated_token_program.to_account_info(),
+//             },
+//         ),
+//         8, // Request 8 bytes of randomness
+//         solana_randomness_service::Callback {
+//             program_id: ID,
+//             accounts: vec![
+//                 AccountMeta::new_readonly(
+//                     ctx.accounts.randomness_state.to_account_info().key(),
+//                     true,
+//                 )
+//                 .into(),
+//                 AccountMeta::new_readonly(
+//                     ctx.accounts.randomness_request.to_account_info().key(),
+//                     false,
+//                 )
+//                 .into(),
+//                 AccountMeta::new(event.to_account_info().key(), false).into(),
+//             ],
+//             ix_data, // TODO: hardcode this discriminator [190,217,49,162,99,26,73,234]
+//         },
+//         Some(TransactionOptions {
+//             compute_units: Some(1_000_000),
+//             compute_unit_price: Some(200),
+//         }),
+//     )?;
+//
+//     Ok(())
+// }
 
 pub fn consume_randomness_event(
     ctx: Context<ConsumeRandomnessEvent>,

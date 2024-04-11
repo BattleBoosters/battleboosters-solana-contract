@@ -29,6 +29,30 @@ url = "https://api.devnet.solana.com"
 [[test.validator.clone]]
 address = "GvDMxPzN1sCj7L26YDK2HnMRXEQmQ2aemov8YBtPS7vR"
 
+#Randomness
+[[test.validator.clone]]
+address = "SBondMDrcV3K4kxZR1HNVT7osZxAHVHgYXL5Ze1oMUv"
+
+[[test.validator.clone]]
+address = "zL8xj8TfQewdL1JmBfagYJydEsdgUZLnTvGhtewrjog"
+[[test.validator.clone]]
+address = "7Gs9n5FQMeC9XcEhg281bRZ6VHRrCvqp5Yq1j78HkvNa"
+[[test.validator.clone]]
+address = "9tMV6o14dJH95PoRgQHhGYMiyLbVS39HPqHWQ5hD4Vn1"
+[[test.validator.clone]]
+address = "FqVyQbsS7YE5WsPWQ5xEukFWjJyjiRtJMgg64tuBuRRU"
+[[test.validator.clone]]
+address = "FqVyQbsS7YE5WsPWQ5xEukFWjJyjiRtJMgg64tuBuRRU"
+
+[[test.validator.clone]]
+address = "ChtPnhtm152NwS5ULDSE9emajj7CLr2bC1eiNpkEMjck"
+
+[[test.validator.clone]]
+address = "5Qv744yu7DmEbU669GmYRqL9kpQsyYsaVKdR8YiBMTaP"
+
+[[test.validator.clone]]
+address = "SysvarS1otHashes111111111111111111111111111"
+
 #[[test.validator.account]]
 #address = "H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712K4AQJEG"
 #filename = "tests/accounts/pythSolUsdAccount.json"
@@ -54,7 +78,7 @@ address = "5ExuoQR69trmKQfB95fDsUGsUrrChbGq9PFgt8qouncz"
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "localnet"
+cluster = "devnet"
 wallet = "/Users/0xantman/.config/solana/id.json"
 
 

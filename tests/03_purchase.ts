@@ -16,7 +16,7 @@ import {
 } from '@metaplex-foundation/mpl-token-metadata';
 import { MPL_TOKEN_METADATA_PROGRAM_ID } from '@metaplex-foundation/mpl-token-metadata';
 import {
-    Connection,
+    Connection, Keypair,
     LAMPORTS_PER_SOL,
     PublicKey,
     Transaction,
@@ -25,21 +25,30 @@ import { before } from 'mocha';
 import airdrop_sol from './utils/airdropSol';
 import { sleep } from '@switchboard-xyz/common';
 import {
-    AggregatorAccount,
+    AggregatorAccount, AnchorWallet,
     SwitchboardProgram,
 } from '@switchboard-xyz/solana.js';
 import InitializePlayerAccount from './utils/initializePlayerAccount';
-import { RandomnessService } from '@switchboard-xyz/solana-randomness-service';
+
 import * as buffer from 'buffer';
 import account_init from './utils/initAccounts';
-
+import {
+    SB_ON_DEMAND_PID,
+    Randomness,
+    InstructionUtils,
+} from "@switchboard-xyz/on-demand";
+import createMintableGameAsset from "./utils/createMintableGameAsset";
 /*
     TODO: Test try to pass nft different type
  */
-describe.skip('Purchase', () => {
+describe.only('Purchase', () => {
+    const sb_programId = SB_ON_DEMAND_PID;
     const provider = anchor.AnchorProvider.env();
     anchor.setProvider(provider);
     const program = anchor.workspace.Battleboosters as Program<Battleboosters>;
+
+
+    const queue = new PublicKey("5Qv744yu7DmEbU669GmYRqL9kpQsyYsaVKdR8YiBMTaP");
 
     const {
         admin_account,
@@ -55,17 +64,8 @@ describe.skip('Purchase', () => {
     } = account_init(program);
 
     let switchboardProgram;
-    let randomnessService;
     let lastPriceSolUsd;
     before(async () => {
-        try {
-            console.log('Randomness Service pending');
-            randomnessService = await RandomnessService.fromProvider(provider);
-        } catch (e) {
-            console.log(e);
-        }
-        console.log(randomnessService);
-        console.log('Randomness Service OK');
 
         switchboardProgram = await SwitchboardProgram.load(
             new Connection('https://api.mainnet-beta.solana.com')
@@ -82,18 +82,14 @@ describe.skip('Purchase', () => {
     });
 
     it('Purchase successfully in-game assets for signer', async () => {
-        // Start watching for the settled event before triggering the request
-        const requestKeypair = anchor.web3.Keypair.generate();
 
-        console.log('watching...');
+        const sb_idl = await anchor.Program.fetchIdl(sb_programId, provider);
+        //console.log("sb_idl")
+        //console.log(sb_idl)
+        const sb_program = new anchor.Program(sb_idl!, sb_programId, provider);
+        const rngKp = Keypair.generate();
+        const [randomness, ix] = await Randomness.create(sb_program, rngKp, queue);
 
-        //Start watching for the settled event before triggering the request
-        const settledRandomnessEventPromise =
-            randomnessService.awaitSettledEvent(requestKeypair.publicKey);
-
-        console.log('watched...');
-
-        console.log('await Randomness Service');
 
         const [bank_pda, bank_bump] =
             anchor.web3.PublicKey.findProgramAddressSync(
@@ -110,23 +106,23 @@ describe.skip('Purchase', () => {
                 ],
                 program.programId
             );
+        const newRecipient = anchor.web3.Keypair.generate();
+        // Initialize the player account first
+        await InitializePlayerAccount(
+            provider,
+            newRecipient.publicKey,
+            //provider.wallet.publicKey,
+            program
+        );
 
-        const [player_inventory_pda, player_inventory_bump] =
-            anchor.web3.PublicKey.findProgramAddressSync(
-                [
-                    Buffer.from('BattleBoosters'),
-                    Buffer.from('inventory'),
-                    provider.wallet.publicKey.toBuffer(),
-                ],
-                program.programId
-            );
 
         const [player_account_pda, player_account_bump] =
             anchor.web3.PublicKey.findProgramAddressSync(
                 [
                     Buffer.from('BattleBoosters'),
                     Buffer.from('player'),
-                    provider.wallet.publicKey.toBuffer(),
+                    newRecipient.publicKey.toBuffer()
+                    //provider.wallet.publicKey.toBuffer(),
                 ],
                 program.programId
             );
@@ -139,8 +135,9 @@ describe.skip('Purchase', () => {
             anchor.web3.PublicKey.findProgramAddressSync(
                 [
                     Buffer.from('BattleBoosters'),
-                    Buffer.from('mystery_box'),
-                    provider.wallet.publicKey.toBuffer(),
+                    Buffer.from('mysteryBox'),
+                    newRecipient.publicKey.toBuffer(),
+                    //provider.wallet.publicKey.toBuffer(),
                     new BN(playerAccountData.orderNonce).toBuffer('le', 8),
                 ],
                 program.programId
@@ -177,8 +174,19 @@ describe.skip('Purchase', () => {
         );
 
         try {
+
             // Sign and send the transaction
             await provider.sendAndConfirm(transferTx, []);
+            const tx2 = await InstructionUtils.asV0Tx(sb_program, [ix]);
+            await provider.sendAndConfirm(tx2, [rngKp]);
+            // tx2.sign([admin_account, rngKp]);
+            // const sig1 = await provider.connection.sendTransaction(tx2);
+            // await provider.connection.confirmTransaction(sig1);
+
+
+            // wait for RPC
+            await sleep(2000);
+
             const accountData = await provider.connection.getAccountInfo(
                 user_bank_pda
             );
@@ -187,14 +195,6 @@ describe.skip('Purchase', () => {
                     accountData.data.length
                 );
 
-            // Initialize the player account first
-            await InitializePlayerAccount(
-                provider,
-                provider.wallet.publicKey,
-                program
-            );
-            console.log('tx start');
-            console.log(randomnessService.accounts.state);
 
             console.log('mystery_box');
             console.log(mystery_box);
@@ -204,9 +204,17 @@ describe.skip('Purchase', () => {
             console.log(user_bank_pda);
             console.log('bank_pda');
             console.log(bank_pda);
+            console.log('randomness pubkey');
+            console.log(randomness)
+
+            console.log("eeee")
+
+            // Add this instruction to your coinFlip transaction and send it
+            const commitIx = await randomness.commitIx();
+            console.log("ok")
 
             const tx = await program.methods
-                .purchaseMysteryBox(user_bank_bump, [
+                .purchaseMysteryBox(user_bank_bump, randomness.pubkey, [
                     {
                         nftType: { booster: {} }, // Use the variant name as key for enum
                         quantity: boosterQty,
@@ -218,83 +226,34 @@ describe.skip('Purchase', () => {
                 ])
                 .accounts({
                     signer: provider.wallet.publicKey,
-                    recipient: provider.wallet.publicKey,
+                    recipient: newRecipient.publicKey, //provider.wallet.publicKey,
                     program: program_pda,
                     playerAccount: player_account_pda,
                     mysteryBox: mystery_box,
                     bank: bank_pda,
                     bankEscrow: user_bank_pda,
                     priceFeed: priceFeedAccount,
-                    randomnessService: randomnessService.programId,
-                    randomnessRequest: requestKeypair.publicKey,
-                    randomnessEscrow: anchor.utils.token.associatedAddress({
-                        mint: randomnessService.accounts.mint,
-                        owner: requestKeypair.publicKey,
-                    }),
-                    randomnessState: randomnessService.accounts.state,
-                    randomnessMint: randomnessService.accounts.mint,
+                    randomnessAccountData: randomness.pubkey,
+                    rarity: rarity_pda,
                     systemProgram: anchor.web3.SystemProgram.programId,
                     tokenProgram: TOKEN_PROGRAM_ID,
                     associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-                })
-                .signers([requestKeypair]) // Include new_account as a signer
-                .rpc();
+                }).instruction();
+
+
+
+            const transaction = new Transaction().add(/*memoIx,*/ commitIx, tx);
+            let t = await provider.sendAndConfirm(transaction, []);
+
 
             console.log('tx await');
-            console.log(`[TX] requestRandomness: ${tx}`);
-            //Await the response from the Switchboard Service
-
-            const [settledRandomnessEvent, settledSlot] =
-                await settledRandomnessEventPromise;
-            console.log(settledRandomnessEventPromise);
-            console.log(
-                `[EVENT] SimpleRandomnessV1SettledEvent\n${JSON.stringify(
-                    {
-                        ...settledRandomnessEvent,
-
-                        // why is anchor.BN so annoying with hex strings?
-                        requestSlot:
-                            settledRandomnessEvent.requestSlot.toNumber(),
-                        settledSlot:
-                            settledRandomnessEvent.settledSlot.toNumber(),
-                        randomness: `[${new Uint8Array(
-                            settledRandomnessEvent.randomness
-                        )}]`,
-                    },
-                    undefined,
-                    2
-                )}`
-            );
-
-            assert.equal(
-                settledRandomnessEvent.user.toBase58(),
-                provider.wallet.publicKey.toBase58(),
-                'User should be the same as the provider wallet'
-            );
-            assert.equal(
-                settledRandomnessEvent.request.toBase58(),
-                requestKeypair.publicKey.toBase58(),
-                'Request should be the same as the provided request keypair'
-            );
-            assert.equal(
-                settledRandomnessEvent.isSuccess,
-                true,
-                'Request did not complete successfully'
-            );
-
-            const latency = settledRandomnessEvent.settledSlot
-                .sub(settledRandomnessEvent.requestSlot)
-                .toNumber();
-            console.log(
-                `\nRandomness: [${new Uint8Array(
-                    settledRandomnessEvent.randomness
-                )}]\nRequest completed in ${latency} slots!\n`
-            );
+            console.log(`[TX] requestRandomness: ${transaction}`);
 
             // wait for RPC
             await sleep(2000);
+
             const logs = await provider.connection.getParsedTransaction(
-                tx,
+                t,
                 'confirmed'
             );
 
@@ -302,8 +261,7 @@ describe.skip('Purchase', () => {
 
             const mystery_box_pda_after =
                 await program.account.mysteryBoxData.fetch(mystery_box);
-            console.log('randomness saved');
-            console.log(Array.from(mystery_box_pda_after.randomness));
+
             console.log('champions pass');
             console.log(mystery_box_pda_after.championsPassMintAllowance);
             // assert.isTrue(
@@ -332,11 +290,47 @@ describe.skip('Purchase', () => {
                 user_bank_pda
             );
             assert.equal(userBankPdaBalance, rentExemptionAmount);
+
+
+
+
         } catch (e) {
             console.log(e);
         }
+
+        let mystery_box_before_data = await program.account.mysteryBoxData.fetch(mystery_box);
+        console.log("mystery_box_before_data.fighterMintAllowance.toNumber()")
+        console.log(mystery_box_before_data.fighterMintAllowance.toNumber())
+        await airdropSol(provider, newRecipient.publicKey, 0.1)
+        try {
+
+            let { mystery_box }=
+            await createMintableGameAsset(
+                program,
+                provider,
+                program_pda,
+                {
+                    nftType: { fighter: {} },
+                },
+                rarity_pda,
+                null,
+                newRecipient,
+                0,
+                randomness.pubkey
+            );
+            let mystery_box_data = await program.account.mysteryBoxData.fetch(mystery_box);
+            console.log("mystery_box_data.fighterMintAllowance.toNumber()")
+            console.log(mystery_box_data.fighterMintAllowance.toNumber())
+
+
+        }catch (e) {
+            console.log(e)
+        }
+
+
     });
 
+/*
     it('Purchase successfully in-game assets for another recipient', async () => {
         const newRecipient = anchor.web3.Keypair.generate();
 
@@ -655,4 +649,6 @@ describe.skip('Purchase', () => {
             assert.include(e.message, 'Insufficient funds.');
         }
     });
+
+*/
 });

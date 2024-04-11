@@ -4,7 +4,6 @@ use crate::state::program::ProgramData;
 use anchor_lang::prelude::*;
 use anchor_spl::associated_token::AssociatedToken;
 use anchor_spl::token::{Mint, Token};
-use solana_randomness_service::program::SolanaRandomnessService;
 use switchboard_solana::prelude::*;
 #[derive(Accounts)]
 #[instruction(event_nonce: u64)]

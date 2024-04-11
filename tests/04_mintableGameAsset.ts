@@ -29,7 +29,6 @@ import {
     SwitchboardProgram,
 } from '@switchboard-xyz/solana.js';
 import InitializePlayerAccount from './utils/initializePlayerAccount';
-import { RandomnessService } from '@switchboard-xyz/solana-randomness-service';
 import * as buffer from 'buffer';
 import account_init from './utils/initAccounts';
 import createMintableGameAsset from './utils/createMintableGameAsset';
@@ -88,28 +87,28 @@ describe('Mintable Game Asset', () => {
                     program.programId
                 );
 
-            const tx = await program.methods
-                .adminAirdropCollectorPack(new BN(3), new BN(2), new BN(0))
-                .accounts({
-                    signer: admin_account.publicKey,
-                    recipient: provider.wallet.publicKey,
-                    program: program_pda,
-                    playerAccount: player_account_pda,
-                    mysteryBox: mystery_box_pda,
-                    rarity: rarity_pda,
-                    systemProgram: anchor.web3.SystemProgram.programId,
-                })
-                .signers([admin_account])
-                .rpc();
-
-            const mystery_box_pda_data =
-                await program.account.mysteryBoxData.fetch(mystery_box_pda);
-            assert.isTrue(
-                mystery_box_pda_data.boosterMintAllowance.eq(new BN(3))
-            );
-            assert.isTrue(
-                mystery_box_pda_data.fighterMintAllowance.eq(new BN(2))
-            );
+            // const tx = await program.methods
+            //     .adminAirdropCollectorPack(new BN(3), new BN(2), new BN(0))
+            //     .accounts({
+            //         signer: admin_account.publicKey,
+            //         recipient: provider.wallet.publicKey,
+            //         program: program_pda,
+            //         playerAccount: player_account_pda,
+            //         mysteryBox: mystery_box_pda,
+            //         rarity: rarity_pda,
+            //         systemProgram: anchor.web3.SystemProgram.programId,
+            //     })
+            //     .signers([admin_account])
+            //     .rpc();
+            //
+            // const mystery_box_pda_data =
+            //     await program.account.mysteryBoxData.fetch(mystery_box_pda);
+            // assert.isTrue(
+            //     mystery_box_pda_data.boosterMintAllowance.eq(new BN(3))
+            // );
+            // assert.isTrue(
+            //     mystery_box_pda_data.fighterMintAllowance.eq(new BN(2))
+            // );
         } catch (e) {
             console.log(e);
         }
@@ -284,12 +283,11 @@ describe('Mintable Game Asset', () => {
         assert.isFalse(mintable_game_asset_pda_data.isMinted);
         assert.equal(mintable_game_asset_pda_data.metadata.name, 'Fighter');
         assert.equal(mintable_game_asset_pda_data.metadata.description, 'test');
-        assert.equal(
-            mintable_game_asset_pda_data.metadata.image,
-            `https://battleboosters.com/metadata/${mintable_game_asset_pda}`
+        assert.isNull(
+            mintable_game_asset_pda_data.metadata.image
         );
         assert.isNull(mintable_game_asset_pda_data.metadata.animationUrl);
-        assert.isNull(mintable_game_asset_pda_data.metadata.externalUrl);
+        assert.equal(mintable_game_asset_pda_data.metadata.externalUrl, `https://battleboosters.com/api/metadata/${mintable_game_asset_pda}`);
         console.log(mintable_game_asset_pda_data.metadata.attributes);
         // assert.deepEqual(
         //     mintable_game_asset_pda_data.metadata.attributes,

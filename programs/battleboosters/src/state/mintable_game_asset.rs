@@ -50,6 +50,9 @@ pub struct CreateMintableGameAsset<'info> {
     )]
     pub mintable_game_asset_link: Box<Account<'info, MintableGameAssetLinkData>>,
 
+    /// CHECK: The account's data is validated manually within the handler.
+    pub randomness_account_data: AccountInfo<'info>,
+
     pub system_program: Program<'info, System>,
 }
 
@@ -85,7 +88,7 @@ pub struct MintableGameAssetLinkData {
 pub struct NftMetadata {
     pub name: String,
     pub description: String,
-    pub image: String,
+    pub image: Option<String>,
     pub animation_url: Option<String>,
     pub external_url: Option<String>,
     pub attributes: Vec<Attribute>,

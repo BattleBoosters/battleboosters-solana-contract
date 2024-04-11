@@ -10,7 +10,8 @@ const createMintableGameAsset = async function (
     rarity_pda,
     custom_player_game_asset_link_nonce,
     signer,
-    mystery_box_nonce_nonce
+    mystery_box_nonce_nonce,
+    randomness_pda
 ) {
     let signer_ = signer
         ? signer.publicKey.toBuffer()
@@ -82,6 +83,7 @@ const createMintableGameAsset = async function (
             rarity: rarity_pda,
             mintableGameAssetLink: mintable_game_asset_link_pda,
             mintableGameAsset: mintable_game_asset_pda,
+            randomnessAccountData: randomness_pda,
             systemProgram: anchor.web3.SystemProgram.programId,
         })
         .signers(signers)
