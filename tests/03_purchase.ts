@@ -107,6 +107,8 @@ describe.only('Purchase', () => {
                 program.programId
             );
         const newRecipient = anchor.web3.Keypair.generate();
+        console.log("newRecipient.publicKey")
+        console.log(newRecipient.publicKey)
         // Initialize the player account first
         await InitializePlayerAccount(
             provider,
@@ -185,7 +187,7 @@ describe.only('Purchase', () => {
 
 
             // wait for RPC
-            await sleep(2000);
+            await sleep(10000);
 
             const accountData = await provider.connection.getAccountInfo(
                 user_bank_pda
@@ -239,6 +241,7 @@ describe.only('Purchase', () => {
                     tokenProgram: TOKEN_PROGRAM_ID,
                     associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
                 }).instruction();
+
 
 
 
@@ -303,7 +306,8 @@ describe.only('Purchase', () => {
         console.log(mystery_box_before_data.fighterMintAllowance.toNumber())
         await airdropSol(provider, newRecipient.publicKey, 0.1)
         try {
-
+            let mystery_box_nonce = new BN(playerAccountData.orderNonce).toNumber();
+            const revealIx = await randomness.revealIx();
             let { mystery_box }=
             await createMintableGameAsset(
                 program,
@@ -315,12 +319,14 @@ describe.only('Purchase', () => {
                 rarity_pda,
                 null,
                 newRecipient,
-                0,
-                randomness.pubkey
+                mystery_box_nonce,
+                randomness.pubkey,
+                revealIx
             );
             let mystery_box_data = await program.account.mysteryBoxData.fetch(mystery_box);
             console.log("mystery_box_data.fighterMintAllowance.toNumber()")
             console.log(mystery_box_data.fighterMintAllowance.toNumber())
+
 
 
         }catch (e) {

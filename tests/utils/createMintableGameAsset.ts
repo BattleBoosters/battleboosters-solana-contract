@@ -2,6 +2,7 @@ import * as anchor from '@coral-xyz/anchor';
 import { BN } from '@coral-xyz/anchor';
 import { sleep } from '@switchboard-xyz/common';
 import { Battleboosters } from '../../target/types/battleboosters';
+import {Transaction} from "@solana/web3.js";
 const createMintableGameAsset = async function (
     program: anchor.Program<Battleboosters>,
     provider: anchor.AnchorProvider,
@@ -11,7 +12,8 @@ const createMintableGameAsset = async function (
     custom_player_game_asset_link_nonce,
     signer,
     mystery_box_nonce_nonce,
-    randomness_pda
+    randomness_pda,
+    revealIx: anchor.web3.TransactionInstruction
 ) {
     let signer_ = signer
         ? signer.publicKey.toBuffer()
@@ -56,7 +58,7 @@ const createMintableGameAsset = async function (
             program.programId
         );
 
-    const [mystery_box, mystery_box_bump] =
+    const [mystery_box_pda, mystery_box_bump] =
         anchor.web3.PublicKey.findProgramAddressSync(
             [
                 Buffer.from('BattleBoosters'),
@@ -69,6 +71,7 @@ const createMintableGameAsset = async function (
 
     let signers = signer ? [signer] : [];
 
+
     const tx = await program.methods
         .createMintableGameAsset(
             new BN(player_game_asset_link_nonce),
@@ -79,17 +82,22 @@ const createMintableGameAsset = async function (
             signer: signer ? signer.publicKey : provider.wallet.publicKey,
             program: program_pda,
             playerAccount: player_account_pda,
-            mysteryBox: mystery_box,
+            mysteryBox: mystery_box_pda,
             rarity: rarity_pda,
             mintableGameAssetLink: mintable_game_asset_link_pda,
             mintableGameAsset: mintable_game_asset_pda,
             randomnessAccountData: randomness_pda,
             systemProgram: anchor.web3.SystemProgram.programId,
-        })
-        .signers(signers)
-        .rpc();
+        }).instruction()
 
-    //
+    const transaction = new Transaction();
+
+    if (revealIx){
+        transaction.add(revealIx)
+    }
+    transaction.add(tx)
+    await provider.sendAndConfirm(transaction, signers);
+
     // console.log(tx)
     // await sleep(2000);
     // const logs = await provider.connection.getParsedTransaction(
@@ -100,7 +108,7 @@ const createMintableGameAsset = async function (
     // console.log(JSON.stringify(logs?.meta?.logMessages, undefined, 2));
 
     return {
-        mystery_box,
+
         mintable_game_asset_pda,
         player_game_asset_link_pda: mintable_game_asset_link_pda,
         player_account_pda,

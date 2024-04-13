@@ -303,7 +303,7 @@ pub fn purchase_mystery_box(
         match request.nft_type {
             NftType::Booster => {
                 // update the quantity of fighter mint allowance
-                mystery_box.fighter_mint_allowance += request.quantity.clone();
+                mystery_box.booster_mint_allowance += request.quantity.clone();
                 total_usd += request
                     .quantity
                     .checked_mul(program.booster_price.clone())
@@ -311,7 +311,7 @@ pub fn purchase_mystery_box(
             }
             NftType::Fighter => {
                 // update the quantity of fighter mint allowance
-                mystery_box.booster_mint_allowance += request
+                mystery_box.fighter_mint_allowance += request
                     .quantity
                     .checked_mul(program.fighter_pack_amount.clone() as u64)
                     .unwrap();
@@ -733,6 +733,7 @@ pub fn create_mintable_game_asset(
             let randomness = randomness_data
                 .get_value(&clock)
                 .unwrap_or_else(|_| [0u8; 32]);
+            msg!("Randomness {:?}", randomness);
             // let randomness = mystery_box
             //     .randomness
             //     .clone()
@@ -852,6 +853,7 @@ pub fn create_mintable_game_asset(
             let randomness = randomness_data
                 .get_value(&clock)
                 .unwrap_or_else(|_| [0u8; 32]);
+            msg!("Randomness {:?}", randomness);
 
             let public_key_bytes = signer.key().to_bytes();
 

@@ -24,4 +24,4 @@ switchboard-solana = "0.29.99"
 solana-program = {version = "1.16.27"}
 sha2 = "0.10.8"
 switchboard-on-demand = "0.1.6"
-bytemuck = "1.15.0"
+
