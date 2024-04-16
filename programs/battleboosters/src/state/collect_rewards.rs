@@ -8,7 +8,6 @@ use crate::state::rarity::RarityData;
 use anchor_lang::prelude::*;
 
 #[derive(Accounts)]
-#[instruction(event_nonce: u64, rank_nonce: u64)]
 pub struct CollectRewards<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -23,13 +22,13 @@ pub struct CollectRewards<'info> {
     pub bank: AccountInfo<'info>,
     #[account(
     mut,
-    seeds = [MY_APP_PREFIX, EVENT, event_nonce.to_le_bytes().as_ref()],
+    seeds = [MY_APP_PREFIX, EVENT, event.nonce.to_le_bytes().as_ref()],
     bump
     )]
     pub event: Box<Account<'info, EventData>>,
     #[account(
     mut,
-    seeds = [MY_APP_PREFIX, RANK, event.key().as_ref(), rank_nonce.to_le_bytes().as_ref()],
+    seeds = [MY_APP_PREFIX, RANK, event.key().as_ref(), rank.nonce.to_le_bytes().as_ref()],
     bump
     )]
     pub rank: Account<'info, RankData>,

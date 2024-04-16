@@ -27,14 +27,13 @@ pub struct CreateFightCard<'info> {
     payer = creator,
     seeds = [MY_APP_PREFIX, FIGHT_CARD, event.key().as_ref(), event.fight_card_nonce.to_le_bytes().as_ref()],
     bump,
-    space = 8 + 32 + 8 + 1 + (1 + (24 * 4) ) + (1 + (24 * 4) ) + 9 + 2 + 2 + 50
+    space = 8 + 32 + 8 + 1 + (1 + (24 * 4) ) + (1 + (24 * 4) ) + 9 + 2 + 2 + 50 + 8
     )]
     pub fight_card: Account<'info, FightCardData>,
     pub system_program: Program<'info, System>,
 }
 
 #[derive(Accounts)]
-#[instruction(event_nonce: u64, fight_card_nonce: u8)]
 pub struct UpdateFightCard<'info> {
     #[account(mut)]
     pub creator: Signer<'info>,
@@ -46,13 +45,13 @@ pub struct UpdateFightCard<'info> {
     pub program: Account<'info, ProgramData>,
     #[account(
     mut,
-    seeds = [MY_APP_PREFIX, EVENT, event_nonce.to_le_bytes().as_ref()],
+    seeds = [MY_APP_PREFIX, EVENT, event.nonce.to_le_bytes().as_ref()],
     bump
     )]
     pub event: Account<'info, EventData>,
     #[account(
     mut,
-    seeds = [MY_APP_PREFIX, FIGHT_CARD, event.key().as_ref(), fight_card_nonce.to_le_bytes().as_ref()],
+    seeds = [MY_APP_PREFIX, FIGHT_CARD, event.key().as_ref(), fight_card.nonce.to_le_bytes().as_ref()],
     bump
     )]
     pub fight_card: Account<'info, FightCardData>,
@@ -80,6 +79,8 @@ pub struct FightCardData {
     /// Winner of the fight
     /// This is None in case of a draw when fight is finished
     pub winner: Option<FighterColorSide>,
+    /// Nonce of the `fight_card`
+    pub nonce: u8,
 }
 #[account]
 pub struct FightCardLinkData {

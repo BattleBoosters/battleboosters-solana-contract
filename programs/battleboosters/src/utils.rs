@@ -90,7 +90,6 @@ pub fn process_and_verify_game_asset_type(
     fight_card_link: &mut Account<FightCardLinkData>,
     event_link: &mut Account<EventLinkData>,
     require_tournament_type: Option<&TournamentType>,
-    game_asset_nonce: Option<u64>,
 ) -> Result<()> {
     if let Some(mintable_asset) = mintable_game_asset {
         for attr in mintable_asset.metadata.attributes.iter() {
@@ -99,40 +98,35 @@ pub fn process_and_verify_game_asset_type(
                     require!(
                         FighterType::from_name(&attr.value).is_some()
                             && fight_card_link.fighter_used.is_none()
-                            && fight_card_link.fighter_nonce_tracker.is_none()
-                            && game_asset_nonce.is_some(),
+                            && fight_card_link.fighter_nonce_tracker.is_none(),
                         ErrorCode::FightCardLinkedToGameAsset
                     );
 
                     fight_card_link.fighter_used = Some(mintable_asset.to_account_info().key());
-                    fight_card_link.fighter_nonce_tracker = Some(game_asset_nonce.unwrap().clone());
+                    fight_card_link.fighter_nonce_tracker = Some(mintable_asset.nonce);
                 }
                 "Booster Type" => match BoosterType::from_name(&attr.value) {
                     Some(BoosterType::Points) => {
                         require!(
                             fight_card_link.points_booster_used.is_none()
-                                && fight_card_link.points_booster_nonce_tracker.is_none()
-                                && game_asset_nonce.is_some(),
+                                && fight_card_link.points_booster_nonce_tracker.is_none(),
                             ErrorCode::FightCardLinkedToGameAsset
                         );
 
                         fight_card_link.points_booster_used =
                             Some(mintable_asset.to_account_info().key());
-                        fight_card_link.points_booster_nonce_tracker =
-                            Some(game_asset_nonce.unwrap().clone());
+                        fight_card_link.points_booster_nonce_tracker = Some(mintable_asset.nonce);
                     }
                     Some(BoosterType::Shield) => {
                         require!(
                             fight_card_link.shield_booster_used.is_none()
-                                && fight_card_link.shield_booster_nonce_tracker.is_none()
-                                && game_asset_nonce.is_some(),
+                                && fight_card_link.shield_booster_nonce_tracker.is_none(),
                             ErrorCode::FightCardLinkedToGameAsset
                         );
 
                         fight_card_link.shield_booster_used =
                             Some(mintable_asset.to_account_info().key());
-                        fight_card_link.shield_booster_nonce_tracker =
-                            Some(game_asset_nonce.unwrap().clone());
+                        fight_card_link.shield_booster_nonce_tracker = Some(mintable_asset.nonce);
                     }
                     // Some(BoosterType::Energy) => {
                     //     require!(
@@ -156,10 +150,17 @@ pub fn process_and_verify_game_asset_type(
     Ok(())
 }
 
-pub fn set_fight_card_properties(fight_card: &mut FightCardData, params: &FightCardData) {
+pub fn set_fight_card_properties(
+    fight_card: &mut FightCardData,
+    params: &FightCardData,
+    fight_card_nonce: Option<u8>,
+) {
     fight_card.event_pubkey = params.event_pubkey;
     fight_card.event_nonce_tracker = params.event_nonce_tracker.clone();
     fight_card.title_fight = params.title_fight.clone();
+    if let Some(nonce) = fight_card_nonce {
+        fight_card.nonce = nonce;
+    }
 
     if let Some(result) = params.result.clone() {
         fight_card.result = Some(result);

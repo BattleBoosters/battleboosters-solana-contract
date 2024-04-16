@@ -1218,10 +1218,10 @@
     protobufjs "^7.2.4"
     yaml "^2.2.1"
 
-"@switchboard-xyz/on-demand@^1.0.20":
-  version "1.0.20"
-  resolved "https://registry.yarnpkg.com/@switchboard-xyz/on-demand/-/on-demand-1.0.20.tgz#832055a4cf955b2aa03bad9d4a1e5ba1a2ef16d4"
-  integrity sha512-4Fn5t3RXnM91QlDgg0ZV010msoPtU7ILNiJJS77Bm4nQxKr28IOeJJ7YwLNGyV7yX2BB4ZWG/RoE/7PGO0aocw==
+"@switchboard-xyz/on-demand@^1.0.22":
+  version "1.0.22"
+  resolved "https://registry.yarnpkg.com/@switchboard-xyz/on-demand/-/on-demand-1.0.22.tgz#ecef7196de713bb2d215d4b18e82bf19f7e944ef"
+  integrity sha512-a37iduBwbaM255i3xNyGXT8QhKeqfLu/dNjM0NjMLSqZufU97jdN1ucbyUak8wLDML3REnCU6DVTcfv1eusL8A==
   dependencies:
     "@coral-xyz/anchor" "^0.29.0"
     "@solana/spl-token" "^0.4.1"

@@ -13,7 +13,7 @@ use anchor_lang::prelude::*;
 use switchboard_solana::prelude::*;
 
 #[derive(Accounts)]
-#[instruction(rank_nonce: u64, event_nonce: u64, fight_card_nonce: u8, fighter_asset_link_nonce: u64, fighter_type: FighterType)]
+#[instruction(fighter_type: FighterType)]
 pub struct DetermineRankingPoints<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -24,13 +24,13 @@ pub struct DetermineRankingPoints<'info> {
     */
     #[account(
     mut,
-    seeds = [MY_APP_PREFIX, EVENT, event_nonce.to_le_bytes().as_ref()],
+    seeds = [MY_APP_PREFIX, EVENT, event.nonce.to_le_bytes().as_ref()],
     bump
     )]
     pub event: Box<Account<'info, EventData>>,
     #[account(
     mut,
-    seeds = [MY_APP_PREFIX, RANK, event.key().as_ref(), rank_nonce.to_le_bytes().as_ref()],
+    seeds = [MY_APP_PREFIX, RANK, event.key().as_ref(), rank.nonce.to_le_bytes().as_ref()],
     bump
     )]
     pub rank: Box<Account<'info, RankData>>,
@@ -42,13 +42,13 @@ pub struct DetermineRankingPoints<'info> {
     pub player_account: Box<Account<'info, PlayerData>>,
     #[account(
     mut,
-    seeds = [MY_APP_PREFIX, FIGHT_CARD, event.key().as_ref(), fight_card_nonce.to_le_bytes().as_ref()],
+    seeds = [MY_APP_PREFIX, FIGHT_CARD, event.key().as_ref(), fight_card.nonce.to_le_bytes().as_ref()],
     bump,
     )]
     pub fight_card: Box<Account<'info, FightCardData>>,
     #[account(
     mut,
-    seeds = [MY_APP_PREFIX, FIGHT_CARD, event.key().as_ref(), fight_card_nonce.to_le_bytes().as_ref(), rank.player_account.key().as_ref()],
+    seeds = [MY_APP_PREFIX, FIGHT_CARD, event.key().as_ref(), fight_card.key().as_ref(), rank.player_account.key().as_ref()],
     bump
     )]
     pub fight_card_link: Box<Account<'info, FightCardLinkData>>,
@@ -64,7 +64,7 @@ pub struct DetermineRankingPoints<'info> {
 
     #[account(
     mut,
-    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, fighter_asset_link_nonce.to_le_bytes().as_ref(), signer.key().as_ref()],
+    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, fighter_asset_link.nonce.to_le_bytes().as_ref(), signer.key().as_ref()],
     bump,
     )]
     pub fighter_asset_link: Box<Account<'info, MintableGameAssetLinkData>>,

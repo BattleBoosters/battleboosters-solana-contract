@@ -121,15 +121,15 @@ pub mod battleboosters {
         processor::purchase_mystery_box(ctx, bank_escrow_bump, randomness_account, requests)
     }
 
-    pub fn consume_randomness(
-        ctx: Context<ConsumeRandomness>,
-        order_nonce: u64,
-        // bank_escrow_bump: u8,
-        // total_lamports: u64,
-        result: Vec<u8>,
-    ) -> Result<()> {
-        processor::consume_randomness(ctx, order_nonce, result)
-    }
+    // pub fn consume_randomness(
+    //     ctx: Context<ConsumeRandomness>,
+    //     order_nonce: u64,
+    //     // bank_escrow_bump: u8,
+    //     // total_lamports: u64,
+    //     result: Vec<u8>,
+    // ) -> Result<()> {
+    //     processor::consume_randomness(ctx, order_nonce, result)
+    // }
 
     // TODO: REMOVE BEFORE MAINNET LAUNCH
     /// ONLY FOR TEST PURPOSE
@@ -170,15 +170,9 @@ pub mod battleboosters {
     pub fn create_mintable_game_asset(
         ctx: Context<CreateMintableGameAsset>,
         mintable_game_asset_link_nonce: u64, // used on instruction
-        mystery_box_nonce: u64,
         request: OpenRequest,
     ) -> Result<()> {
-        processor::create_mintable_game_asset(
-            ctx,
-            mintable_game_asset_link_nonce,
-            mystery_box_nonce,
-            request,
-        )
+        processor::create_mintable_game_asset(ctx, mintable_game_asset_link_nonce, request)
     }
 
     pub fn create_new_event(
@@ -193,20 +187,12 @@ pub mod battleboosters {
 
     pub fn update_event(
         ctx: Context<UpdateEvent>,
-        event_nonce: u64,
         start_date: i64,
         end_date: i64,
         tournament_type: TournamentType,
         rank_reward: Vec<RankReward>,
     ) -> Result<()> {
-        processor::update_event(
-            ctx,
-            event_nonce,
-            start_date,
-            end_date,
-            tournament_type,
-            rank_reward,
-        )
+        processor::update_event(ctx, start_date, end_date, tournament_type, rank_reward)
     }
 
     pub fn create_new_fight_card(
@@ -217,13 +203,8 @@ pub mod battleboosters {
         processor::create_new_fight_card(ctx, event_nonce, params)
     }
 
-    pub fn update_fight_card(
-        ctx: Context<UpdateFightCard>,
-        event_nonce: u64,
-        fight_card_id: u8,
-        params: FightCardData,
-    ) -> Result<()> {
-        processor::update_fight_card(ctx, event_nonce, fight_card_id, params)
+    pub fn update_fight_card(ctx: Context<UpdateFightCard>, params: FightCardData) -> Result<()> {
+        processor::update_fight_card(ctx, params)
     }
 
     /*
@@ -231,44 +212,17 @@ pub mod battleboosters {
     */
     pub fn join_fight_card(
         ctx: Context<JoinFightCard>,
-        event_nonce: u64,                        // Used in instruction
-        fight_card_nonce: u8,                    // Used in instruction
-        fighter_asset_nonce: u64,                // Used in instruction
-        energy_booster_asset_nonce: Option<u64>, // Used in instruction
-        shield_booster_asset_nonce: Option<u64>, // Used in instruction
-        points_booster_asset_nonce: Option<u64>, // Used in instruction
-        fighter_link_nonce: u64,                 // Used in instruction
-        energy_booster_link_nonce: Option<u64>,  // Used in instruction
-        shield_booster_link_nonce: Option<u64>,  // Used in instruction
-        points_booster_link_nonce: Option<u64>,  // Used in instruction
         fighter_color_side: FighterColorSide,
     ) -> Result<()> {
-        processor::join_fight_card(
-            ctx,
-            event_nonce,
-            fight_card_nonce,
-            fighter_asset_nonce,
-            energy_booster_asset_nonce,
-            shield_booster_asset_nonce,
-            points_booster_asset_nonce,
-            fighter_link_nonce,
-            energy_booster_link_nonce,
-            shield_booster_link_nonce,
-            points_booster_link_nonce,
-            fighter_color_side,
-        )
+        processor::join_fight_card(ctx, fighter_color_side)
     }
 
     /*
        TODO: Admin resolve ranking, Calculate points
     */
 
-    pub fn collect_rewards(
-        ctx: Context<CollectRewards>,
-        event_nonce: u64,
-        rank_nonce: u64,
-    ) -> Result<()> {
-        processor::collect_rewards(ctx, event_nonce, rank_nonce)
+    pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
+        processor::collect_rewards(ctx)
     }
 
     // pub fn event_request_randomness(
@@ -285,31 +239,15 @@ pub mod battleboosters {
         processor::consume_randomness_event(ctx, event_nonce, result)
     }
 
-    pub fn admin_update_rank(
-        ctx: Context<UpdateRank>,
-        event_nonce: u64, // Used in instruction
-        rank_nonce: u64,  // Used in instruction
-        ranking: u64,
-    ) -> Result<()> {
-        processor::admin_update_rank(ctx, event_nonce, rank_nonce, ranking)
+    pub fn admin_update_rank(ctx: Context<UpdateRank>, ranking: u64) -> Result<()> {
+        processor::admin_update_rank(ctx, ranking)
     }
 
     pub fn determine_ranking_points(
         ctx: Context<DetermineRankingPoints>,
-        rank_nonce: u64,
-        event_nonce: u64,
-        fight_card_nonce: u8,
-        mintable_game_asset_link_nonce: u64,
         fighter_type: FighterType,
     ) -> Result<()> {
-        processor::determine_ranking_points(
-            ctx,
-            rank_nonce,
-            event_nonce,
-            fight_card_nonce,
-            mintable_game_asset_link_nonce,
-            fighter_type,
-        )
+        processor::determine_ranking_points(ctx, fighter_type)
     }
 
     /*

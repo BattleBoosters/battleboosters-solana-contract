@@ -17,9 +17,9 @@ pub struct InitializeMysteryBox<'info> {
     #[account(
         init,
         payer = creator,
-        seeds = [MY_APP_PREFIX, MYSTERY_BOX, player_pubkey.as_ref(), player_account.order_nonce.to_le_bytes().as_ref()],
+        seeds = [MY_APP_PREFIX, MYSTERY_BOX, player_account.order_nonce.to_le_bytes().as_ref(), player_pubkey.as_ref()],
         bump,
-        space = 128 + 32
+        space = 128 + 32 + 8
     )]
     pub mystery_box: Account<'info, MysteryBoxData>,
     pub system_program: Program<'info, System>,
@@ -33,6 +33,8 @@ pub struct MysteryBoxData {
     pub randomness_account: Pubkey, // Reference to the Switchboard randomness account
     pub randomness: Option<Vec<u8>>,
     pub probability_tier: TierProbabilities,
+    /// Nonce of the `mystery_box`
+    pub nonce: u64,
 }
 // {
 // "attributes": [

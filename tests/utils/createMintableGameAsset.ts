@@ -75,7 +75,6 @@ const createMintableGameAsset = async function (
     const tx = await program.methods
         .createMintableGameAsset(
             new BN(player_game_asset_link_nonce),
-            new BN(mystery_box_nonce_nonce),
             variant
         )
         .accounts({

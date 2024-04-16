@@ -8,7 +8,7 @@ use anchor_lang::{account, AnchorDeserialize, AnchorSerialize};
 use solana_program::pubkey::Pubkey;
 
 #[derive(Accounts)]
-#[instruction(mintable_game_asset_link_nonce: u64, mystery_box_nonce: u64)]
+#[instruction(mintable_game_asset_link_nonce: u64)]
 pub struct CreateMintableGameAsset<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -22,7 +22,7 @@ pub struct CreateMintableGameAsset<'info> {
     pub player_account: Box<Account<'info, PlayerData>>,
     #[account(
     mut,
-    seeds = [MY_APP_PREFIX, MYSTERY_BOX, signer.key().as_ref(), mystery_box_nonce.to_le_bytes().as_ref()],
+    seeds = [MY_APP_PREFIX, MYSTERY_BOX, signer.key().as_ref(), mystery_box.nonce.to_le_bytes().as_ref()],
     bump,
     )]
     pub mystery_box: Box<Account<'info, MysteryBoxData>>,
@@ -36,7 +36,7 @@ pub struct CreateMintableGameAsset<'info> {
     init,
     payer = signer,
     seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, program.mintable_game_asset_nonce.to_le_bytes().as_ref()],
-    space = 8 + 1 + 1 + 32 + (4 + 20) + (4 + 100) + (4 + 100) + (4 + 100) + (4 + 100) + (4 + 480),
+    space = 8 + 1 + 1 + 32 + (4 + 20) + (4 + 100) + (4 + 100) + (4 + 100) + (4 + 100) + (4 + 480) + 8,
     bump
     )]
     pub mintable_game_asset: Box<Account<'info, MintableGameAssetData>>,
@@ -45,7 +45,7 @@ pub struct CreateMintableGameAsset<'info> {
     init_if_needed,
     payer = signer,
     seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, mintable_game_asset_link_nonce.to_le_bytes().as_ref(), signer.key().as_ref()],
-    space = 8 + 32 + 8 + 1,
+    space = 8 + 32 + 8 + 1 + 8 + 8,
     bump,
     )]
     pub mintable_game_asset_link: Box<Account<'info, MintableGameAssetLinkData>>,
@@ -69,6 +69,8 @@ pub struct MintableGameAssetData {
     pub owner: Option<Pubkey>,
     /// The metadata on-chain, which allow dynamic use on our game
     pub metadata: NftMetadata,
+    /// Nonce of the `mintable_game_asset`
+    pub nonce: u64,
 }
 
 #[account]
@@ -81,6 +83,8 @@ pub struct MintableGameAssetLinkData {
     /// The PDA becomes eligible upon minting and withdrawing a `mintable_game_asset`,
     /// which break the link with the last `mintable_game_asset_nonce`.
     pub is_free: bool,
+    /// Nonce of the `mintable_game_asset_link`
+    pub nonce: u64,
 }
 
 /// Metatada Standards copy on-chain

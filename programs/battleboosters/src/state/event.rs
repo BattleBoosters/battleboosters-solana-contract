@@ -27,7 +27,6 @@ pub struct CreateEvent<'info> {
 }
 
 #[derive(Accounts)]
-#[instruction(event_nonce: u64)]
 pub struct UpdateEvent<'info> {
     #[account(mut)]
     pub creator: Signer<'info>,
@@ -39,7 +38,7 @@ pub struct UpdateEvent<'info> {
     pub program: Box<Account<'info, ProgramData>>,
     #[account(
     mut,
-    seeds = [MY_APP_PREFIX, EVENT, event_nonce.to_le_bytes().as_ref()],
+    seeds = [MY_APP_PREFIX, EVENT, event.nonce.to_le_bytes().as_ref()],
     bump
     )]
     pub event: Box<Account<'info, EventData>>,
@@ -60,7 +59,7 @@ pub struct InitializeEventLink<'info> {
     #[account(
     init,
     payer = creator,
-    space = 111,
+    space = 120,
     seeds = [MY_APP_PREFIX, EVENT, event.key().as_ref(), creator.key().as_ref()],
     bump
     )]
@@ -84,7 +83,7 @@ pub struct InitializeEventLink<'info> {
     payer = creator,
     seeds = [MY_APP_PREFIX, RANK, event.key().as_ref(), event.rank_nonce.to_le_bytes().as_ref()],
     bump,
-    space = 8 + 33 + 9 + 50
+    space = 8 + 33 + 9 + 50 + 8
     )]
     pub rank: Box<Account<'info, RankData>>,
     pub system_program: Program<'info, System>,
@@ -127,6 +126,8 @@ pub struct EventData {
     pub rank_nonce: u64,
     /// Represent the randomness, will be used to derive child randomness for collecting mystery box
     pub randomness: Option<Vec<u8>>,
+    /// Nonce of the `event`
+    pub nonce: u64,
 }
 
 /*

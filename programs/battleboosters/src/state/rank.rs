@@ -35,7 +35,6 @@ use anchor_lang::prelude::*;
 // }
 
 #[derive(Accounts)]
-#[instruction(event_nonce:u64, rank_nonce: u64)]
 pub struct UpdateRank<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -47,13 +46,13 @@ pub struct UpdateRank<'info> {
     pub program: Box<Account<'info, ProgramData>>,
     #[account(
     mut,
-    seeds = [MY_APP_PREFIX, EVENT, event_nonce.to_le_bytes().as_ref()],
+    seeds = [MY_APP_PREFIX, EVENT, event.nonce.to_le_bytes().as_ref()],
     bump
     )]
     pub event: Box<Account<'info, EventData>>,
     #[account(
     mut,
-    seeds = [MY_APP_PREFIX, RANK, event.key().as_ref(), rank_nonce.to_le_bytes().as_ref()],
+    seeds = [MY_APP_PREFIX, RANK, event.key().as_ref(), rank.nonce.to_le_bytes().as_ref()],
     bump,
     )]
     pub rank: Box<Account<'info, RankData>>,
@@ -65,4 +64,5 @@ pub struct RankData {
     pub rank: Option<u64>,
     pub total_points: Option<u64>,
     pub is_consumed: bool,
+    pub nonce: u64,
 }

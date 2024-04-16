@@ -377,7 +377,9 @@ pub fn purchase_mystery_box(
     // Set the collector pack to default `champion_s_pass_mint_allowance`
     mystery_box.champions_pass_mint_allowance = 0;
     // Set the randomness account
-    mystery_box.randomness_account = randomness_account;
+    mystery_box.randomness_account = ctx.accounts.randomness_account_data.to_account_info().key();
+    // Set the order nonce to regenerate the PDA
+    mystery_box.nonce = player_account.order_nonce;
 
     if let Some(probability_tier) = rarity.get_probability_by_tier(TierType::Tier3) {
         mystery_box.probability_tier = probability_tier;
@@ -390,77 +392,77 @@ pub fn purchase_mystery_box(
 
     Ok(())
 }
-pub fn consume_randomness(
-    ctx: Context<ConsumeRandomness>,
-    _order_nonce: u64, // Used in instruction
-    // bank_escrow_bump: u8,
-    // total_lamports: u64,
-    result: Vec<u8>,
-) -> Result<()> {
-    msg!("Randomness received: {:?}", result);
-    //msg!("order_nonce: {:?}", order_nonce);
-    msg!(
-        "fighter mint allowance:  {:?}",
-        ctx.accounts.mystery_box.fighter_mint_allowance
-    );
-    msg!(
-        "booster mint allowance:  {:?}",
-        ctx.accounts.mystery_box.booster_mint_allowance
-    );
-    let mystery_box = &mut ctx.accounts.mystery_box;
-    mystery_box.randomness = Some(result);
-
-    // // let signer = &ctx.accounts.signer.key();
-    // let bank = &mut ctx.accounts.bank;
-    // let bank_escrow = &mut ctx.accounts.bank_escrow;
-    // let bank_escrow_balance = bank_escrow.lamports();
-    // msg!("lamport balance: {}",bank_escrow_balance);
-    // msg!("total lamports to send: {}",total_lamports);
-    // if bank_escrow_balance < total_lamports {
-    //      msg!(
-    //          "Insufficient funds: required {}, available {}.",
-    //          total_lamports,
-    //          bank_escrow_balance
-    //      );
-    //      return Err(ErrorCode::InsufficientFunds.into());
-    //  }
-    // bank_escrow.sub_lamports(total_lamports)?;
-    // bank.add_lamports(total_lamports)?;
-
-    // ctx.accounts.bank_escrow.sub_lamports(total_lamports)?;
-    // ctx.accounts.bank.add_lamports(total_lamports)?;
-    // **ctx.accounts.bank_escrow.to_account_info().try_borrow_mut_lamports()? -= total_lamports;
-    // **ctx.accounts.bank.to_account_info().try_borrow_mut_lamports()? += total_lamports;
-    //
-    //Calculate the minimum balance required to remain rent-exempt
-    // let rent_exempt_balance = Rent::get()?.minimum_balance(bank_escrow.data_len());
-    // // Calculate the maximum amount that can be safely withdrawn while keeping the account rent-exempt
-    // let withdrawable_balance = bank_escrow_balance.saturating_sub(rent_exempt_balance);
-
-    // Construct the transfer instruction
-
-    // let transfer_instruction = system_instruction::transfer(
-    //     &bank_escrow.key(),
-    //     &bank.key(),
-    //     // Withdraw the full balance
-    //     total_lamports, // Amount in lamports to transfer
-    // );
-    //
-    // let bank_escrow_seeds = [MY_APP_PREFIX, BANK, signer.as_ref(), &[bank_escrow_bump]];
-
-    //Perform the transfer
-    // invoke_signed(
-    //     &transfer_instruction,
-    //     &[
-    //         bank_escrow.to_account_info(),
-    //         bank.to_account_info(),
-    //         ctx.accounts.system_program.to_account_info(),
-    //     ],
-    //     &[&bank_escrow_seeds],
-    // )?;
-
-    Ok(())
-}
+// pub fn consume_randomness(
+//     ctx: Context<ConsumeRandomness>,
+//     _order_nonce: u64, // Used in instruction
+//     // bank_escrow_bump: u8,
+//     // total_lamports: u64,
+//     result: Vec<u8>,
+// ) -> Result<()> {
+//     msg!("Randomness received: {:?}", result);
+//     //msg!("order_nonce: {:?}", order_nonce);
+//     msg!(
+//         "fighter mint allowance:  {:?}",
+//         ctx.accounts.mystery_box.fighter_mint_allowance
+//     );
+//     msg!(
+//         "booster mint allowance:  {:?}",
+//         ctx.accounts.mystery_box.booster_mint_allowance
+//     );
+//     let mystery_box = &mut ctx.accounts.mystery_box;
+//     mystery_box.randomness = Some(result);
+//
+//     // // let signer = &ctx.accounts.signer.key();
+//     // let bank = &mut ctx.accounts.bank;
+//     // let bank_escrow = &mut ctx.accounts.bank_escrow;
+//     // let bank_escrow_balance = bank_escrow.lamports();
+//     // msg!("lamport balance: {}",bank_escrow_balance);
+//     // msg!("total lamports to send: {}",total_lamports);
+//     // if bank_escrow_balance < total_lamports {
+//     //      msg!(
+//     //          "Insufficient funds: required {}, available {}.",
+//     //          total_lamports,
+//     //          bank_escrow_balance
+//     //      );
+//     //      return Err(ErrorCode::InsufficientFunds.into());
+//     //  }
+//     // bank_escrow.sub_lamports(total_lamports)?;
+//     // bank.add_lamports(total_lamports)?;
+//
+//     // ctx.accounts.bank_escrow.sub_lamports(total_lamports)?;
+//     // ctx.accounts.bank.add_lamports(total_lamports)?;
+//     // **ctx.accounts.bank_escrow.to_account_info().try_borrow_mut_lamports()? -= total_lamports;
+//     // **ctx.accounts.bank.to_account_info().try_borrow_mut_lamports()? += total_lamports;
+//     //
+//     //Calculate the minimum balance required to remain rent-exempt
+//     // let rent_exempt_balance = Rent::get()?.minimum_balance(bank_escrow.data_len());
+//     // // Calculate the maximum amount that can be safely withdrawn while keeping the account rent-exempt
+//     // let withdrawable_balance = bank_escrow_balance.saturating_sub(rent_exempt_balance);
+//
+//     // Construct the transfer instruction
+//
+//     // let transfer_instruction = system_instruction::transfer(
+//     //     &bank_escrow.key(),
+//     //     &bank.key(),
+//     //     // Withdraw the full balance
+//     //     total_lamports, // Amount in lamports to transfer
+//     // );
+//     //
+//     // let bank_escrow_seeds = [MY_APP_PREFIX, BANK, signer.as_ref(), &[bank_escrow_bump]];
+//
+//     //Perform the transfer
+//     // invoke_signed(
+//     //     &transfer_instruction,
+//     //     &[
+//     //         bank_escrow.to_account_info(),
+//     //         bank.to_account_info(),
+//     //         ctx.accounts.system_program.to_account_info(),
+//     //     ],
+//     //     &[&bank_escrow_seeds],
+//     // )?;
+//
+//     Ok(())
+// }
 pub fn create_new_event(
     ctx: Context<CreateEvent>,
     start_date: i64,
@@ -480,6 +482,7 @@ pub fn create_new_event(
     create_event.rank_rewards = rank_reward;
     create_event.rank_nonce = 0_u64;
     create_event.randomness = None;
+    create_event.nonce = program.event_nonce;
 
     emit!(EventCreated {
         event_id: program.event_nonce
@@ -493,7 +496,6 @@ pub fn create_new_event(
 
 pub fn update_event(
     ctx: Context<UpdateEvent>,
-    _event_nonce: u64, // used in instruction
     start_date: i64,
     end_date: i64,
     tournament_type: TournamentType,
@@ -524,9 +526,9 @@ pub fn create_new_fight_card(
     verify_equality(&ctx.accounts.creator.key(), &program.admin_pubkey)?;
 
     let fight_card = &mut ctx.accounts.fight_card;
-    set_fight_card_properties(fight_card, &params);
-
     let event = &mut ctx.accounts.event;
+    set_fight_card_properties(fight_card, &params, Some(event.fight_card_nonce));
+
     event.fight_card_nonce = event.fight_card_nonce.checked_add(1_u8).unwrap();
 
     // emit!(FightCardCreated {
@@ -536,17 +538,12 @@ pub fn create_new_fight_card(
     Ok(())
 }
 
-pub fn update_fight_card(
-    ctx: Context<UpdateFightCard>,
-    _event_nonce: u64,     // used in instruction
-    _fight_card_nonce: u8, // used in instruction
-    params: FightCardData,
-) -> Result<()> {
+pub fn update_fight_card(ctx: Context<UpdateFightCard>, params: FightCardData) -> Result<()> {
     let program = &ctx.accounts.program;
     verify_equality(&ctx.accounts.creator.key(), &program.admin_pubkey)?;
 
     let fight_card = &mut ctx.accounts.fight_card;
-    set_fight_card_properties(fight_card, &params);
+    set_fight_card_properties(fight_card, &params, None);
 
     // emit!(FightCardUpdated {
     //     fight_card_id: fight_card.id
@@ -691,7 +688,6 @@ pub fn mint_nft_from_game_asset(
 pub fn create_mintable_game_asset(
     ctx: Context<CreateMintableGameAsset>,
     mintable_game_asset_link_nonce: u64, // used on instruction
-    _mystery_box_nonce: u64,             // used on instruction
     request: OpenRequest,
 ) -> Result<()> {
     let clock: Clock = Clock::get()?;
@@ -710,6 +706,8 @@ pub fn create_mintable_game_asset(
     if mintable_game_asset_link_nonce < player_account.player_game_asset_link_nonce {
         require!(mintable_game_asset_link.is_free, ErrorCode::NotFreePDA);
     } else {
+        // Save the nonce for seeds easier re-generation
+        mintable_game_asset_link.nonce = player_account.player_game_asset_link_nonce;
         // increase the player game asset link nonce for the next game asset generation
         player_account.player_game_asset_link_nonce += 1;
     }
@@ -1038,27 +1036,19 @@ pub fn create_mintable_game_asset(
     // Save the Public key of the `mintable_game_asset` PDA for direct linkage
     mintable_game_asset_link.mintable_game_asset_pubkey =
         mintable_game_asset.to_account_info().key();
-    // Updates the global state to track the current amount of created `mintable_game_asset` instances.
-    program.mintable_game_asset_nonce += 1;
+    // Save the nonce for seeds easier re-generation
+    mintable_game_asset.nonce = program.mintable_game_asset_nonce;
     // Assigns the player_game_asset_link as the owner of the mintable asset,
     // ensuring ownership until the user decides to mint it.
     mintable_game_asset.owner = Some(mintable_game_asset_link.to_account_info().key());
+    // Updates the global state to track the current amount of created `mintable_game_asset` instances.
+    program.mintable_game_asset_nonce += 1;
 
     Ok(())
 }
 
 pub fn join_fight_card(
     ctx: Context<JoinFightCard>,
-    _event_nonce: u64,                       // Used in instruction
-    fight_card_nonce: u8,                    // Used in instruction
-    fighter_asset_nonce: u64,                // Used in instruction
-    energy_booster_asset_nonce: Option<u64>, // Used in instruction
-    shield_booster_asset_nonce: Option<u64>, // Used in instruction
-    points_booster_asset_nonce: Option<u64>, // Used in instruction
-    _fighter_link_nonce: u64,                // Used in instruction
-    _energy_booster_link_nonce: Option<u64>, // Used in instruction
-    _shield_booster_link_nonce: Option<u64>, // Used in instruction
-    _points_booster_link_nonce: Option<u64>, // Used in instruction
     fighter_color_side: FighterColorSide,
 ) -> Result<()> {
     let clock = Clock::get().unwrap();
@@ -1091,21 +1081,20 @@ pub fn join_fight_card(
         fight_card_link,
         event_link,
         None,
-        Some(fighter_asset_nonce),
     )?;
 
-    process_game_asset_for_action(
-        ctx.accounts.energy_booster_asset.as_mut(),
-        ctx.accounts.energy_booster_link.as_mut(),
-        true,
-    )?;
-    process_and_verify_game_asset_type(
-        ctx.accounts.energy_booster_asset.as_ref(),
-        fight_card_link,
-        event_link,
-        None,
-        energy_booster_asset_nonce,
-    )?;
+    // process_game_asset_for_action(
+    //     ctx.accounts.energy_booster_asset.as_mut(),
+    //     ctx.accounts.energy_booster_link.as_mut(),
+    //     true,
+    // )?;
+    // process_and_verify_game_asset_type(
+    //     ctx.accounts.energy_booster_asset.as_ref(),
+    //     fight_card_link,
+    //     event_link,
+    //     None,
+    //     energy_booster_asset_nonce,
+    // )?;
     process_game_asset_for_action(
         ctx.accounts.shield_booster_asset.as_mut(),
         ctx.accounts.shield_booster_link.as_mut(),
@@ -1116,7 +1105,6 @@ pub fn join_fight_card(
         fight_card_link,
         event_link,
         None,
-        shield_booster_asset_nonce,
     )?;
     process_game_asset_for_action(
         ctx.accounts.points_booster_asset.as_mut(),
@@ -1128,7 +1116,6 @@ pub fn join_fight_card(
         fight_card_link,
         event_link,
         None,
-        points_booster_asset_nonce,
     )?;
 
     require!(
@@ -1137,7 +1124,7 @@ pub fn join_fight_card(
     );
 
     fight_card_link.fight_card_pubkey = fight_card.to_account_info().key();
-    fight_card_link.fight_card_nonce_tracker = fight_card_nonce;
+    fight_card_link.fight_card_nonce_tracker = fight_card.nonce;
     fight_card_link.fighter_color_side = fighter_color_side;
     fight_card_link.is_consumed = false;
     fight_card_link.is_initialized = true;
@@ -1145,11 +1132,7 @@ pub fn join_fight_card(
     Ok(())
 }
 
-pub fn collect_rewards(
-    ctx: Context<CollectRewards>,
-    _event_nonce: u64,
-    _rank_nonce: u64,
-) -> Result<()> {
+pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
     let clock = Clock::get().unwrap();
     let current_blockchain_timestamp = clock.unix_timestamp;
     let program = &ctx.accounts.program;
@@ -1208,6 +1191,7 @@ pub fn collect_rewards(
             mystery_box.booster_mint_allowance = reward.booster_amount as u64;
             mystery_box.fighter_mint_allowance = reward.fighter_amount as u64;
             mystery_box.champions_pass_mint_allowance = reward.champions_pass_amount as u64;
+            mystery_box.nonce = player_account.order_nonce;
 
             let total_lamports = (reward.prize_amount * LAMPORTS_PER_SOL as f64).round() as u64;
             let bank_balance = bank.lamports();
@@ -1323,12 +1307,7 @@ pub fn consume_randomness_event(
     Ok(())
 }
 
-pub fn admin_update_rank(
-    ctx: Context<UpdateRank>,
-    _event_nonce: u64, // Used in instruction
-    _rank_nonce: u64,  // Used in instruction
-    ranking: u64,
-) -> Result<()> {
+pub fn admin_update_rank(ctx: Context<UpdateRank>, ranking: u64) -> Result<()> {
     let signer = &ctx.accounts.signer;
     let program = &ctx.accounts.program;
     let rank = &mut ctx.accounts.rank;
@@ -1341,11 +1320,7 @@ pub fn admin_update_rank(
 
 pub fn determine_ranking_points(
     ctx: Context<DetermineRankingPoints>,
-    _rank_nonce: u64,
-    _event_nonce: u64,
-    _fight_card_nonce: u8,
-    _fighter_asset_link_nonce: u64,
-    _fighter_type: FighterType,
+    _fighter_type: FighterType, // Used in instruction
 ) -> Result<()> {
     let clock = Clock::get().unwrap();
     let current_blockchain_timestamp = clock.unix_timestamp;
