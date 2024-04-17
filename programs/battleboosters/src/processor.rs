@@ -1,5 +1,5 @@
 use crate::constants::{
-    BANK, METADATA_OFF_CHAIN_URI, MINT_AUTHORITY, MY_APP_PREFIX, SELLER_FEE, STALENESS_THRESHOLD,
+    BANK, METADATA_OFF_CHAIN_URI, MINT_AUTHORITY, MY_APP_PREFIX, STALENESS_THRESHOLD,
 };
 use crate::errors::ErrorCode;
 use crate::events::*;
@@ -10,7 +10,7 @@ use crate::state::event::{CreateEvent, InitializeEventLink, RankReward, UpdateEv
 use crate::state::fight_card::{CreateFightCard, FightCardData, UpdateFightCard};
 use crate::state::fighter::{CreateFighter, FightMetrics};
 use crate::state::join_fight_card::JoinFightCard;
-use crate::state::mint_nft_from_game_asset::MintNftFromGameAsset;
+// use crate::state::mint_nft_from_game_asset::MintNftFromGameAsset;
 use crate::state::mintable_game_asset::Attribute;
 use crate::state::mintable_game_asset::*;
 use crate::state::player::InitializePlayer;
@@ -19,7 +19,6 @@ use crate::state::rank::UpdateRank;
 use crate::state::rarity::{
     InitializeRarity, RarityBooster, RarityFighter, TierProbabilities, TierType,
 };
-use crate::state::switchboard_callback::{ConsumeRandomness, ConsumeRandomnessEvent};
 use crate::state::transaction_escrow::TransactionEscrow;
 use crate::types::{
     BoosterType, CollectionType, FighterColorSide, FighterType, NftType, OpenRequest,
@@ -30,17 +29,17 @@ use crate::utils::{
     metrics_calculation, process_and_verify_game_asset_type, process_game_asset_for_action,
     set_fight_card_properties, verify_equality,
 };
-use crate::ID;
+
 use anchor_lang::prelude::*;
 use mpl_token_metadata::instructions::{
-    CreateV1CpiBuilder, MintV1CpiBuilder, VerifyCollectionV1CpiBuilder,
+    CreateV1CpiBuilder, MintV1CpiBuilder,
 };
-use mpl_token_metadata::types::{Collection, PrintSupply, TokenStandard};
+use mpl_token_metadata::types::{PrintSupply, TokenStandard};
 use solana_program::native_token::LAMPORTS_PER_SOL;
 use solana_program::program::invoke_signed;
 use solana_program::system_instruction;
 use switchboard_on_demand::accounts::RandomnessAccountData;
-use switchboard_solana::get_ixn_discriminator;
+
 
 pub fn initialize(
     ctx: Context<InitializeProgram>,
@@ -92,10 +91,7 @@ pub fn initialize_rarity(
     Ok(())
 }
 pub fn initialize_event_link(
-    ctx: Context<InitializeEventLink>,
-    event_nonce: u64,
-    _champions_pass_asset_nonce: Option<u64>,
-    _champions_pass_link_nonce: Option<u64>,
+    ctx: Context<InitializeEventLink>
 ) -> Result<()> {
     let event_link = &mut ctx.accounts.event_link;
     let rank = &mut ctx.accounts.rank;
@@ -134,7 +130,7 @@ pub fn initialize_event_link(
 
     // Configure event link
     event_link.event_pubkey = event.to_account_info().key();
-    event_link.event_nonce_tracker = event_nonce;
+    event_link.event_nonce_tracker = event.nonce;
     event_link.champions_pass_pubkey = champions_pass_pubkey;
     event_link.champions_pass_nonce_tracker = champions_pass_nonce_tracker;
     event_link.is_initialized = true;
@@ -278,7 +274,6 @@ pub fn update_fighter(
 pub fn purchase_mystery_box(
     ctx: Context<TransactionEscrow>,
     bank_escrow_bump: u8,
-    randomness_account: Pubkey,
     requests: Vec<PurchaseRequest>,
 ) -> Result<()> {
     let clock = Clock::get()?;
@@ -519,7 +514,6 @@ pub fn update_event(
 
 pub fn create_new_fight_card(
     ctx: Context<CreateFightCard>,
-    _event_nonce: u64, // used in instruction
     params: FightCardData,
 ) -> Result<()> {
     let program = &ctx.accounts.program;
@@ -552,138 +546,138 @@ pub fn update_fight_card(ctx: Context<UpdateFightCard>, params: FightCardData) -
     Ok(())
 }
 
-pub fn mint_nft_from_game_asset(
-    ctx: Context<MintNftFromGameAsset>,
-    //requests: Vec<PurchaseRequest>,
-) -> Result<()> {
-    let program = &mut ctx.accounts.program;
-
-    let metadata_program = &ctx.accounts.metadata_program.to_account_info();
-    let metadata = &ctx.accounts.metadata.to_account_info();
-    let token_record = &ctx.accounts.token_record.to_account_info();
-    let minter = &ctx.accounts.minter.to_account_info();
-    let token_owner = &ctx.accounts.creator.to_account_info();
-    let master_edition = &ctx.accounts.master_edition.to_account_info();
-    let mint_authority = &ctx.accounts.mint_authority.to_account_info();
-    let token_account = &ctx.accounts.token_account.to_account_info();
-
-    let sysvar = &ctx.accounts.sysvar_instructions.to_account_info();
-    let spl_token_program = &ctx.accounts.token_program.to_account_info();
-
-    // Energy
-    let energy_metadata = &ctx.accounts.energy_metadata.to_account_info();
-    let energy_master_edition = &ctx.accounts.energy_master_edition.to_account_info();
-    let energy_minter = &ctx.accounts.energy_minter.to_account_info();
-
-    let mut binding_create = CreateV1CpiBuilder::new(&metadata_program);
-
-    let create_cpi = binding_create
-        .metadata(&metadata)
-        .mint(&minter, false)
-        .authority(&mint_authority)
-        .payer(&token_owner)
-        .update_authority(&mint_authority, true)
-        .master_edition(Some(&ctx.accounts.master_edition))
-        .collection(Collection {
-            key: energy_minter.key(),
-            verified: false,
-        })
-        .system_program(&ctx.accounts.system_program)
-        .sysvar_instructions(&sysvar)
-        .spl_token_program(Some(&spl_token_program))
-        .token_standard(TokenStandard::ProgrammableNonFungible)
-        .name("Energy booster".to_string())
-        .uri("https://battleboosters.com".to_string())
-        .seller_fee_basis_points(SELLER_FEE)
-        .is_mutable(true)
-        .print_supply(PrintSupply::Zero);
-
-    let mut binding = MintV1CpiBuilder::new(metadata_program);
-    let mint_cpi = binding
-        .token(token_account)
-        .token_owner(Some(token_owner))
-        .metadata(metadata)
-        .master_edition(Some(master_edition))
-        .token_record(Some(token_record))
-        .mint(minter)
-        .payer(token_owner)
-        .authority(mint_authority)
-        .system_program(&ctx.accounts.system_program)
-        .sysvar_instructions(&ctx.accounts.sysvar_instructions)
-        .spl_token_program(&ctx.accounts.token_program)
-        .spl_ata_program(&ctx.accounts.associated_token_program)
-        .amount(1);
-
-    let mut binding_verify = VerifyCollectionV1CpiBuilder::new(&metadata_program);
-    let create_cpi_verify = binding_verify
-        .collection_mint(&energy_minter)
-        .authority(&mint_authority)
-        .metadata(&metadata)
-        .collection_metadata(Some(&energy_metadata))
-        .collection_master_edition(Some(&energy_master_edition))
-        .sysvar_instructions(&ctx.accounts.sysvar_instructions)
-        .system_program(&ctx.accounts.system_program);
-
-    let authority_seeds = [
-        MY_APP_PREFIX,
-        MINT_AUTHORITY,
-        &[program.authority_bump.clone()],
-    ];
-
-    create_cpi.invoke_signed(&[&authority_seeds])?;
-    mint_cpi.invoke_signed(&[&authority_seeds])?;
-    create_cpi_verify.invoke_signed(&[&authority_seeds])?;
-
-    // for request in &requests {
-    //     match request.nft_type {
-    //         NftType::Booster => {
-    //             // update the quantity of booster mint allowance
-    //             collector_pack.booster_mint_allowance = collector_pack.booster_mint_allowance.checked_sub(1).unwrap();
-    //
-    //
-    //             let metadata_program = &ctx.accounts.metadata_program.to_account_info();
-    //             let energy_metadata = &ctx.accounts.energy_metadata.to_account_info();
-    //             let minter = &ctx.accounts.energy_minter.to_account_info();
-    //             let token_owner = &ctx.accounts.creator.to_account_info();
-    //             let master_edition = &ctx.accounts.energy_master_edition.to_account_info();
-    //             let mint_authority = &ctx.accounts.mint_authority.to_account_info();
-    //
-    //             let energy_token_account = &ctx.accounts.energy_token_account.to_account_info();
-    //
-    //             let mut binding = MintV1CpiBuilder::new(metadata_program);
-    //             let mint_cpi = binding
-    //                 .token(energy_token_account)
-    //                 .token_owner(Some(token_owner))
-    //                 .metadata(energy_metadata)
-    //                 .master_edition(Some(master_edition))
-    //                 .mint(minter)
-    //                 .payer(token_owner)
-    //                 .authority(mint_authority)
-    //                 .system_program(&ctx.accounts.system_program)
-    //                 .sysvar_instructions(&ctx.accounts.sysvar_instructions)
-    //                 .spl_token_program(&ctx.accounts.token_program)
-    //                 .spl_ata_program(&ctx.accounts.associated_token_program)
-    //                 .amount(1);
-    //
-    //             let authority_seeds = [
-    //                 MY_APP_PREFIX,
-    //                 MINT_AUTHORITY,
-    //                 &[program.authority_bump.clone()],
-    //             ];
-    //
-    //             mint_cpi.invoke_signed(&[&authority_seeds])?;
-    //
-    //         }
-    //         NftType::FighterPack => {
-    //             // update the quantity of fighter mint allowance
-    //             collector_pack.fighter_mint_allowance = collector_pack.fighter_mint_allowance.checked_sub(1).unwrap();
-    //         }
-    //     }
-    // }
-
-    program.mintable_game_asset_nonce = program.mintable_game_asset_nonce.checked_add(1).unwrap();
-    Ok(())
-}
+// pub fn mint_nft_from_game_asset(
+//     ctx: Context<MintNftFromGameAsset>,
+//     //requests: Vec<PurchaseRequest>,
+// ) -> Result<()> {
+//     let program = &mut ctx.accounts.program;
+// 
+//     let metadata_program = &ctx.accounts.metadata_program.to_account_info();
+//     let metadata = &ctx.accounts.metadata.to_account_info();
+//     let token_record = &ctx.accounts.token_record.to_account_info();
+//     let minter = &ctx.accounts.minter.to_account_info();
+//     let token_owner = &ctx.accounts.creator.to_account_info();
+//     let master_edition = &ctx.accounts.master_edition.to_account_info();
+//     let mint_authority = &ctx.accounts.mint_authority.to_account_info();
+//     let token_account = &ctx.accounts.token_account.to_account_info();
+// 
+//     let sysvar = &ctx.accounts.sysvar_instructions.to_account_info();
+//     let spl_token_program = &ctx.accounts.token_program.to_account_info();
+// 
+//     // Energy
+//     let energy_metadata = &ctx.accounts.energy_metadata.to_account_info();
+//     let energy_master_edition = &ctx.accounts.energy_master_edition.to_account_info();
+//     let energy_minter = &ctx.accounts.energy_minter.to_account_info();
+// 
+//     let mut binding_create = CreateV1CpiBuilder::new(&metadata_program);
+// 
+//     let create_cpi = binding_create
+//         .metadata(&metadata)
+//         .mint(&minter, false)
+//         .authority(&mint_authority)
+//         .payer(&token_owner)
+//         .update_authority(&mint_authority, true)
+//         .master_edition(Some(&ctx.accounts.master_edition))
+//         .collection(Collection {
+//             key: energy_minter.key(),
+//             verified: false,
+//         })
+//         .system_program(&ctx.accounts.system_program)
+//         .sysvar_instructions(&sysvar)
+//         .spl_token_program(Some(&spl_token_program))
+//         .token_standard(TokenStandard::ProgrammableNonFungible)
+//         .name("Energy booster".to_string())
+//         .uri("https://battleboosters.com".to_string())
+//         .seller_fee_basis_points(SELLER_FEE)
+//         .is_mutable(true)
+//         .print_supply(PrintSupply::Zero);
+// 
+//     let mut binding = MintV1CpiBuilder::new(metadata_program);
+//     let mint_cpi = binding
+//         .token(token_account)
+//         .token_owner(Some(token_owner))
+//         .metadata(metadata)
+//         .master_edition(Some(master_edition))
+//         .token_record(Some(token_record))
+//         .mint(minter)
+//         .payer(token_owner)
+//         .authority(mint_authority)
+//         .system_program(&ctx.accounts.system_program)
+//         .sysvar_instructions(&ctx.accounts.sysvar_instructions)
+//         .spl_token_program(&ctx.accounts.token_program)
+//         .spl_ata_program(&ctx.accounts.associated_token_program)
+//         .amount(1);
+// 
+//     let mut binding_verify = VerifyCollectionV1CpiBuilder::new(&metadata_program);
+//     let create_cpi_verify = binding_verify
+//         .collection_mint(&energy_minter)
+//         .authority(&mint_authority)
+//         .metadata(&metadata)
+//         .collection_metadata(Some(&energy_metadata))
+//         .collection_master_edition(Some(&energy_master_edition))
+//         .sysvar_instructions(&ctx.accounts.sysvar_instructions)
+//         .system_program(&ctx.accounts.system_program);
+// 
+//     let authority_seeds = [
+//         MY_APP_PREFIX,
+//         MINT_AUTHORITY,
+//         &[program.authority_bump.clone()],
+//     ];
+// 
+//     create_cpi.invoke_signed(&[&authority_seeds])?;
+//     mint_cpi.invoke_signed(&[&authority_seeds])?;
+//     create_cpi_verify.invoke_signed(&[&authority_seeds])?;
+// 
+//     // for request in &requests {
+//     //     match request.nft_type {
+//     //         NftType::Booster => {
+//     //             // update the quantity of booster mint allowance
+//     //             collector_pack.booster_mint_allowance = collector_pack.booster_mint_allowance.checked_sub(1).unwrap();
+//     //
+//     //
+//     //             let metadata_program = &ctx.accounts.metadata_program.to_account_info();
+//     //             let energy_metadata = &ctx.accounts.energy_metadata.to_account_info();
+//     //             let minter = &ctx.accounts.energy_minter.to_account_info();
+//     //             let token_owner = &ctx.accounts.creator.to_account_info();
+//     //             let master_edition = &ctx.accounts.energy_master_edition.to_account_info();
+//     //             let mint_authority = &ctx.accounts.mint_authority.to_account_info();
+//     //
+//     //             let energy_token_account = &ctx.accounts.energy_token_account.to_account_info();
+//     //
+//     //             let mut binding = MintV1CpiBuilder::new(metadata_program);
+//     //             let mint_cpi = binding
+//     //                 .token(energy_token_account)
+//     //                 .token_owner(Some(token_owner))
+//     //                 .metadata(energy_metadata)
+//     //                 .master_edition(Some(master_edition))
+//     //                 .mint(minter)
+//     //                 .payer(token_owner)
+//     //                 .authority(mint_authority)
+//     //                 .system_program(&ctx.accounts.system_program)
+//     //                 .sysvar_instructions(&ctx.accounts.sysvar_instructions)
+//     //                 .spl_token_program(&ctx.accounts.token_program)
+//     //                 .spl_ata_program(&ctx.accounts.associated_token_program)
+//     //                 .amount(1);
+//     //
+//     //             let authority_seeds = [
+//     //                 MY_APP_PREFIX,
+//     //                 MINT_AUTHORITY,
+//     //                 &[program.authority_bump.clone()],
+//     //             ];
+//     //
+//     //             mint_cpi.invoke_signed(&[&authority_seeds])?;
+//     //
+//     //         }
+//     //         NftType::FighterPack => {
+//     //             // update the quantity of fighter mint allowance
+//     //             collector_pack.fighter_mint_allowance = collector_pack.fighter_mint_allowance.checked_sub(1).unwrap();
+//     //         }
+//     //     }
+//     // }
+// 
+//     program.mintable_game_asset_nonce = program.mintable_game_asset_nonce.checked_add(1).unwrap();
+//     Ok(())
+// }
 
 pub fn create_mintable_game_asset(
     ctx: Context<CreateMintableGameAsset>,
@@ -1059,6 +1053,13 @@ pub fn join_fight_card(
     let fight_card_link = &mut ctx.accounts.fight_card_link;
     let event_link = &mut ctx.accounts.event_link;
 
+    match event.tournament_type {
+        TournamentType::MainCard => {
+            require!(event_link.champions_pass_pubkey.is_some(), ErrorCode::MissingChampionsPassAsset)
+        }
+        _ => {}
+    }
+
     require!(
         !fight_card_link.is_initialized,
         ErrorCode::AlreadyInitialized
@@ -1079,22 +1080,8 @@ pub fn join_fight_card(
     process_and_verify_game_asset_type(
         Some(&ctx.accounts.fighter_asset),
         fight_card_link,
-        event_link,
-        None,
     )?;
-
-    // process_game_asset_for_action(
-    //     ctx.accounts.energy_booster_asset.as_mut(),
-    //     ctx.accounts.energy_booster_link.as_mut(),
-    //     true,
-    // )?;
-    // process_and_verify_game_asset_type(
-    //     ctx.accounts.energy_booster_asset.as_ref(),
-    //     fight_card_link,
-    //     event_link,
-    //     None,
-    //     energy_booster_asset_nonce,
-    // )?;
+    
     process_game_asset_for_action(
         ctx.accounts.shield_booster_asset.as_mut(),
         ctx.accounts.shield_booster_link.as_mut(),
@@ -1103,8 +1090,6 @@ pub fn join_fight_card(
     process_and_verify_game_asset_type(
         ctx.accounts.shield_booster_asset.as_ref(),
         fight_card_link,
-        event_link,
-        None,
     )?;
     process_game_asset_for_action(
         ctx.accounts.points_booster_asset.as_mut(),
@@ -1114,14 +1099,14 @@ pub fn join_fight_card(
     process_and_verify_game_asset_type(
         ctx.accounts.points_booster_asset.as_ref(),
         fight_card_link,
-        event_link,
-        None,
     )?;
 
     require!(
         fight_card_link.fighter_used.is_some() && fight_card_link.fighter_nonce_tracker.is_some(),
         ErrorCode::FightCardLinkedToGameAsset
     );
+    
+    
 
     fight_card_link.fight_card_pubkey = fight_card.to_account_info().key();
     fight_card_link.fight_card_nonce_tracker = fight_card.nonce;
@@ -1294,18 +1279,18 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
 //     Ok(())
 // }
 
-pub fn consume_randomness_event(
-    ctx: Context<ConsumeRandomnessEvent>,
-    _event_nonce: u64, // Used in instruction
-    result: Vec<u8>,
-) -> Result<()> {
-    msg!("Randomness received: {:?}", result);
-
-    let event = &mut ctx.accounts.event;
-    event.randomness = Some(result);
-
-    Ok(())
-}
+// pub fn consume_randomness_event(
+//     ctx: Context<ConsumeRandomnessEvent>,
+//     _event_nonce: u64, // Used in instruction
+//     result: Vec<u8>,
+// ) -> Result<()> {
+//     msg!("Randomness received: {:?}", result);
+// 
+//     let event = &mut ctx.accounts.event;
+//     event.randomness = Some(result);
+// 
+//     Ok(())
+// }
 
 pub fn admin_update_rank(ctx: Context<UpdateRank>, ranking: u64) -> Result<()> {
     let signer = &ctx.accounts.signer;

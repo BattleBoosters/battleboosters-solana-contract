@@ -5,7 +5,7 @@ use crate::constants::*;
 use crate::ErrorCode;
 use anchor_lang::prelude::*;
 use anchor_spl::associated_token::AssociatedToken;
-use anchor_spl::token::{Mint, Token};
+use anchor_spl::token::{Token};
 use std::str::FromStr;
 
 use crate::state::event::EventData;
@@ -170,7 +170,7 @@ pub struct TransactionTest<'info> {
     #[account(
     init,
     payer = signer,
-    seeds = [MY_APP_PREFIX, MYSTERY_BOX, recipient.key().as_ref(), player_account.order_nonce.to_le_bytes().as_ref()],
+    seeds = [MY_APP_PREFIX, MYSTERY_BOX, player_account.order_nonce.to_le_bytes().as_ref(), recipient.key().as_ref()],
     bump,
     space = 128
     )]

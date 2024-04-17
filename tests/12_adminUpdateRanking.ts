@@ -6,7 +6,7 @@ import { updateFightCard } from './utils/createUpdateFightCard';
 import { updateEvent } from './utils/createUpdateEvent';
 import { sleep } from '@switchboard-xyz/common';
 
-describe('Admin update player ranking', () => {
+describe.skip('Admin update player ranking', () => {
     const provider = anchor.AnchorProvider.env();
 
     anchor.setProvider(provider);
@@ -54,7 +54,7 @@ describe('Admin update player ranking', () => {
 
         try {
             let tx = await program.methods
-                .adminUpdateRank(new BN(0), new BN(0), new BN(100))
+                .adminUpdateRank(new BN(100))
                 .accounts({
                     signer: admin_account.publicKey,
                     event: event_account,

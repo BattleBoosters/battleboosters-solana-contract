@@ -46,13 +46,12 @@ pub struct UpdateEvent<'info> {
 }
 
 #[derive(Accounts)]
-#[instruction(event_nonce: u64, champions_pass_asset_nonce: Option<u64>, champions_pass_link_nonce: Option<u64>)]
 pub struct InitializeEventLink<'info> {
     #[account(mut)]
     pub creator: Signer<'info>,
     #[account(
     mut,
-    seeds = [MY_APP_PREFIX, EVENT, event_nonce.to_le_bytes().as_ref()],
+    seeds = [MY_APP_PREFIX, EVENT, event.nonce.to_le_bytes().as_ref()],
     bump
     )]
     pub event: Box<Account<'info, EventData>>,
@@ -66,7 +65,7 @@ pub struct InitializeEventLink<'info> {
     pub event_link: Box<Account<'info, EventLinkData>>,
     #[account(
     mut,
-    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, champions_pass_asset_nonce.unwrap().to_le_bytes().as_ref()],
+    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, champions_pass_asset.nonce.to_le_bytes().as_ref()],
     // constraint = points_booster_asset.as_ref().is_burned == true,
     // close = signer,
     bump
@@ -74,7 +73,7 @@ pub struct InitializeEventLink<'info> {
     pub champions_pass_asset: Option<Box<Account<'info, MintableGameAssetData>>>,
     #[account(
     mut,
-    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, champions_pass_link_nonce.unwrap().to_le_bytes().as_ref(), creator.key().as_ref()],
+    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, champions_pass_link.nonce.to_le_bytes().as_ref(), creator.key().as_ref()],
     bump
     )]
     pub champions_pass_link: Option<Box<Account<'info, MintableGameAssetLinkData>>>,

@@ -17,11 +17,6 @@ use switchboard_solana::prelude::*;
 pub struct DetermineRankingPoints<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
-    /*
-       TODO:
-           - Add player rank to modify the points. Rank will be determined off-chain
-           - Store the sequence per rounds and Determine ranks per rounds
-    */
     #[account(
     mut,
     seeds = [MY_APP_PREFIX, EVENT, event.nonce.to_le_bytes().as_ref()],

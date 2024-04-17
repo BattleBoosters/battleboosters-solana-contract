@@ -23,14 +23,6 @@ pub struct JoinFightCard<'info> {
     bump
     )]
     pub fighter_asset: Box<Account<'info, MintableGameAssetData>>,
-    // #[account(
-    // mut,
-    // seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, energy_booster_asset.nonce.to_le_bytes().as_ref()],
-    // // constraint = energy_booster_asset.as_ref().is_burned == true,
-    // // close = signer,
-    // bump
-    // )]
-    // pub energy_booster_asset: Option<Box<Account<'info, MintableGameAssetData>>>,
     #[account(
     mut,
     seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, shield_booster_asset.nonce.to_le_bytes().as_ref()],
@@ -54,12 +46,6 @@ pub struct JoinFightCard<'info> {
     bump
     )]
     pub fighter_link: Box<Account<'info, MintableGameAssetLinkData>>,
-    // #[account(
-    // mut,
-    // seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, energy_booster_link.nonce.to_le_bytes().as_ref(), signer.key().as_ref()],
-    // bump
-    // )]
-    // pub energy_booster_link: Option<Box<Account<'info, MintableGameAssetLinkData>>>,
     #[account(
     mut,
     seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, shield_booster_link.nonce.to_le_bytes().as_ref(), signer.key().as_ref()],

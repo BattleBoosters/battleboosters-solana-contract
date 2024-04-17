@@ -90,7 +90,6 @@ const updateEvent = async function (
     try {
         const tx = await program.methods
             .updateEvent(
-                new BN(event_nonce),
                 new BN(time_start),
                 new BN(time_end),
                 tournament_type,

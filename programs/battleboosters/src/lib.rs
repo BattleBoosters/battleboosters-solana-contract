@@ -9,8 +9,8 @@ mod utils;
 
 use crate::state::{
     collect_rewards::*, create_spl_nft::*, determine_ranking_points::*, event::*, fight_card::*,
-    fighter::*, join_fight_card::*, mint_nft_from_game_asset::*, mintable_game_asset::*, player::*,
-    program::*, rank::*, rarity::*, switchboard_callback::*, transaction_escrow::*,
+    fighter::*, join_fight_card::*, mintable_game_asset::*, player::*,
+    program::*, rank::*, rarity::*, transaction_escrow::*,
 };
 
 use crate::types::*;
@@ -18,7 +18,7 @@ use crate::utils::*;
 
 use errors::ErrorCode;
 
-declare_id!("9JyF2qTLYfEyy7UVSPVNCQQgUD4AQ5u5gVdGmAZu7cPA");
+declare_id!("7L9GjKBzhodpa8LL4CExnUfsBDeZ5sWnj7gJkEqUNJfa");
 
 #[program]
 pub mod battleboosters {
@@ -74,15 +74,9 @@ pub mod battleboosters {
 
     pub fn initialize_event_link(
         ctx: Context<InitializeEventLink>,
-        event_nonce: u64,
-        champions_pass_asset_nonce: Option<u64>,
-        champions_pass_link_nonce: Option<u64>,
     ) -> Result<()> {
         processor::initialize_event_link(
-            ctx,
-            event_nonce,
-            champions_pass_asset_nonce,
-            champions_pass_link_nonce,
+            ctx
         )
     }
 
@@ -115,10 +109,9 @@ pub mod battleboosters {
     pub fn purchase_mystery_box(
         ctx: Context<TransactionEscrow>,
         bank_escrow_bump: u8,
-        randomness_account: Pubkey,
         requests: Vec<PurchaseRequest>,
     ) -> Result<()> {
-        processor::purchase_mystery_box(ctx, bank_escrow_bump, randomness_account, requests)
+        processor::purchase_mystery_box(ctx, bank_escrow_bump, requests)
     }
 
     // pub fn consume_randomness(
@@ -161,7 +154,7 @@ pub mod battleboosters {
     }
     // TODO: REMOVE BEFORE MAINNET LAUNCH
     /// ONLY FOR TEST PURPOSE
-    pub fn admin_set_randomness(ctx: Context<TransactionTest2>, event_nonce: u64) -> Result<()> {
+    pub fn admin_set_randomness(ctx: Context<TransactionTest2>) -> Result<()> {
         let event = &mut ctx.accounts.event;
         event.randomness = Some(vec![12, 23, 34, 34, 54, 74, 94, 23]);
         Ok(())
@@ -197,10 +190,9 @@ pub mod battleboosters {
 
     pub fn create_new_fight_card(
         ctx: Context<CreateFightCard>,
-        event_nonce: u64,
         params: FightCardData,
     ) -> Result<()> {
-        processor::create_new_fight_card(ctx, event_nonce, params)
+        processor::create_new_fight_card(ctx, params)
     }
 
     pub fn update_fight_card(ctx: Context<UpdateFightCard>, params: FightCardData) -> Result<()> {
@@ -231,13 +223,13 @@ pub mod battleboosters {
     // ) -> Result<()> {
     //     processor::event_request_randomness(ctx, event_nonce)
     // }
-    pub fn consume_randomness_event(
-        ctx: Context<ConsumeRandomnessEvent>,
-        event_nonce: u64,
-        result: Vec<u8>,
-    ) -> Result<()> {
-        processor::consume_randomness_event(ctx, event_nonce, result)
-    }
+    // pub fn consume_randomness_event(
+    //     ctx: Context<ConsumeRandomnessEvent>,
+    //     event_nonce: u64,
+    //     result: Vec<u8>,
+    // ) -> Result<()> {
+    //     processor::consume_randomness_event(ctx, event_nonce, result)
+    // }
 
     pub fn admin_update_rank(ctx: Context<UpdateRank>, ranking: u64) -> Result<()> {
         processor::admin_update_rank(ctx, ranking)

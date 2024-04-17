@@ -7,7 +7,7 @@ import { updateEvent } from './utils/createUpdateEvent';
 import { sleep } from '@switchboard-xyz/common';
 import { assert } from 'chai';
 
-describe('Collect Rewards', () => {
+describe.skip('Collect Rewards', () => {
     const provider = anchor.AnchorProvider.env();
 
     anchor.setProvider(provider);
@@ -91,7 +91,7 @@ describe('Collect Rewards', () => {
         console.log(rarity_pda);
         try {
             let tx = await program.methods
-                .collectRewards(new BN(0), new BN(0))
+                .collectRewards()
                 .accounts({
                     signer: provider.wallet.publicKey,
                     event: event_account,

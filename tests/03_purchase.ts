@@ -41,7 +41,7 @@ import createMintableGameAsset from "./utils/createMintableGameAsset";
 /*
     TODO: Test try to pass nft different type
  */
-describe.only('Purchase', () => {
+describe('Purchase', () => {
     const sb_programId = SB_ON_DEMAND_PID;
     const provider = anchor.AnchorProvider.env();
     anchor.setProvider(provider);
@@ -181,6 +181,7 @@ describe.only('Purchase', () => {
             await provider.sendAndConfirm(transferTx, []);
             const tx2 = await InstructionUtils.asV0Tx(sb_program, [ix]);
             await provider.sendAndConfirm(tx2, [rngKp]);
+
             // tx2.sign([admin_account, rngKp]);
             // const sig1 = await provider.connection.sendTransaction(tx2);
             // await provider.connection.confirmTransaction(sig1);
@@ -216,7 +217,7 @@ describe.only('Purchase', () => {
             console.log("ok")
 
             const tx = await program.methods
-                .purchaseMysteryBox(user_bank_bump, randomness.pubkey, [
+                .purchaseMysteryBox(user_bank_bump, [
                     {
                         nftType: { booster: {} }, // Use the variant name as key for enum
                         quantity: boosterQty,
@@ -308,7 +309,7 @@ describe.only('Purchase', () => {
         try {
             let mystery_box_nonce = new BN(playerAccountData.orderNonce).toNumber();
             const revealIx = await randomness.revealIx();
-            let { mystery_box }=
+            let { mystery_box_pda }=
             await createMintableGameAsset(
                 program,
                 provider,
@@ -323,7 +324,7 @@ describe.only('Purchase', () => {
                 randomness.pubkey,
                 revealIx
             );
-            let mystery_box_data = await program.account.mysteryBoxData.fetch(mystery_box);
+            let mystery_box_data = await program.account.mysteryBoxData.fetch(mystery_box_pda);
             console.log("mystery_box_data.fighterMintAllowance.toNumber()")
             console.log(mystery_box_data.fighterMintAllowance.toNumber())
 

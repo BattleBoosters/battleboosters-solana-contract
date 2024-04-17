@@ -1,12 +1,10 @@
 use super::event::EventData;
 use super::program::ProgramData;
 use crate::constants::*;
-use crate::state::fighter::Metrics;
 use crate::types::FighterColorSide;
 use anchor_lang::prelude::*;
 
 #[derive(Accounts)]
-#[instruction(event_nonce: u64)]
 pub struct CreateFightCard<'info> {
     #[account(mut)]
     pub creator: Signer<'info>,
@@ -18,7 +16,7 @@ pub struct CreateFightCard<'info> {
     pub program: Account<'info, ProgramData>,
     #[account(
         mut,
-        seeds = [MY_APP_PREFIX, EVENT, event_nonce.to_le_bytes().as_ref()],
+        seeds = [MY_APP_PREFIX, EVENT, event.nonce.to_le_bytes().as_ref()],
         bump
     )]
     pub event: Account<'info, EventData>,

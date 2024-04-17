@@ -5,13 +5,13 @@ seeds = false
 skip-lint = false
 
 [programs.localnet]
-battleboosters = "9JyF2qTLYfEyy7UVSPVNCQQgUD4AQ5u5gVdGmAZu7cPA"
+battleboosters = "7L9GjKBzhodpa8LL4CExnUfsBDeZ5sWnj7gJkEqUNJfa"
 
 [programs.devnet]
-battleboosters = "9JyF2qTLYfEyy7UVSPVNCQQgUD4AQ5u5gVdGmAZu7cPA"
+battleboosters = "7L9GjKBzhodpa8LL4CExnUfsBDeZ5sWnj7gJkEqUNJfa"
 
 [programs.testnet]
-battleboosters = "9JyF2qTLYfEyy7UVSPVNCQQgUD4AQ5u5gVdGmAZu7cPA"
+battleboosters = "7L9GjKBzhodpa8LL4CExnUfsBDeZ5sWnj7gJkEqUNJfa"
 
 [[test.genesis]]
 address = "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
@@ -32,26 +32,28 @@ address = "GvDMxPzN1sCj7L26YDK2HnMRXEQmQ2aemov8YBtPS7vR"
 #Randomness
 [[test.validator.clone]]
 address = "SBondMDrcV3K4kxZR1HNVT7osZxAHVHgYXL5Ze1oMUv"
-
 [[test.validator.clone]]
-address = "zL8xj8TfQewdL1JmBfagYJydEsdgUZLnTvGhtewrjog"
+address = "71fF4B6WKayr7ExFMb8pwG5CkknwwG5ot8ToHabPxd1w"
+[[test.validator.clone]]
+address = "5Qv744yu7DmEbU669GmYRqL9kpQsyYsaVKdR8YiBMTaP"
+[[test.validator.clone]]
+address = "SysvarS1otHashes111111111111111111111111111"
+[[test.validator.clone]]
+address = "9tpH8NwT7UBFSE4KQaB9Kxi7f77supSgV13Do3txcGcf"
+[[test.validator.clone]]
+address = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+[[test.validator.clone]]
+address = "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+[[test.validator.clone]]
+address = "So11111111111111111111111111111111111111112"
 [[test.validator.clone]]
 address = "7Gs9n5FQMeC9XcEhg281bRZ6VHRrCvqp5Yq1j78HkvNa"
 [[test.validator.clone]]
-address = "9tMV6o14dJH95PoRgQHhGYMiyLbVS39HPqHWQ5hD4Vn1"
+address = "BfvoZHYSxgJe4P7jbt9HTqJHip7Lf3xRB1QNszEPrhCx"
 [[test.validator.clone]]
-address = "FqVyQbsS7YE5WsPWQ5xEukFWjJyjiRtJMgg64tuBuRRU"
+address = "4ivjMfh7eGaGkx8ptLfKBLXABvukzDERD4LNabH8n666"
 [[test.validator.clone]]
-address = "FqVyQbsS7YE5WsPWQ5xEukFWjJyjiRtJMgg64tuBuRRU"
-
-[[test.validator.clone]]
-address = "ChtPnhtm152NwS5ULDSE9emajj7CLr2bC1eiNpkEMjck"
-
-[[test.validator.clone]]
-address = "5Qv744yu7DmEbU669GmYRqL9kpQsyYsaVKdR8YiBMTaP"
-
-[[test.validator.clone]]
-address = "SysvarS1otHashes111111111111111111111111111"
+address = "znfpFSvLzz8zergsdx4QEQtQV5pr6w1sztj3VhjneRL"
 
 #[[test.validator.account]]
 #address = "H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712K4AQJEG"

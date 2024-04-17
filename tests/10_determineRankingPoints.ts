@@ -251,10 +251,6 @@ describe('Determine ranking points', () => {
         try {
             let tx = await program.methods
                 .determineRankingPoints(
-                    new BN(0),
-                    new BN(0),
-                    new BN(0),
-                    new BN(0),
                     { brazilianJiuJitsu: {} }
                 )
                 .accounts({

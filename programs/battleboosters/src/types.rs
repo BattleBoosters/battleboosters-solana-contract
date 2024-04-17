@@ -95,7 +95,7 @@ impl FighterCategory {
 
 #[derive(Clone, Debug, AnchorSerialize, AnchorDeserialize, PartialEq)]
 pub enum FighterType {
-    Boxer,
+    Boxing,
     MuayThai,
     Taekwondo,
     Karate,
@@ -114,7 +114,7 @@ pub enum FighterColorSide {
 impl fmt::Display for FighterType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let variant_str = match self {
-            FighterType::Boxer => "Boxer",
+            FighterType::Boxing => "Boxing",
             FighterType::MuayThai => "MuayThai",
             FighterType::Taekwondo => "Taekwondo",
             FighterType::Karate => "Karate",
@@ -130,7 +130,7 @@ impl fmt::Display for FighterType {
 impl FighterType {
     pub fn from_index(index: usize) -> Option<FighterType> {
         match index {
-            0 => Some(FighterType::Boxer),
+            0 => Some(FighterType::Boxing),
             1 => Some(FighterType::MuayThai),
             2 => Some(FighterType::Taekwondo),
             3 => Some(FighterType::Karate),
@@ -144,7 +144,7 @@ impl FighterType {
 
     pub fn from_name(index: &str) -> Option<FighterType> {
         match index {
-            "Boxer" => Some(FighterType::Boxer),
+            "Boxing" => Some(FighterType::Boxing),
             "MuayThai" => Some(FighterType::MuayThai),
             "Taekwondo" => Some(FighterType::Taekwondo),
             "Karate" => Some(FighterType::Karate),
@@ -159,7 +159,7 @@ impl FighterType {
     // Determine the category of the fighter
     pub fn _category(&self) -> FighterCategory {
         match self {
-            FighterType::Boxer
+            FighterType::Boxing
             | FighterType::MuayThai
             | FighterType::Taekwondo
             | FighterType::Karate => FighterCategory::Striker,

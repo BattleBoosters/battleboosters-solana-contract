@@ -107,7 +107,7 @@ const createMintableGameAsset = async function (
     // console.log(JSON.stringify(logs?.meta?.logMessages, undefined, 2));
 
     return {
-
+        mystery_box_pda,
         mintable_game_asset_pda,
         player_game_asset_link_pda: mintable_game_asset_link_pda,
         player_account_pda,

@@ -160,28 +160,6 @@ const joinFightCard = async function (
 
     const tx = await program.methods
         .joinFightCard(
-            new BN(event_nonce),
-            fight_card_nonce,
-            new BN(fighter_mintable_asset_nonce),
-            energy_mintable_asset_nonce
-                ? new BN(energy_mintable_asset_nonce)
-                : null,
-            shield_mintable_asset_nonce
-                ? new BN(shield_mintable_asset_nonce)
-                : null,
-            points_mintable_asset_nonce
-                ? new BN(points_mintable_asset_nonce)
-                : null,
-            new BN(fighter_mintable_asset_link_nonce),
-            energy_mintable_asset_link_nonce
-                ? new BN(energy_mintable_asset_link_nonce)
-                : null,
-            shield_mintable_asset_link_nonce
-                ? new BN(shield_mintable_asset_link_nonce)
-                : null,
-            points_mintable_asset_link_nonce
-                ? new BN(points_mintable_asset_link_nonce)
-                : null,
             fighterColorSide
         )
         .accounts({
@@ -189,10 +167,8 @@ const joinFightCard = async function (
             event: event_account,
             fighterAsset: fighter_mintable_game_asset_pda,
             fighterLink: fighter_mintable_game_asset_link_pda,
-            energyBoosterAsset: energy_mintable_game_asset_pda,
             shieldBoosterAsset: shield_mintable_game_asset_pda,
             pointsBoosterAsset: points_mintable_game_asset_pda,
-            energyBoosterLink: energy_mintable_game_asset_link_pda,
             shieldBoosterLink: shield_mintable_game_asset_link_pda,
             pointsBoosterLink: points_mintable_game_asset_link_pda,
             fightCard: fight_card_account,

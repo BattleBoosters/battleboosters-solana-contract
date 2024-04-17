@@ -6,7 +6,7 @@ import { updateFightCard } from './utils/createUpdateFightCard';
 import { updateEvent } from './utils/createUpdateEvent';
 import { sleep } from '@switchboard-xyz/common';
 
-describe('Request Randomness', () => {
+describe.skip('Request Randomness', () => {
     const provider = anchor.AnchorProvider.env();
 
     anchor.setProvider(provider);

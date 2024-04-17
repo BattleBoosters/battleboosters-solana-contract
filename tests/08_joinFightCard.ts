@@ -142,7 +142,7 @@ describe('Join fight card', () => {
             );
 
         const tx = await program.methods
-            .initializeEventLink(new BN(0), null, null)
+            .initializeEventLink()
             .accounts({
                 creator: provider.wallet.publicKey,
                 event: event_account,

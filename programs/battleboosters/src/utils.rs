@@ -1,5 +1,4 @@
 use crate::errors::ErrorCode;
-use crate::state::event::EventLinkData;
 use crate::state::fight_card::*;
 use crate::state::fighter::*;
 use crate::state::mintable_game_asset::{
@@ -88,8 +87,6 @@ pub fn process_game_asset_for_action(
 pub fn process_and_verify_game_asset_type(
     mintable_game_asset: Option<&Box<Account<MintableGameAssetData>>>,
     fight_card_link: &mut Account<FightCardLinkData>,
-    event_link: &mut Account<EventLinkData>,
-    require_tournament_type: Option<&TournamentType>,
 ) -> Result<()> {
     if let Some(mintable_asset) = mintable_game_asset {
         for attr in mintable_asset.metadata.attributes.iter() {

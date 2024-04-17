@@ -45,7 +45,7 @@ const createFightCard = async function (
     };
 
     const tx = await program.methods
-        .createNewFightCard(new BN(event_nonce), fightCardData)
+        .createNewFightCard(fightCardData)
         .accounts({
             creator: admin_account.publicKey,
             program: program_pda,
@@ -118,7 +118,7 @@ const updateFightCard = async function (
     };
 
     const tx = await program.methods
-        .updateFightCard(new BN(event_nonce), fight_card_nonce, fightCardData)
+        .updateFightCard(fightCardData)
         .accounts({
             creator: admin_account.publicKey,
             program: program_pda,
