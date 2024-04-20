@@ -31,15 +31,12 @@ use crate::utils::{
 };
 
 use anchor_lang::prelude::*;
-use mpl_token_metadata::instructions::{
-    CreateV1CpiBuilder, MintV1CpiBuilder,
-};
+use mpl_token_metadata::instructions::{CreateV1CpiBuilder, MintV1CpiBuilder};
 use mpl_token_metadata::types::{PrintSupply, TokenStandard};
 use solana_program::native_token::LAMPORTS_PER_SOL;
 use solana_program::program::invoke_signed;
 use solana_program::system_instruction;
 use switchboard_on_demand::accounts::RandomnessAccountData;
-
 
 pub fn initialize(
     ctx: Context<InitializeProgram>,
@@ -90,9 +87,7 @@ pub fn initialize_rarity(
 
     Ok(())
 }
-pub fn initialize_event_link(
-    ctx: Context<InitializeEventLink>
-) -> Result<()> {
+pub fn initialize_event_link(ctx: Context<InitializeEventLink>) -> Result<()> {
     let event_link = &mut ctx.accounts.event_link;
     let rank = &mut ctx.accounts.rank;
     let event = &mut ctx.accounts.event;
@@ -512,10 +507,7 @@ pub fn update_event(
     Ok(())
 }
 
-pub fn create_new_fight_card(
-    ctx: Context<CreateFightCard>,
-    params: FightCardData,
-) -> Result<()> {
+pub fn create_new_fight_card(ctx: Context<CreateFightCard>, params: FightCardData) -> Result<()> {
     let program = &ctx.accounts.program;
     verify_equality(&ctx.accounts.creator.key(), &program.admin_pubkey)?;
 
@@ -551,7 +543,7 @@ pub fn update_fight_card(ctx: Context<UpdateFightCard>, params: FightCardData) -
 //     //requests: Vec<PurchaseRequest>,
 // ) -> Result<()> {
 //     let program = &mut ctx.accounts.program;
-// 
+//
 //     let metadata_program = &ctx.accounts.metadata_program.to_account_info();
 //     let metadata = &ctx.accounts.metadata.to_account_info();
 //     let token_record = &ctx.accounts.token_record.to_account_info();
@@ -560,17 +552,17 @@ pub fn update_fight_card(ctx: Context<UpdateFightCard>, params: FightCardData) -
 //     let master_edition = &ctx.accounts.master_edition.to_account_info();
 //     let mint_authority = &ctx.accounts.mint_authority.to_account_info();
 //     let token_account = &ctx.accounts.token_account.to_account_info();
-// 
+//
 //     let sysvar = &ctx.accounts.sysvar_instructions.to_account_info();
 //     let spl_token_program = &ctx.accounts.token_program.to_account_info();
-// 
+//
 //     // Energy
 //     let energy_metadata = &ctx.accounts.energy_metadata.to_account_info();
 //     let energy_master_edition = &ctx.accounts.energy_master_edition.to_account_info();
 //     let energy_minter = &ctx.accounts.energy_minter.to_account_info();
-// 
+//
 //     let mut binding_create = CreateV1CpiBuilder::new(&metadata_program);
-// 
+//
 //     let create_cpi = binding_create
 //         .metadata(&metadata)
 //         .mint(&minter, false)
@@ -591,7 +583,7 @@ pub fn update_fight_card(ctx: Context<UpdateFightCard>, params: FightCardData) -
 //         .seller_fee_basis_points(SELLER_FEE)
 //         .is_mutable(true)
 //         .print_supply(PrintSupply::Zero);
-// 
+//
 //     let mut binding = MintV1CpiBuilder::new(metadata_program);
 //     let mint_cpi = binding
 //         .token(token_account)
@@ -607,7 +599,7 @@ pub fn update_fight_card(ctx: Context<UpdateFightCard>, params: FightCardData) -
 //         .spl_token_program(&ctx.accounts.token_program)
 //         .spl_ata_program(&ctx.accounts.associated_token_program)
 //         .amount(1);
-// 
+//
 //     let mut binding_verify = VerifyCollectionV1CpiBuilder::new(&metadata_program);
 //     let create_cpi_verify = binding_verify
 //         .collection_mint(&energy_minter)
@@ -617,17 +609,17 @@ pub fn update_fight_card(ctx: Context<UpdateFightCard>, params: FightCardData) -
 //         .collection_master_edition(Some(&energy_master_edition))
 //         .sysvar_instructions(&ctx.accounts.sysvar_instructions)
 //         .system_program(&ctx.accounts.system_program);
-// 
+//
 //     let authority_seeds = [
 //         MY_APP_PREFIX,
 //         MINT_AUTHORITY,
 //         &[program.authority_bump.clone()],
 //     ];
-// 
+//
 //     create_cpi.invoke_signed(&[&authority_seeds])?;
 //     mint_cpi.invoke_signed(&[&authority_seeds])?;
 //     create_cpi_verify.invoke_signed(&[&authority_seeds])?;
-// 
+//
 //     // for request in &requests {
 //     //     match request.nft_type {
 //     //         NftType::Booster => {
@@ -674,7 +666,7 @@ pub fn update_fight_card(ctx: Context<UpdateFightCard>, params: FightCardData) -
 //     //         }
 //     //     }
 //     // }
-// 
+//
 //     program.mintable_game_asset_nonce = program.mintable_game_asset_nonce.checked_add(1).unwrap();
 //     Ok(())
 // }
@@ -954,6 +946,10 @@ pub fn create_mintable_game_asset(
                         value: scaled_random_number_power.to_string(),
                     },
                     Attribute {
+                        trait_type: "Maximum Lifespan".to_string(),
+                        value: scaled_random_number_lifespan.to_string(),
+                    },
+                    Attribute {
                         trait_type: "Lifespan".to_string(),
                         value: scaled_random_number_lifespan.to_string(),
                     },
@@ -1055,7 +1051,10 @@ pub fn join_fight_card(
 
     match event.tournament_type {
         TournamentType::MainCard => {
-            require!(event_link.champions_pass_pubkey.is_some(), ErrorCode::MissingChampionsPassAsset)
+            require!(
+                event_link.champions_pass_pubkey.is_some(),
+                ErrorCode::MissingChampionsPassAsset
+            )
         }
         _ => {}
     }
@@ -1077,11 +1076,8 @@ pub fn join_fight_card(
         Some(&mut ctx.accounts.fighter_link),
         false,
     )?;
-    process_and_verify_game_asset_type(
-        Some(&ctx.accounts.fighter_asset),
-        fight_card_link,
-    )?;
-    
+    process_and_verify_game_asset_type(Some(&ctx.accounts.fighter_asset), fight_card_link)?;
+
     process_game_asset_for_action(
         ctx.accounts.shield_booster_asset.as_mut(),
         ctx.accounts.shield_booster_link.as_mut(),
@@ -1105,8 +1101,6 @@ pub fn join_fight_card(
         fight_card_link.fighter_used.is_some() && fight_card_link.fighter_nonce_tracker.is_some(),
         ErrorCode::FightCardLinkedToGameAsset
     );
-    
-    
 
     fight_card_link.fight_card_pubkey = fight_card.to_account_info().key();
     fight_card_link.fight_card_nonce_tracker = fight_card.nonce;
@@ -1285,10 +1279,10 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
 //     result: Vec<u8>,
 // ) -> Result<()> {
 //     msg!("Randomness received: {:?}", result);
-// 
+//
 //     let event = &mut ctx.accounts.event;
 //     event.randomness = Some(result);
-// 
+//
 //     Ok(())
 // }
 
@@ -1422,6 +1416,7 @@ pub fn determine_ranking_points(
             if new_lifespan_value == 0 {
                 // Burn the metadata of the game asset
                 fighter_mintable_game_asset.is_burned = true;
+                fighter_mintable_game_asset.owner = None;
                 // Free the space of the game asset link
                 fighter_mintable_game_asset_link.is_free = true;
             }

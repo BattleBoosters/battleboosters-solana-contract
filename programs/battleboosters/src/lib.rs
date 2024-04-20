@@ -9,8 +9,8 @@ mod utils;
 
 use crate::state::{
     collect_rewards::*, create_spl_nft::*, determine_ranking_points::*, event::*, fight_card::*,
-    fighter::*, join_fight_card::*, mintable_game_asset::*, player::*,
-    program::*, rank::*, rarity::*, transaction_escrow::*,
+    fighter::*, join_fight_card::*, mintable_game_asset::*, player::*, program::*, rank::*,
+    rarity::*, transaction_escrow::*,
 };
 
 use crate::types::*;
@@ -72,12 +72,8 @@ pub mod battleboosters {
         processor::initialize_player(ctx, player_pubkey)
     }
 
-    pub fn initialize_event_link(
-        ctx: Context<InitializeEventLink>,
-    ) -> Result<()> {
-        processor::initialize_event_link(
-            ctx
-        )
+    pub fn initialize_event_link(ctx: Context<InitializeEventLink>) -> Result<()> {
+        processor::initialize_event_link(ctx)
     }
 
     pub fn create_nft_collection(

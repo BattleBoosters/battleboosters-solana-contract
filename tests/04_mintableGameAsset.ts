@@ -283,11 +283,12 @@ describe.skip('Mintable Game Asset', () => {
         assert.isFalse(mintable_game_asset_pda_data.isMinted);
         assert.equal(mintable_game_asset_pda_data.metadata.name, 'Fighter');
         assert.equal(mintable_game_asset_pda_data.metadata.description, 'test');
-        assert.isNull(
-            mintable_game_asset_pda_data.metadata.image
-        );
+        assert.isNull(mintable_game_asset_pda_data.metadata.image);
         assert.isNull(mintable_game_asset_pda_data.metadata.animationUrl);
-        assert.equal(mintable_game_asset_pda_data.metadata.externalUrl, `https://battleboosters.com/api/metadata/${mintable_game_asset_pda}`);
+        assert.equal(
+            mintable_game_asset_pda_data.metadata.externalUrl,
+            `https://battleboosters.com/api/metadata/${mintable_game_asset_pda}`
+        );
         console.log(mintable_game_asset_pda_data.metadata.attributes);
         // assert.deepEqual(
         //     mintable_game_asset_pda_data.metadata.attributes,

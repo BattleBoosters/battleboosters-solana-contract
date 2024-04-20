@@ -159,9 +159,7 @@ const joinFightCard = async function (
     );
 
     const tx = await program.methods
-        .joinFightCard(
-            fighterColorSide
-        )
+        .joinFightCard(fighterColorSide)
         .accounts({
             signer: provider.wallet.publicKey,
             event: event_account,

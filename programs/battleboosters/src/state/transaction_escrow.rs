@@ -5,7 +5,7 @@ use crate::constants::*;
 use crate::ErrorCode;
 use anchor_lang::prelude::*;
 use anchor_spl::associated_token::AssociatedToken;
-use anchor_spl::token::{Token};
+use anchor_spl::token::Token;
 use std::str::FromStr;
 
 use crate::state::event::EventData;

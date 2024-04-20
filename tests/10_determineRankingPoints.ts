@@ -250,9 +250,7 @@ describe('Determine ranking points', () => {
 
         try {
             let tx = await program.methods
-                .determineRankingPoints(
-                    { brazilianJiuJitsu: {} }
-                )
+                .determineRankingPoints({ brazilianJiuJitsu: {} })
                 .accounts({
                     signer: provider.wallet.publicKey,
                     event: event_account,

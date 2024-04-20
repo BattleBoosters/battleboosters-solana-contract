@@ -1,10 +1,10 @@
-import {updateFightCard} from "./utils/createUpdateFightCard";
-import * as anchor from "@coral-xyz/anchor";
-import {BN, Program} from "@coral-xyz/anchor";
-import account_init from "./utils/initAccounts";
+import { updateFightCard } from './utils/createUpdateFightCard';
+import * as anchor from '@coral-xyz/anchor';
+import { BN, Program } from '@coral-xyz/anchor';
+import account_init from './utils/initAccounts';
 import { Battleboosters } from '../target/types/battleboosters';
-import {updateEvent} from "./utils/createUpdateEvent";
-import {assert} from "chai";
+import { updateEvent } from './utils/createUpdateEvent';
+import { assert } from 'chai';
 
 describe.only('Collect Rewards', () => {
     const provider = anchor.AnchorProvider.env();
@@ -26,11 +26,10 @@ describe.only('Collect Rewards', () => {
         authority_bump,
     } = account_init(program);
 
-
     it('Should update an event', async () => {
         const event_id = 0;
         const new_time_start = 1713535498;
-        const new_time_end = 1813535498;
+        const new_time_end = 1713623964;
         const { eventAccount } = await updateEvent(
             provider,
             program,
@@ -57,11 +56,50 @@ describe.only('Collect Rewards', () => {
                     boosterAmount: 5,
                     championsPassAmount: 1,
                 },
+                {
+                    startRank: new BN(3),
+                    endRank: new BN(3),
+                    prizeAmount: new BN(20),
+                    fighterAmount: 1,
+                    boosterAmount: 3,
+                    championsPassAmount: 1,
+                },
+                {
+                    startRank: new BN(4),
+                    endRank: new BN(4),
+                    prizeAmount: new BN(10),
+                    fighterAmount: 1,
+                    boosterAmount: 1,
+                    championsPassAmount: 1,
+                },
+                {
+                    startRank: new BN(5),
+                    endRank: new BN(10),
+                    prizeAmount: new BN(1),
+                    fighterAmount: 1,
+                    boosterAmount: 1,
+                    championsPassAmount: 1,
+                },
+                {
+                    startRank: new BN(11),
+                    endRank: new BN(20),
+                    prizeAmount: new BN(0),
+                    fighterAmount: 1,
+                    boosterAmount: 1,
+                    championsPassAmount: 0,
+                },
+                {
+                    startRank: new BN(21),
+                    endRank: null,
+                    prizeAmount: new BN(0),
+                    fighterAmount: 1,
+                    boosterAmount: 1,
+                    championsPassAmount: 0,
+                },
             ]
         );
         assert.equal(eventAccount.startDate.eq(new BN(new_time_start)), true);
         assert.equal(eventAccount.endDate.eq(new BN(new_time_end)), true);
         assert.equal(eventAccount.fightCardNonce, 0);
     });
-
-})
+});

@@ -90,10 +90,10 @@ pub struct FightCardLinkData {
     pub fighter_used: Option<Pubkey>,
     /// Tracker to link the `Fighter` PDA to the `FightCardLink` PDA
     pub fighter_nonce_tracker: Option<u64>,
-    /// The `Pubkey` of the booster used
-    pub energy_booster_used: Option<Pubkey>,
-    /// Tracker to link the `Booster` PDA to the `FightCardLink` PDA
-    pub energy_booster_nonce_tracker: Option<u64>,
+    // /// The `Pubkey` of the booster used
+    // pub energy_booster_used: Option<Pubkey>,
+    // /// Tracker to link the `Booster` PDA to the `FightCardLink` PDA
+    // pub energy_booster_nonce_tracker: Option<u64>,
     /// The `Pubkey` of the booster used
     pub shield_booster_used: Option<Pubkey>,
     /// Tracker to link the `Booster` PDA to the `FightCardLink` PDA

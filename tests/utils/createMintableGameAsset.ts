@@ -2,7 +2,7 @@ import * as anchor from '@coral-xyz/anchor';
 import { BN } from '@coral-xyz/anchor';
 import { sleep } from '@switchboard-xyz/common';
 import { Battleboosters } from '../../target/types/battleboosters';
-import {Transaction} from "@solana/web3.js";
+import { Transaction } from '@solana/web3.js';
 const createMintableGameAsset = async function (
     program: anchor.Program<Battleboosters>,
     provider: anchor.AnchorProvider,
@@ -71,12 +71,8 @@ const createMintableGameAsset = async function (
 
     let signers = signer ? [signer] : [];
 
-
     const tx = await program.methods
-        .createMintableGameAsset(
-            new BN(player_game_asset_link_nonce),
-            variant
-        )
+        .createMintableGameAsset(new BN(player_game_asset_link_nonce), variant)
         .accounts({
             signer: signer ? signer.publicKey : provider.wallet.publicKey,
             program: program_pda,
@@ -87,14 +83,15 @@ const createMintableGameAsset = async function (
             mintableGameAsset: mintable_game_asset_pda,
             randomnessAccountData: randomness_pda,
             systemProgram: anchor.web3.SystemProgram.programId,
-        }).instruction()
+        })
+        .instruction();
 
     const transaction = new Transaction();
 
-    if (revealIx){
-        transaction.add(revealIx)
+    if (revealIx) {
+        transaction.add(revealIx);
     }
-    transaction.add(tx)
+    transaction.add(tx);
     await provider.sendAndConfirm(transaction, signers);
 
     // console.log(tx)
