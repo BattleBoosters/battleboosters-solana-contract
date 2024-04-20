@@ -75,4 +75,6 @@ pub enum ErrorCode {
     MissingChampionsPassLink,
     #[msg("Randomness already revealed")]
     RandomnessAlreadyRevealed,
+    #[msg("Randomness is not yet resolved")]
+    RandomnessNotResolved,
 }

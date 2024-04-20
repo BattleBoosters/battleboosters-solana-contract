@@ -697,6 +697,13 @@ pub fn create_mintable_game_asset(
         // increase the player game asset link nonce for the next game asset generation
         player_account.player_game_asset_link_nonce += 1;
     }
+    let randomness_data =
+        RandomnessAccountData::parse(ctx.accounts.randomness_account_data.data.borrow()).unwrap();
+    // call the switchboard on-demand get_value function to get the revealed random value
+    let randomness = randomness_data
+        .get_value(&clock)
+        .map_err(|_| ErrorCode::RandomnessNotResolved);
+    msg!("Randomness {:?}", randomness);
 
     match request.nft_type {
         NftType::Booster => {
@@ -710,14 +717,7 @@ pub fn create_mintable_game_asset(
                 .clone()
                 .ok_or(ErrorCode::RarityAccountRequired)?;
             // call the switchboard on-demand parse function to get the randomness data
-            let randomness_data =
-                RandomnessAccountData::parse(ctx.accounts.randomness_account_data.data.borrow())
-                    .unwrap();
-            // call the switchboard on-demand get_value function to get the revealed random value
-            let randomness = randomness_data
-                .get_value(&clock)
-                .unwrap_or_else(|_| [0u8; 32]);
-            msg!("Randomness {:?}", randomness);
+
             // let randomness = mystery_box
             //     .randomness
             //     .clone()
@@ -829,15 +829,15 @@ pub fn create_mintable_game_asset(
                 .rarity
                 .clone()
                 .ok_or(ErrorCode::RarityAccountRequired)?;
-            // call the switchboard on-demand parse function to get the randomness data
-            let randomness_data =
-                RandomnessAccountData::parse(ctx.accounts.randomness_account_data.data.borrow())
-                    .unwrap();
-            // call the switchboard on-demand get_value function to get the revealed random value
-            let randomness = randomness_data
-                .get_value(&clock)
-                .unwrap_or_else(|_| [0u8; 32]);
-            msg!("Randomness {:?}", randomness);
+            // // call the switchboard on-demand parse function to get the randomness data
+            // let randomness_data =
+            //     RandomnessAccountData::parse(ctx.accounts.randomness_account_data.data.borrow())
+            //         .unwrap();
+            // // call the switchboard on-demand get_value function to get the revealed random value
+            // let randomness = randomness_data
+            //     .get_value(&clock)
+            //     .unwrap_or_else(|_| [0u8; 32]);
+            // msg!("Randomness {:?}", randomness);
 
             let public_key_bytes = signer.key().to_bytes();
 
