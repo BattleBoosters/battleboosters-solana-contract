@@ -702,7 +702,7 @@ pub fn create_mintable_game_asset(
     // call the switchboard on-demand get_value function to get the revealed random value
     let randomness = randomness_data
         .get_value(&clock)
-        .map_err(|_| ErrorCode::RandomnessNotResolved);
+        .map_err(|_| ErrorCode::RandomnessNotResolved)?;
     msg!("Randomness {:?}", randomness);
 
     match request.nft_type {
