@@ -46,27 +46,6 @@ pub struct UpdateEvent<'info> {
 }
 
 #[derive(Accounts)]
-pub struct EventRequestRandomness<'info> {
-    #[account(mut)]
-    pub creator: Signer<'info>,
-    #[account(
-    mut,
-    seeds = [MY_APP_PREFIX, PROGRAM_STATE],
-    bump
-    )]
-    pub program: Box<Account<'info, ProgramData>>,
-    #[account(
-    mut,
-    seeds = [MY_APP_PREFIX, EVENT, event.nonce.to_le_bytes().as_ref()],
-    bump
-    )]
-    pub event: Box<Account<'info, EventData>>,
-    /// CHECK: The account's data is validated manually within the handler.
-    pub randomness_account_data: AccountInfo<'info>,
-    pub system_program: Program<'info, System>,
-}
-
-#[derive(Accounts)]
 pub struct InitializeEventLink<'info> {
     #[account(mut)]
     pub creator: Signer<'info>,
@@ -146,8 +125,6 @@ pub struct EventData {
     pub rank_rewards: Vec<RankReward>,
     /// Represent the current amount of player
     pub rank_nonce: u64,
-    /// Represent the randomness, will be used to derive child randomness for collecting mystery box
-    pub randomness_account: Option<Pubkey>,
     /// Nonce of the `event`
     pub nonce: u64,
 }

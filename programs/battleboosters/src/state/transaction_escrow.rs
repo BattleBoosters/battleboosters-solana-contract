@@ -2,14 +2,12 @@ use super::mystery_box::MysteryBoxData;
 use super::player::PlayerData;
 use super::program::ProgramData;
 use crate::constants::*;
+use crate::state::rarity::RarityData;
 use crate::ErrorCode;
 use anchor_lang::prelude::*;
 use anchor_spl::associated_token::AssociatedToken;
 use anchor_spl::token::Token;
 use std::str::FromStr;
-
-use crate::state::event::EventData;
-use crate::state::rarity::RarityData;
 use switchboard_solana::prelude::*;
 
 #[derive(Accounts)]
@@ -147,53 +145,3 @@ pub struct TransactionEscrow<'info> {
 //     )]
 //     pub rarity: Account<'info, RarityData>,
 // }
-
-#[derive(Accounts)]
-pub struct TransactionTest<'info> {
-    #[account(mut)]
-    pub signer: Signer<'info>,
-    /// CHECK: Receiver of the pack we use this account only for crediting fighter packs and boosters
-    #[account(mut)]
-    pub recipient: AccountInfo<'info>,
-    #[account(mut, seeds = [MY_APP_PREFIX, PROGRAM_STATE], bump)]
-    pub program: Account<'info, ProgramData>,
-    #[account(
-    mut,
-    seeds = [MY_APP_PREFIX, PLAYER, recipient.key().as_ref()],
-    bump,
-    )]
-    pub player_account: Account<'info, PlayerData>,
-    #[account(
-    init,
-    payer = signer,
-    seeds = [MY_APP_PREFIX, MYSTERY_BOX, player_account.order_nonce.to_le_bytes().as_ref(), recipient.key().as_ref()],
-    bump,
-    space = 128
-    )]
-    pub mystery_box: Account<'info, MysteryBoxData>,
-    /// Rarity PDA
-    #[account(
-    mut,
-    seeds = [MY_APP_PREFIX, RARITY],
-    bump,
-    )]
-    pub rarity: Account<'info, RarityData>,
-
-    /// The Solana System program. Used to allocate space on-chain for the randomness_request account.
-    pub system_program: Program<'info, System>,
-}
-
-#[derive(Accounts)]
-#[instruction(event_nonce: u64)]
-pub struct TransactionTest2<'info> {
-    #[account(mut)]
-    pub signer: Signer<'info>,
-    #[account(mut, seeds = [MY_APP_PREFIX, PROGRAM_STATE], bump, constraint = signer.key == &program.admin_pubkey)]
-    pub program: Account<'info, ProgramData>,
-    #[account(
-    mut,
-    seeds = [MY_APP_PREFIX, EVENT, event_nonce.to_le_bytes().as_ref()],
-    bump
-    )]
-    pub event: Box<Account<'info, EventData>>,
-}

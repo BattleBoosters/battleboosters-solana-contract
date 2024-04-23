@@ -6,9 +6,7 @@ use crate::events::*;
 use crate::state::collect_rewards::CollectRewards;
 use crate::state::create_spl_nft::CreateSplNft;
 use crate::state::determine_ranking_points::DetermineRankingPoints;
-use crate::state::event::{
-    CreateEvent, EventRequestRandomness, InitializeEventLink, RankReward, UpdateEvent,
-};
+use crate::state::event::{CreateEvent, InitializeEventLink, RankReward, UpdateEvent};
 use crate::state::fight_card::{CreateFightCard, FightCardData, UpdateFightCard};
 use crate::state::fighter_base::{CreateFighterBase, FightMetrics};
 use crate::state::join_fight_card::JoinFightCard;
@@ -363,11 +361,10 @@ pub fn purchase_mystery_box(
 
     let randomness_data =
         RandomnessAccountData::parse(ctx.accounts.randomness_account_data.data.borrow()).unwrap();
-    if randomness_data.seed_slot != clock.slot - 1 {
-        msg!("seed_slot: {}", randomness_data.seed_slot);
-        msg!("slot: {}", clock.slot);
-        return Err(ErrorCode::RandomnessAlreadyRevealed.into());
-    }
+    require!(
+        randomness_data.seed_slot == clock.slot - 1,
+        ErrorCode::RandomnessAlreadyRevealed
+    );
 
     // Set the collector pack to default `champion_s_pass_mint_allowance`
     mystery_box.champions_pass_mint_allowance = 0;
@@ -476,7 +473,6 @@ pub fn create_new_event(
     create_event.tournament_type = tournament_type;
     create_event.rank_rewards = rank_reward;
     create_event.rank_nonce = 0_u64;
-    create_event.randomness_account = None;
     create_event.nonce = program.event_nonce;
 
     emit!(EventCreated {
@@ -508,29 +504,6 @@ pub fn update_event(
     emit!(EventUpdated {
         event_id: program.event_nonce
     });
-
-    Ok(())
-}
-
-pub fn event_request_randomness(ctx: Context<EventRequestRandomness>) -> Result<()> {
-    let clock = Clock::get()?;
-    let current_blockchain_timestamp = clock.unix_timestamp;
-    let event = &mut ctx.accounts.event;
-    let randomness_data =
-        RandomnessAccountData::parse(ctx.accounts.randomness_account_data.data.borrow()).unwrap();
-
-    require!(
-        event.end_date < current_blockchain_timestamp,
-        ErrorCode::EventStillRunning
-    );
-
-    if randomness_data.seed_slot != clock.slot - 1 {
-        msg!("seed_slot: {}", randomness_data.seed_slot);
-        msg!("slot: {}", clock.slot);
-        return Err(ErrorCode::RandomnessAlreadyRevealed.into());
-    }
-    // Update randomness account
-    event.randomness_account = Some(ctx.accounts.randomness_account_data.to_account_info().key());
 
     Ok(())
 }
@@ -1145,7 +1118,7 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
     let current_blockchain_timestamp = clock.unix_timestamp;
     let program = &ctx.accounts.program;
     let rank = &mut ctx.accounts.rank;
-    let event = &ctx.accounts.event;
+    let event = &mut ctx.accounts.event;
     let player_account = &mut ctx.accounts.player_account;
     let mystery_box = &mut ctx.accounts.mystery_box;
     let rarity = &ctx.accounts.rarity;
@@ -1156,13 +1129,15 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
         event.end_date < current_blockchain_timestamp,
         ErrorCode::EventStillRunning
     );
-    if let Some(randomness) = event.randomness_account.clone() {
-        mystery_box.randomness_account = randomness
-    } else {
-        return Err(ErrorCode::RandomnessIsNone.into());
-    }
-    require!(rank.total_points.is_some(), ErrorCode::RankPointsIsNone);
     require!(!rank.is_consumed, ErrorCode::ConsumedAlready);
+
+    let randomness_data =
+        RandomnessAccountData::parse(ctx.accounts.randomness_account_data.data.borrow()).unwrap();
+    require!(
+        randomness_data.seed_slot == clock.slot - 1,
+        ErrorCode::RandomnessAlreadyRevealed
+    );
+    require!(rank.total_points.is_some(), ErrorCode::RankPointsIsNone);
 
     if let Some(player_rank) = rank.rank {
         let rank_rewards = event.rank_rewards.iter().find(|rank_reward| {
@@ -1196,6 +1171,9 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
                 }
             }
 
+            // Set the randomness account
+            mystery_box.randomness_account =
+                ctx.accounts.randomness_account_data.to_account_info().key();
             mystery_box.booster_mint_allowance = reward.booster_amount as u64;
             mystery_box.fighter_mint_allowance = reward.fighter_amount as u64;
             mystery_box.champions_pass_mint_allowance = reward.champions_pass_amount as u64;
@@ -1233,7 +1211,7 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
             )?;
 
             msg!("bank balance now: {}", bank.lamports());
-
+            // Increase order_nonce
             player_account.order_nonce += 1;
         }
     } else {
@@ -1243,77 +1221,6 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
     rank.is_consumed = true;
     Ok(())
 }
-
-// pub fn event_request_randomness(
-//     ctx: Context<EventRequestRandomness>,
-//     event_nonce: u64,
-// ) -> Result<()> {
-//     let clock = Clock::get().unwrap();
-//     let current_blockchain_timestamp = clock.unix_timestamp;
-//     let event = &ctx.accounts.event;
-//     require!(
-//         event.end_date < current_blockchain_timestamp,
-//         ErrorCode::EventStillRunning
-//     );
-//
-//     let mut ix_data = get_ixn_discriminator("consume_randomness_event").to_vec();
-//     ix_data.extend_from_slice(&event_nonce.to_le_bytes());
-//     // ix_data.extend_from_slice(&[bank_escrow_bump.clone()]);
-//     // ix_data.extend_from_slice(&total_lamports.to_le_bytes());
-//
-//     solana_randomness_service::cpi::simple_randomness_v1(
-//         CpiContext::new(
-//             ctx.accounts.randomness_service.to_account_info(),
-//             solana_randomness_service::cpi::accounts::SimpleRandomnessV1Request {
-//                 request: ctx.accounts.randomness_request.to_account_info(),
-//                 escrow: ctx.accounts.randomness_escrow.to_account_info(),
-//                 state: ctx.accounts.randomness_state.to_account_info(),
-//                 mint: ctx.accounts.randomness_mint.to_account_info(),
-//                 payer: ctx.accounts.signer.to_account_info(),
-//                 system_program: ctx.accounts.system_program.to_account_info(),
-//                 token_program: ctx.accounts.token_program.to_account_info(),
-//                 associated_token_program: ctx.accounts.associated_token_program.to_account_info(),
-//             },
-//         ),
-//         8, // Request 8 bytes of randomness
-//         solana_randomness_service::Callback {
-//             program_id: ID,
-//             accounts: vec![
-//                 AccountMeta::new_readonly(
-//                     ctx.accounts.randomness_state.to_account_info().key(),
-//                     true,
-//                 )
-//                 .into(),
-//                 AccountMeta::new_readonly(
-//                     ctx.accounts.randomness_request.to_account_info().key(),
-//                     false,
-//                 )
-//                 .into(),
-//                 AccountMeta::new(event.to_account_info().key(), false).into(),
-//             ],
-//             ix_data, // TODO: hardcode this discriminator [190,217,49,162,99,26,73,234]
-//         },
-//         Some(TransactionOptions {
-//             compute_units: Some(1_000_000),
-//             compute_unit_price: Some(200),
-//         }),
-//     )?;
-//
-//     Ok(())
-// }
-
-// pub fn consume_randomness_event(
-//     ctx: Context<ConsumeRandomnessEvent>,
-//     _event_nonce: u64, // Used in instruction
-//     result: Vec<u8>,
-// ) -> Result<()> {
-//     msg!("Randomness received: {:?}", result);
-//
-//     let event = &mut ctx.accounts.event;
-//     event.randomness = Some(result);
-//
-//     Ok(())
-// }
 
 pub fn admin_update_rank(ctx: Context<UpdateRank>, ranking: u64) -> Result<()> {
     let signer = &ctx.accounts.signer;

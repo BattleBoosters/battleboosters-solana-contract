@@ -145,10 +145,6 @@ pub mod battleboosters {
         processor::update_event(ctx, start_date, end_date, tournament_type, rank_reward)
     }
 
-    pub fn event_request_randomness(ctx: Context<EventRequestRandomness>) -> Result<()> {
-        processor::event_request_randomness(ctx)
-    }
-
     pub fn create_new_fight_card(
         ctx: Context<CreateFightCard>,
         params: FightCardData,
