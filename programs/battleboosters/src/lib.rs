@@ -9,13 +9,11 @@ mod utils;
 
 use crate::state::{
     collect_rewards::*, create_spl_nft::*, determine_ranking_points::*, event::*, fight_card::*,
-    fighter::*, join_fight_card::*, mintable_game_asset::*, player::*, program::*, rank::*,
+    fighter_base::*, join_fight_card::*, mintable_game_asset::*, player::*, program::*, rank::*,
     rarity::*, transaction_escrow::*,
 };
 
 use crate::types::*;
-use crate::utils::*;
-
 use errors::ErrorCode;
 
 declare_id!("7L9GjKBzhodpa8LL4CExnUfsBDeZ5sWnj7gJkEqUNJfa");
@@ -87,7 +85,7 @@ pub mod battleboosters {
         processor::create_nft_collection(ctx, collection_id, collection_name, symbol, uri, fees)
     }
     pub fn create_fighter(
-        ctx: Context<CreateFighter>,
+        ctx: Context<CreateFighterBase>,
         fighter_type: FighterType,
         fight_metrics: FightMetrics,
     ) -> Result<()> {
@@ -95,7 +93,7 @@ pub mod battleboosters {
     }
 
     pub fn update_fighter(
-        ctx: Context<CreateFighter>,
+        ctx: Context<CreateFighterBase>,
         fighter_type: FighterType,
         fight_metrics: FightMetrics,
     ) -> Result<()> {
@@ -104,10 +102,9 @@ pub mod battleboosters {
 
     pub fn purchase_mystery_box(
         ctx: Context<TransactionEscrow>,
-        bank_escrow_bump: u8,
         requests: Vec<PurchaseRequest>,
     ) -> Result<()> {
-        processor::purchase_mystery_box(ctx, bank_escrow_bump, requests)
+        processor::purchase_mystery_box(ctx, requests)
     }
 
     // pub fn consume_randomness(
@@ -119,42 +116,6 @@ pub mod battleboosters {
     // ) -> Result<()> {
     //     processor::consume_randomness(ctx, order_nonce, result)
     // }
-
-    // TODO: REMOVE BEFORE MAINNET LAUNCH
-    /// ONLY FOR TEST PURPOSE
-    pub fn admin_airdrop_collector_pack(
-        ctx: Context<TransactionTest>,
-        booster_mint_alowance: u64,
-        fighter_mint_allowance: u64,
-        champions_pass_mint_allowance: u64,
-    ) -> Result<()> {
-        verify_equality(
-            &ctx.accounts.signer.key(),
-            &ctx.accounts.program.admin_pubkey,
-        )?;
-        let mystery_box = &mut ctx.accounts.mystery_box;
-        let rarity = &ctx.accounts.rarity;
-        let player = &mut ctx.accounts.player_account;
-        mystery_box.randomness = Some(vec![12, 23, 34, 34, 54, 74, 94, 23]);
-        mystery_box.booster_mint_allowance = booster_mint_alowance;
-        mystery_box.fighter_mint_allowance = fighter_mint_allowance;
-        mystery_box.champions_pass_mint_allowance = champions_pass_mint_allowance;
-        if let Some(probability_tier) = rarity.get_probability_by_tier(TierType::Tier3) {
-            mystery_box.probability_tier = probability_tier;
-        } else {
-            return Err(ErrorCode::ProbabilityTierNotFound.into());
-        }
-        player.order_nonce += 1;
-
-        Ok(())
-    }
-    // TODO: REMOVE BEFORE MAINNET LAUNCH
-    /// ONLY FOR TEST PURPOSE
-    pub fn admin_set_randomness(ctx: Context<TransactionTest2>) -> Result<()> {
-        let event = &mut ctx.accounts.event;
-        event.randomness = Some(vec![12, 23, 34, 34, 54, 74, 94, 23]);
-        Ok(())
-    }
 
     pub fn create_mintable_game_asset(
         ctx: Context<CreateMintableGameAsset>,
@@ -182,6 +143,10 @@ pub mod battleboosters {
         rank_reward: Vec<RankReward>,
     ) -> Result<()> {
         processor::update_event(ctx, start_date, end_date, tournament_type, rank_reward)
+    }
+
+    pub fn event_request_randomness(ctx: Context<EventRequestRandomness>) -> Result<()> {
+        processor::event_request_randomness(ctx)
     }
 
     pub fn create_new_fight_card(

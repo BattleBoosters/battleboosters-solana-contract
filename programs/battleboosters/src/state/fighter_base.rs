@@ -5,7 +5,7 @@ use anchor_lang::prelude::*;
 
 #[derive(Accounts)]
 #[instruction(fighter_type: FighterType)]
-pub struct CreateFighter<'info> {
+pub struct CreateFighterBase<'info> {
     #[account(mut)]
     pub creator: Signer<'info>,
     #[account(
@@ -17,17 +17,17 @@ pub struct CreateFighter<'info> {
     #[account(
     init,
     payer = creator,
-    seeds = [MY_APP_PREFIX, FIGHTER, &[fighter_type.clone() as u8]],
+    seeds = [MY_APP_PREFIX, FIGHTER_BASE, &[fighter_type.clone() as u8]],
     bump,
     space = 8 + 2 + (1 + (87 * 4) ) + 50
     )]
-    pub fighter: Account<'info, FighterData>,
+    pub fighter_base: Account<'info, FighterBaseData>,
     pub system_program: Program<'info, System>,
 }
 
 #[derive(Accounts)]
 #[instruction(fighter_type: FighterType)]
-pub struct UpdateFighter<'info> {
+pub struct UpdateFighterBase<'info> {
     #[account(mut)]
     pub creator: Signer<'info>,
     #[account(
@@ -38,15 +38,15 @@ pub struct UpdateFighter<'info> {
     pub program: Account<'info, ProgramData>,
     #[account(
     mut,
-    seeds = [MY_APP_PREFIX, FIGHTER, &[fighter_type.clone() as u8]],
+    seeds = [MY_APP_PREFIX, FIGHTER_BASE, &[fighter_type.clone() as u8]],
     bump,
     )]
-    pub fighter: Account<'info, FighterData>,
+    pub fighter_base: Account<'info, FighterBaseData>,
     pub system_program: Program<'info, System>,
 }
 
 #[account]
-pub struct FighterData {
+pub struct FighterBaseData {
     pub fighter_type: FighterType,
     pub fight_metrics: FightMetrics,
 }

@@ -31,7 +31,6 @@ pub struct MysteryBoxData {
     pub booster_mint_allowance: u64,
     pub champions_pass_mint_allowance: u64,
     pub randomness_account: Pubkey, // Reference to the Switchboard randomness account
-    pub randomness: Option<Vec<u8>>,
     pub probability_tier: TierProbabilities,
     /// Nonce of the `mystery_box`
     pub nonce: u64,

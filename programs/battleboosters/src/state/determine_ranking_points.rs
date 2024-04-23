@@ -4,7 +4,7 @@
 use crate::constants::*;
 use crate::state::event::EventData;
 use crate::state::fight_card::{FightCardData, FightCardLinkData};
-use crate::state::fighter::FighterData;
+use crate::state::fighter_base::FighterBaseData;
 use crate::state::mintable_game_asset::{MintableGameAssetData, MintableGameAssetLinkData};
 use crate::state::player::PlayerData;
 use crate::state::rank::RankData;
@@ -80,8 +80,8 @@ pub struct DetermineRankingPoints<'info> {
 
     #[account(
     mut,
-    seeds = [MY_APP_PREFIX, FIGHTER, &[fighter_type.clone() as u8]],
+    seeds = [MY_APP_PREFIX, FIGHTER_BASE, &[fighter_type.clone() as u8]],
     bump,
     )]
-    pub fighter: Account<'info, FighterData>,
+    pub fighter_base: Account<'info, FighterBaseData>,
 }

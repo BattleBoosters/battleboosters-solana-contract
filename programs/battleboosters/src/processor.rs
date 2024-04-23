@@ -6,9 +6,11 @@ use crate::events::*;
 use crate::state::collect_rewards::CollectRewards;
 use crate::state::create_spl_nft::CreateSplNft;
 use crate::state::determine_ranking_points::DetermineRankingPoints;
-use crate::state::event::{CreateEvent, InitializeEventLink, RankReward, UpdateEvent};
+use crate::state::event::{
+    CreateEvent, EventRequestRandomness, InitializeEventLink, RankReward, UpdateEvent,
+};
 use crate::state::fight_card::{CreateFightCard, FightCardData, UpdateFightCard};
-use crate::state::fighter::{CreateFighter, FightMetrics};
+use crate::state::fighter_base::{CreateFighterBase, FightMetrics};
 use crate::state::join_fight_card::JoinFightCard;
 // use crate::state::mint_nft_from_game_asset::MintNftFromGameAsset;
 use crate::state::mintable_game_asset::Attribute;
@@ -34,7 +36,7 @@ use anchor_lang::prelude::*;
 use mpl_token_metadata::instructions::{CreateV1CpiBuilder, MintV1CpiBuilder};
 use mpl_token_metadata::types::{PrintSupply, TokenStandard};
 use solana_program::native_token::LAMPORTS_PER_SOL;
-use solana_program::program::invoke_signed;
+use solana_program::program::{invoke, invoke_signed};
 use solana_program::system_instruction;
 use switchboard_on_demand::accounts::RandomnessAccountData;
 
@@ -126,6 +128,7 @@ pub fn initialize_event_link(ctx: Context<InitializeEventLink>) -> Result<()> {
     event_link.event_nonce_tracker = event.nonce;
     event_link.champions_pass_pubkey = champions_pass_pubkey;
     event_link.champions_pass_nonce_tracker = champions_pass_nonce_tracker;
+    // For recreating the rank pda with nonce
     event_link.rank_nonce = event.rank_nonce;
     event_link.is_initialized = true;
 
@@ -232,28 +235,28 @@ pub fn create_nft_collection(
 }
 
 pub fn create_fighter(
-    ctx: Context<CreateFighter>,
+    ctx: Context<CreateFighterBase>,
     fighter_type: FighterType,
     fight_metrics: FightMetrics,
 ) -> Result<()> {
     let program = &ctx.accounts.program;
     verify_equality(&ctx.accounts.creator.key(), &program.admin_pubkey)?;
 
-    let fighter = &mut ctx.accounts.fighter;
+    let fighter = &mut ctx.accounts.fighter_base;
     fighter.fighter_type = fighter_type;
     fighter.fight_metrics = fight_metrics;
     Ok(())
 }
 
 pub fn update_fighter(
-    ctx: Context<CreateFighter>,
+    ctx: Context<CreateFighterBase>,
     fighter_type: FighterType,
     fight_metrics: FightMetrics,
 ) -> Result<()> {
     let program = &ctx.accounts.program;
     verify_equality(&ctx.accounts.creator.key(), &program.admin_pubkey)?;
 
-    let fighter = &mut ctx.accounts.fighter;
+    let fighter = &mut ctx.accounts.fighter_base;
     fighter.fighter_type = fighter_type;
     fighter.fight_metrics = fight_metrics;
 
@@ -262,7 +265,6 @@ pub fn update_fighter(
 
 pub fn purchase_mystery_box(
     ctx: Context<TransactionEscrow>,
-    bank_escrow_bump: u8,
     requests: Vec<PurchaseRequest>,
 ) -> Result<()> {
     let clock = Clock::get()?;
@@ -271,7 +273,7 @@ pub fn purchase_mystery_box(
     let mystery_box = &mut ctx.accounts.mystery_box;
     let player_account = &mut ctx.accounts.player_account;
     let bank = &mut ctx.accounts.bank;
-    let bank_escrow = &mut ctx.accounts.bank_escrow;
+    // let bank_escrow = &mut ctx.accounts.bank_escrow;
     let signer_key = &ctx.accounts.signer.to_account_info().key();
     let rarity = &ctx.accounts.rarity;
 
@@ -313,41 +315,50 @@ pub fn purchase_mystery_box(
 
     let total_sol = total_usd as f64 * sol_per_usd;
     let total_lamports = (total_sol * LAMPORTS_PER_SOL as f64).round() as u64;
-    let bank_escrow_balance = bank_escrow.lamports();
+    //let bank_escrow_balance = bank_escrow.lamports();
     msg!("bank balance before: {}", bank.lamports());
-    if bank_escrow_balance < total_lamports {
-        msg!(
-            "Insufficient funds: required {}, available {}.",
-            total_lamports,
-            bank_escrow_balance
-        );
-        return Err(ErrorCode::InsufficientFunds.into());
-    }
+    // if bank_escrow_balance < total_lamports {
+    //     msg!(
+    //         "Insufficient funds: required {}, available {}.",
+    //         total_lamports,
+    //         bank_escrow_balance
+    //     );
+    //     return Err(ErrorCode::InsufficientFunds.into());
+    // }
 
     let transfer_instruction = system_instruction::transfer(
-        &bank_escrow.key(),
+        signer_key,
         &bank.key(),
         // Withdraw the full balance
         total_lamports, // Amount in lamports to transfer
     );
 
-    let bank_escrow_seeds = [
-        MY_APP_PREFIX,
-        BANK,
-        signer_key.as_ref(),
-        &[bank_escrow_bump],
-    ];
-
+    // let bank_escrow_seeds = [
+    //     MY_APP_PREFIX,
+    //     BANK,
+    //     signer_key.as_ref(),
+    //     &[bank_escrow_bump],
+    // ];
     //Perform the transfer
-    invoke_signed(
+    invoke(
         &transfer_instruction,
         &[
-            bank_escrow.to_account_info(),
+            ctx.accounts.signer.to_account_info(),
             bank.to_account_info(),
             ctx.accounts.system_program.to_account_info(),
         ],
-        &[&bank_escrow_seeds],
     )?;
+
+    //Perform the transfer
+    // invoke_signed(
+    //     &transfer_instruction,
+    //     &[
+    //         bank_escrow.to_account_info(),
+    //         bank.to_account_info(),
+    //         ctx.accounts.system_program.to_account_info(),
+    //     ],
+    //     &[&bank_escrow_seeds],
+    // )?;
     msg!("bank balance now: {}", bank.lamports());
 
     let randomness_data =
@@ -465,7 +476,7 @@ pub fn create_new_event(
     create_event.tournament_type = tournament_type;
     create_event.rank_rewards = rank_reward;
     create_event.rank_nonce = 0_u64;
-    create_event.randomness = None;
+    create_event.randomness_account = None;
     create_event.nonce = program.event_nonce;
 
     emit!(EventCreated {
@@ -497,6 +508,29 @@ pub fn update_event(
     emit!(EventUpdated {
         event_id: program.event_nonce
     });
+
+    Ok(())
+}
+
+pub fn event_request_randomness(ctx: Context<EventRequestRandomness>) -> Result<()> {
+    let clock = Clock::get()?;
+    let current_blockchain_timestamp = clock.unix_timestamp;
+    let event = &mut ctx.accounts.event;
+    let randomness_data =
+        RandomnessAccountData::parse(ctx.accounts.randomness_account_data.data.borrow()).unwrap();
+
+    require!(
+        event.end_date < current_blockchain_timestamp,
+        ErrorCode::EventStillRunning
+    );
+
+    if randomness_data.seed_slot != clock.slot - 1 {
+        msg!("seed_slot: {}", randomness_data.seed_slot);
+        msg!("slot: {}", clock.slot);
+        return Err(ErrorCode::RandomnessAlreadyRevealed.into());
+    }
+    // Update randomness account
+    event.randomness_account = Some(ctx.accounts.randomness_account_data.to_account_info().key());
 
     Ok(())
 }
@@ -1035,9 +1069,8 @@ pub fn join_fight_card(
     ctx: Context<JoinFightCard>,
     fighter_color_side: FighterColorSide,
 ) -> Result<()> {
-    let clock = Clock::get().unwrap();
+    let clock = Clock::get()?;
     let current_blockchain_timestamp = clock.unix_timestamp;
-
     let event = &ctx.accounts.event;
     let fight_card = &ctx.accounts.fight_card;
     let fight_card_link = &mut ctx.accounts.fight_card_link;
@@ -1123,8 +1156,8 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
         event.end_date < current_blockchain_timestamp,
         ErrorCode::EventStillRunning
     );
-    if let Some(randomness) = event.randomness.clone() {
-        mystery_box.randomness = Some(randomness)
+    if let Some(randomness) = event.randomness_account.clone() {
+        mystery_box.randomness_account = randomness
     } else {
         return Err(ErrorCode::RandomnessIsNone.into());
     }
@@ -1289,6 +1322,7 @@ pub fn admin_update_rank(ctx: Context<UpdateRank>, ranking: u64) -> Result<()> {
 
     verify_equality(&program.admin_pubkey, &signer.to_account_info().key())?;
     rank.rank = Some(ranking);
+    msg!("new rank : {:?}", rank.rank);
 
     Ok(())
 }
@@ -1308,7 +1342,7 @@ pub fn determine_ranking_points(
     let fighter_mintable_game_asset_link = &mut ctx.accounts.fighter_asset_link;
     let points_mintable_game_asset = &mut ctx.accounts.points_booster_asset;
     let shield_mintable_game_asset = &mut ctx.accounts.shield_booster_asset;
-    let fighting_style_metrics = &ctx.accounts.fighter;
+    let fighter_base = &ctx.accounts.fighter_base;
 
     verify_equality(
         &fighter_mintable_game_asset.to_account_info().key(),
@@ -1328,7 +1362,7 @@ pub fn determine_ranking_points(
     {
         let fighter_type = FighterType::from_name(&attribute.value).unwrap();
         require!(
-            fighting_style_metrics.fighter_type == fighter_type,
+            fighter_base.fighter_type == fighter_type,
             ErrorCode::Unauthorized
         );
     }
@@ -1360,13 +1394,13 @@ pub fn determine_ranking_points(
         FighterColorSide::FighterBlue => metrics_calculation(
             &fighter_blue,
             &fighter_red,
-            &fighting_style_metrics.fight_metrics,
+            &fighter_base.fight_metrics,
             power_multiplier_float,
         ),
         FighterColorSide::FighterRed => metrics_calculation(
             &fighter_red,
             &fighter_blue,
-            &fighting_style_metrics.fight_metrics,
+            &fighter_base.fight_metrics,
             power_multiplier_float,
         ),
     };

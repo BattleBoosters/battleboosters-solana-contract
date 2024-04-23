@@ -1,6 +1,6 @@
 use crate::errors::ErrorCode;
 use crate::state::fight_card::*;
-use crate::state::fighter::*;
+use crate::state::fighter_base::*;
 use crate::state::mintable_game_asset::{
     Attribute, MintableGameAssetData, MintableGameAssetLinkData, NftMetadata,
 };

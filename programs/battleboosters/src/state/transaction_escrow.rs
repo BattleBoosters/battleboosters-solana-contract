@@ -13,7 +13,6 @@ use crate::state::rarity::RarityData;
 use switchboard_solana::prelude::*;
 
 #[derive(Accounts)]
-#[instruction(bank_escrow_bump: u8)]
 pub struct TransactionEscrow<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -39,9 +38,6 @@ pub struct TransactionEscrow<'info> {
     /// CHECK: This is a PDA used as the bank
     #[account(mut, seeds = [MY_APP_PREFIX, BANK], bump)]
     pub bank: AccountInfo<'info>,
-    /// CHECK: This is a PDA used as the bank
-    #[account(mut, seeds = [MY_APP_PREFIX, BANK, signer.key().as_ref()], bump)]
-    pub bank_escrow: AccountInfo<'info>,
 
     /// CHECK: Switchboard network price feed id
     #[account(address = Pubkey::from_str(SOL_USD_FEED_MAINNET).unwrap() @ ErrorCode::InvalidPriceFeed)]
