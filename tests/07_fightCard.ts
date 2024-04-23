@@ -28,7 +28,7 @@ describe('Create fight card', () => {
         authority_bump,
     } = account_init(program);
 
-    it('Should add a main card fight card', async () => {
+    it('Should create a fight card', async () => {
         const { fight_card_account, event_account } = await createFightCard(
             provider,
             program,

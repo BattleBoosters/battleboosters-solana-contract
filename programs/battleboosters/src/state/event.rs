@@ -82,7 +82,7 @@ pub struct InitializeEventLink<'info> {
     payer = creator,
     seeds = [MY_APP_PREFIX, RANK, event.key().as_ref(), event.rank_nonce.to_le_bytes().as_ref()],
     bump,
-    space = 8 + 33 + 9 + 50 + 8
+    space = 8 + 33 + 9 + 50 + 8 + 8
     )]
     pub rank: Box<Account<'info, RankData>>,
     pub system_program: Program<'info, System>,
@@ -95,6 +95,8 @@ pub struct EventLinkData {
     pub event_pubkey: Pubkey,
     /// Tracker to link the `EventLink` PDA to the `Event` PDA
     pub event_nonce_tracker: u64,
+    /// User rank nonce to recreate the pda
+    pub rank_nonce: u64,
     /// Ensure a champions pass have been used for `MainCard` access
     /// `champions_pass_asset` PDA public key for direct ref
     pub champions_pass_pubkey: Option<Pubkey>,

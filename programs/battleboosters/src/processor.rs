@@ -68,7 +68,6 @@ pub fn initialize(
 pub fn initialize_rarity(
     ctx: Context<InitializeRarity>,
     fighter: Vec<RarityFighter>,
-    //energy_booster: Vec<RarityBooster>,
     shield_booster: Vec<RarityBooster>,
     points_booster: Vec<RarityBooster>,
     probability_tiers: Vec<TierProbabilities>,
@@ -77,7 +76,6 @@ pub fn initialize_rarity(
     require!(!rarity.is_initialized, ErrorCode::AlreadyInitialized);
 
     rarity.fighter = fighter;
-    //rarity.energy_booster = energy_booster;
     rarity.shield_booster = shield_booster;
     rarity.points_booster = points_booster;
     rarity.probability_tiers = probability_tiers;
@@ -128,6 +126,7 @@ pub fn initialize_event_link(ctx: Context<InitializeEventLink>) -> Result<()> {
     event_link.event_nonce_tracker = event.nonce;
     event_link.champions_pass_pubkey = champions_pass_pubkey;
     event_link.champions_pass_nonce_tracker = champions_pass_nonce_tracker;
+    event_link.rank_nonce = event.rank_nonce;
     event_link.is_initialized = true;
 
     // Configure rank
@@ -145,16 +144,11 @@ pub fn initialize_player(
     ctx: Context<InitializePlayer>,
     _player_pubkey: Pubkey, /* Used in initialization */
 ) -> Result<()> {
-    //let player_inventory = &mut ctx.accounts.inventory;
     let player_account = &mut ctx.accounts.player_account;
     require!(
         !player_account.is_initialized,
         ErrorCode::AlreadyInitialized
     );
-    //
-    // player_inventory.fighter_mint_allowance = 0;
-    // player_inventory.booster_mint_allowance = 0;
-    // player_inventory.is_initialized = true;
 
     player_account.order_nonce = 0;
     player_account.player_game_asset_link_nonce = 0;
@@ -1102,6 +1096,8 @@ pub fn join_fight_card(
         ErrorCode::FightCardLinkedToGameAsset
     );
 
+    fight_card_link.fighter_link_used = Some(ctx.accounts.fighter_link.to_account_info().key());
+    fight_card_link.fighter_link_used_nonce_tracker = Some(ctx.accounts.fighter_link.nonce);
     fight_card_link.fight_card_pubkey = fight_card.to_account_info().key();
     fight_card_link.fight_card_nonce_tracker = fight_card.nonce;
     fight_card_link.fighter_color_side = fighter_color_side;

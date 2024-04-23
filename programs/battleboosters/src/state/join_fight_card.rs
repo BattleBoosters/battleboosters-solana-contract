@@ -69,7 +69,7 @@ pub struct JoinFightCard<'info> {
     #[account(
     init,
     payer = signer,
-    space = 260,
+    space = 320,
     seeds = [MY_APP_PREFIX, FIGHT_CARD, event.key().as_ref(), fight_card.key().as_ref(), signer.key().as_ref()],
     bump
     )]

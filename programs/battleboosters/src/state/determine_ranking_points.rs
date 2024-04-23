@@ -59,7 +59,7 @@ pub struct DetermineRankingPoints<'info> {
 
     #[account(
     mut,
-    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, fighter_asset_link.nonce.to_le_bytes().as_ref(), signer.key().as_ref()],
+    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, fighter_asset_link.nonce.to_le_bytes().as_ref(), rank.player_account.key().as_ref()],
     bump,
     )]
     pub fighter_asset_link: Box<Account<'info, MintableGameAssetLinkData>>,
