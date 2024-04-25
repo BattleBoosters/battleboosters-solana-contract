@@ -123,7 +123,7 @@ describe.skip('Mintable Game Asset', () => {
             );
 
             let {
-                mystery_box,
+                mystery_box_pda,
                 mintable_game_asset_pda,
                 player_game_asset_link_pda,
                 player_account_pda,
@@ -137,11 +137,13 @@ describe.skip('Mintable Game Asset', () => {
                 rarity_pda,
                 null,
                 '',
-                0
+                0,
+                provider.wallet.publicKey,
+                null
             );
 
             const mystery_box_pda_data =
-                await program.account.mysteryBoxData.fetch(mystery_box);
+                await program.account.mysteryBoxData.fetch(mystery_box_pda);
             assert.isTrue(
                 mystery_box_pda_data.boosterMintAllowance.eq(new BN(3))
             );
@@ -230,7 +232,7 @@ describe.skip('Mintable Game Asset', () => {
 
     it('Open a second fighter from mystery box randomly', async () => {
         let {
-            mystery_box,
+            mystery_box_pda,
             mintable_game_asset_pda,
             player_game_asset_link_pda,
             player_account_pda,
@@ -244,10 +246,12 @@ describe.skip('Mintable Game Asset', () => {
             rarity_pda,
             null,
             '',
-            0
+            0,
+            provider.wallet.publicKey,
+            null
         );
         const mystery_box_pda_data = await program.account.mysteryBoxData.fetch(
-            mystery_box
+            mystery_box_pda
         );
         assert.isTrue(mystery_box_pda_data.boosterMintAllowance.eq(new BN(3)));
 
@@ -340,7 +344,9 @@ describe.skip('Mintable Game Asset', () => {
                 rarity_pda,
                 null,
                 '',
-                0
+                0,
+                provider.wallet.publicKey,
+                null
             );
         } catch (e) {
             //console.log(e);
@@ -369,8 +375,8 @@ describe.skip('Mintable Game Asset', () => {
                 null,
                 '',
                 0,
-                randomness_pda,
-                revealIx
+                provider.wallet.publicKey,
+                null
             );
             const mystery_box_pda_data =
                 await program.account.mysteryBoxData.fetch(mystery_box_pda);
@@ -456,7 +462,9 @@ describe.skip('Mintable Game Asset', () => {
                 rarity_pda,
                 1,
                 '',
-                0
+                0,
+                provider.wallet.publicKey,
+                null
             );
         } catch (e) {
             assert.include(
@@ -478,7 +486,9 @@ describe.skip('Mintable Game Asset', () => {
                 rarity_pda,
                 10,
                 '',
-                0
+                0,
+                provider.wallet.publicKey,
+                null
             );
         } catch (e) {
             assert.include(

@@ -89,6 +89,26 @@ pub struct InitializeEventLink<'info> {
 }
 
 #[account]
+pub struct EventData {
+    /// Represent the current amount of created fight card
+    /// On average, a UFC event typically features around 12 to 15 fights
+    /// We set it as `u8` because there will be never more than `255` per events in an MMA fight week
+    pub fight_card_nonce: u8,
+    /// The type of tournament MainCard, Prelims or Early Prelims
+    pub tournament_type: TournamentType,
+    /// Start date in seconds
+    pub start_date: i64,
+    /// End date in seconds
+    pub end_date: i64,
+    /// Rank rewards for prize distribution
+    pub rank_rewards: Vec<RankReward>,
+    /// Represent the current amount of player
+    pub rank_nonce: u64,
+    /// Nonce of the `event`
+    pub nonce: u64,
+}
+
+#[account]
 #[derive(Default)]
 pub struct EventLinkData {
     /// `Event` PDA public key for direct ref
@@ -107,26 +127,6 @@ pub struct EventLinkData {
     pub is_consumed: bool,
     /// Prevent accidental multiple initializations of a PDA
     pub is_initialized: bool,
-}
-
-#[account]
-pub struct EventData {
-    /// Represent the current amount of created fight card
-    /// On average, a UFC event typically features around 12 to 15 fights
-    /// We set it as `u8` because there will be never more than `255` per events in an MMA fight week
-    pub fight_card_nonce: u8,
-    /// The type of tournament MainCard, Prelims or Early Prelims
-    pub tournament_type: TournamentType,
-    /// Start date in seconds
-    pub start_date: i64,
-    /// End date in seconds
-    pub end_date: i64,
-    /// Rank rewards for prize distribution
-    pub rank_rewards: Vec<RankReward>,
-    /// Represent the current amount of player
-    pub rank_nonce: u64,
-    /// Nonce of the `event`
-    pub nonce: u64,
 }
 
 /*

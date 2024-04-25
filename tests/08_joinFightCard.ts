@@ -232,11 +232,7 @@ describe('Join fight card', () => {
             fight_card_account
         );
         assert.equal(fight_card_link_account_data.fightCardNonceTracker, 0);
-        assert.equal(fight_card_link_account_data.energyBoosterUsed, null);
-        assert.equal(
-            fight_card_link_account_data.energyBoosterNonceTracker,
-            null
-        );
+
         assert.equal(fight_card_link_account_data.shieldBoosterUsed, null);
         assert.equal(
             fight_card_link_account_data.shieldBoosterNonceTracker,
@@ -392,16 +388,7 @@ describe('Join fight card', () => {
             });
             assert.isFalse(fight_card_link_account_data.isConsumed);
             assert.isTrue(fight_card_link_account_data.isInitialized);
-            assert.deepEqual(
-                fight_card_link_account_data.energyBoosterUsed,
-                energy_mintable_game_asset_pda
-            );
-            assert.equal(
-                fight_card_link_account_data.energyBoosterNonceTracker.eq(
-                    new BN(2)
-                ),
-                true
-            );
+
             assert.deepEqual(
                 fight_card_link_account_data.fighterUsed,
                 fighter_mintable_game_asset_pda

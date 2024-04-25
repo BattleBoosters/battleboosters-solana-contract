@@ -1,14 +1,17 @@
-import {createFightCard, updateFightCard} from './utils/createUpdateFightCard';
+import {
+    createFightCard,
+    updateFightCard,
+} from './utils/createUpdateFightCard';
 import * as anchor from '@coral-xyz/anchor';
 import { BN, Program } from '@coral-xyz/anchor';
 import account_init from './utils/initAccounts';
 import { Battleboosters } from '../target/types/battleboosters';
-import {createEvent, updateEvent} from './utils/createUpdateEvent';
+import { createEvent, updateEvent } from './utils/createUpdateEvent';
 import { assert } from 'chai';
-import {sleep} from "@switchboard-xyz/common";
-import {PublicKey} from "@solana/web3.js";
+import { sleep } from '@switchboard-xyz/common';
+import { PublicKey } from '@solana/web3.js';
 
-describe.only('Creator', () => {
+describe.skip('Creator', () => {
     const provider = anchor.AnchorProvider.env();
 
     anchor.setProvider(provider);
@@ -98,10 +101,9 @@ describe.only('Creator', () => {
                 },
             ]
         );
-
     });
 
-    it.skip("should add a fightCard", async() => {
+    it.skip('should add a fightCard', async () => {
         const { fight_card_account, event_account } = await createFightCard(
             provider,
             program,
@@ -110,9 +112,9 @@ describe.only('Creator', () => {
             2,
             true
         );
-    })
+    });
 
-    it.skip("should create a fighting style", async () => {
+    it.skip('should create a fighting style', async () => {
         const [fighter_pda] = anchor.web3.PublicKey.findProgramAddressSync(
             [
                 Buffer.from('BattleBoosters'),
@@ -253,9 +255,9 @@ describe.only('Creator', () => {
             })
             .signers([admin_account])
             .rpc();
-    })
+    });
 
-    it.skip("update fight card", async () => {
+    it.skip('update fight card', async () => {
         let fighterBlue = {
             takedownsAttempted: 2,
             takedownsLanded: 0,
@@ -338,10 +340,9 @@ describe.only('Creator', () => {
             { koTko: {} },
             { fighterBlue: {} }
         );
-    })
+    });
 
-    it.skip("should determine ranking points", async () => {
-
+    it.skip('should determine ranking points', async () => {
         const [event_account, event_account_bump] =
             anchor.web3.PublicKey.findProgramAddressSync(
                 [
@@ -364,7 +365,9 @@ describe.only('Creator', () => {
                 program.programId
             );
 
-        const player = new PublicKey("Dov9Td4ZuYbnqrzTTX6G52QvuzZshezyX9pEdZpUsYh8");
+        const player = new PublicKey(
+            'Dov9Td4ZuYbnqrzTTX6G52QvuzZshezyX9pEdZpUsYh8'
+        );
         const [fight_card_link_account, fight_card_link_bump] =
             anchor.web3.PublicKey.findProgramAddressSync(
                 [
@@ -377,7 +380,7 @@ describe.only('Creator', () => {
                 ],
                 program.programId
             );
-        console.log(fight_card_link_account.toString())
+        console.log(fight_card_link_account.toString());
 
         const [player_account_pda, player_account_bump] =
             anchor.web3.PublicKey.findProgramAddressSync(
@@ -390,15 +393,22 @@ describe.only('Creator', () => {
                 program.programId
             );
 
-        console.log(player_account_pda.toString())
-        const fight_card_link_data = await program.account.fightCardLinkData.fetch(fight_card_link_account);
+        console.log(player_account_pda.toString());
+        const fight_card_link_data =
+            await program.account.fightCardLinkData.fetch(
+                fight_card_link_account
+            );
 
-        const fighter_mintable_game_asset_pda = fight_card_link_data.fighterUsed
-        const fighter_mintable_game_asset_link_pda =  fight_card_link_data.fighterLinkUsed
-        const points_mintable_game_asset_link_pda =  fight_card_link_data.pointsBoosterUsed
-        const shield_mintable_game_asset_link_pda =  fight_card_link_data.shieldBoosterUsed
-        console.log(fighter_mintable_game_asset_pda.toString())
-        console.log(fighter_mintable_game_asset_link_pda.toString())
+        const fighter_mintable_game_asset_pda =
+            fight_card_link_data.fighterUsed;
+        const fighter_mintable_game_asset_link_pda =
+            fight_card_link_data.fighterLinkUsed;
+        const points_mintable_game_asset_link_pda =
+            fight_card_link_data.pointsBoosterUsed;
+        const shield_mintable_game_asset_link_pda =
+            fight_card_link_data.shieldBoosterUsed;
+        console.log(fighter_mintable_game_asset_pda.toString());
+        console.log(fighter_mintable_game_asset_link_pda.toString());
 
         //const fighter_mintable_game_asset_link_pda = new PublicKey(fight_card_link_data.)
         // const [
@@ -482,9 +492,9 @@ describe.only('Creator', () => {
             console.log('issue');
             console.log(e);
         }
-    })
+    });
 
-    it.skip('Should update an event', async () => {
+    it('Should update an event', async () => {
         const event_id = 2;
         const new_time_start = 1713535498;
         const new_time_end = 1713623964;
@@ -503,7 +513,7 @@ describe.only('Creator', () => {
                     endRank: new BN(1),
                     prizeAmount: new BN(100),
                     fighterAmount: 1,
-                    boosterAmount: 5,
+                    boosterAmount: 3,
                     championsPassAmount: 1,
                 },
                 {
@@ -511,7 +521,7 @@ describe.only('Creator', () => {
                     endRank: new BN(2),
                     prizeAmount: new BN(50),
                     fighterAmount: 1,
-                    boosterAmount: 5,
+                    boosterAmount: 3,
                     championsPassAmount: 1,
                 },
                 {
@@ -558,7 +568,7 @@ describe.only('Creator', () => {
         );
     });
 
-    it('Update ranking', async () => {
+    it.skip('Update ranking', async () => {
         // Test code here
 
         const [event_account, event_account_bump] =

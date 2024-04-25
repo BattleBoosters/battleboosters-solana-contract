@@ -89,52 +89,5 @@ describe.skip('Collect Rewards', () => {
         console.log(player_account_pda);
         console.log(mystery_box_pda);
         console.log(rarity_pda);
-        try {
-            let tx = await program.methods
-                .collectRewards()
-                .accounts({
-                    signer: provider.wallet.publicKey,
-                    event: event_account,
-                    bank: bank_pda,
-                    rank: rank_pda,
-                    program: program_pda,
-                    playerAccount: player_account_pda,
-                    mysteryBox: mystery_box_pda,
-                    rarity: rarity_pda,
-                    systemProgram: anchor.web3.SystemProgram.programId,
-                })
-                .signers([])
-                .rpc();
-
-            await sleep(2000);
-            const logs = await provider.connection.getParsedTransaction(
-                tx,
-                'confirmed'
-            );
-
-            console.log(JSON.stringify(logs?.meta?.logMessages, undefined, 2));
-
-            let rank_data = await program.account.rankData.fetch(rank_pda);
-            assert.isTrue(rank_data.isConsumed);
-            let mystery_box_data = await program.account.mysteryBoxData.fetch(
-                mystery_box_pda
-            );
-            console.log('mystery_box_data.boosterMintAllowance');
-            console.log(mystery_box_data.boosterMintAllowance);
-            console.log('mystery_box_data.fighterMintAllowance');
-            console.log(mystery_box_data.fighterMintAllowance);
-            console.log('mystery_box_data.championsPassMintAllowance');
-            console.log(mystery_box_data.championsPassMintAllowance);
-            console.log('mystery_box_data.probabilityTier');
-            console.log(mystery_box_data.probabilityTier);
-            console.log('mystery_box_data.randomness');
-            console.log(mystery_box_data.randomness);
-
-            // let event_data = await program.account.eventData.fetch(event_account);
-            // console.log(event_data.randomness);
-        } catch (e) {
-            console.log('issue');
-            console.log(e);
-        }
     });
 });

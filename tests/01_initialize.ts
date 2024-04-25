@@ -77,7 +77,8 @@ describe('Initialize', () => {
                     admin_account.publicKey,
                     new BN(1),
                     new BN(1),
-                    5
+                    5,
+                    { dev: {} }
                 )
                 .accounts({
                     creator: admin_account.publicKey,

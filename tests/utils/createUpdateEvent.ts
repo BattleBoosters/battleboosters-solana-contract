@@ -104,6 +104,7 @@ const updateEvent = async function (
             .signers([admin_account])
             .rpc();
     } catch (e) {
+        console.log(e);
         assert.include(e.message, 'Unauthorized access attempt');
     }
 

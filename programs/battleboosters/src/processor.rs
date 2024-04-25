@@ -14,7 +14,7 @@ use crate::state::join_fight_card::JoinFightCard;
 use crate::state::mintable_game_asset::Attribute;
 use crate::state::mintable_game_asset::*;
 use crate::state::player::InitializePlayer;
-use crate::state::program::InitializeProgram;
+use crate::state::program::{Env, InitializeProgram};
 use crate::state::rank::UpdateRank;
 use crate::state::rarity::{
     InitializeRarity, RarityBooster, RarityFighter, TierProbabilities, TierType,
@@ -46,6 +46,7 @@ pub fn initialize(
     nft_fighter_pack_price: u64,
     booster_price: u64,
     fighter_pack_amount: u8,
+    env: Env,
 ) -> Result<()> {
     let program = &mut ctx.accounts.program;
     require!(!program.is_initialized, ErrorCode::AlreadyInitialized);
@@ -58,6 +59,7 @@ pub fn initialize(
     program.fighter_pack_price = nft_fighter_pack_price;
     program.booster_price = booster_price;
     program.fighter_pack_amount = fighter_pack_amount;
+    program.env = env;
     program.is_initialized = true;
 
     msg!("Program Initialized");
@@ -275,11 +277,21 @@ pub fn purchase_mystery_box(
     let signer_key = &ctx.accounts.signer.to_account_info().key();
     let rarity = &ctx.accounts.rarity;
 
-    // get result
-    let val: f64 = feed.get_result()?.try_into()?;
-    // check whether the feed has been updated in the last 300 seconds
-    feed.check_staleness(Clock::get()?.unix_timestamp, STALENESS_THRESHOLD)
-        .map_err(|_| error!(ErrorCode::StaleFeed))?;
+    let val = match program.env {
+        Env::Prod => {
+            // get result
+            let val: f64 = feed.get_result()?.try_into()?;
+            // check whether the feed has been updated in the last 300 seconds
+            feed.check_staleness(Clock::get()?.unix_timestamp, STALENESS_THRESHOLD)
+                .map_err(|_| error!(ErrorCode::StaleFeed))?;
+
+            val
+        }
+        Env::Dev => {
+            // get result
+            feed.get_result()?.try_into()?
+        }
+    };
 
     let sol_per_usd = 1.0 / val;
     let mut total_usd = 0;
@@ -359,17 +371,28 @@ pub fn purchase_mystery_box(
     // )?;
     msg!("bank balance now: {}", bank.lamports());
 
-    let randomness_data =
-        RandomnessAccountData::parse(ctx.accounts.randomness_account_data.data.borrow()).unwrap();
-    require!(
-        randomness_data.seed_slot == clock.slot - 1,
-        ErrorCode::RandomnessAlreadyRevealed
-    );
+    // Used for testing in local-net without depending on external services
+    match program.env {
+        Env::Prod => {
+            let randomness_data =
+                RandomnessAccountData::parse(ctx.accounts.randomness_account_data.data.borrow())
+                    .unwrap();
+            require!(
+                randomness_data.seed_slot == clock.slot - 1,
+                ErrorCode::RandomnessAlreadyRevealed
+            );
+            // Set the randomness account
+            mystery_box.randomness_account =
+                ctx.accounts.randomness_account_data.to_account_info().key();
+        }
+        Env::Dev => {
+            mystery_box.randomness_account = ctx.accounts.signer.to_account_info().key();
+        }
+    }
 
     // Set the collector pack to default `champion_s_pass_mint_allowance`
     mystery_box.champions_pass_mint_allowance = 0;
-    // Set the randomness account
-    mystery_box.randomness_account = ctx.accounts.randomness_account_data.to_account_info().key();
+
     // Set the order nonce to regenerate the PDA
     mystery_box.nonce = player_account.order_nonce;
 
@@ -698,12 +721,21 @@ pub fn create_mintable_game_asset(
         // increase the player game asset link nonce for the next game asset generation
         player_account.player_game_asset_link_nonce += 1;
     }
-    let randomness_data =
-        RandomnessAccountData::parse(ctx.accounts.randomness_account_data.data.borrow()).unwrap();
-    // call the switchboard on-demand get_value function to get the revealed random value
-    let randomness = randomness_data
-        .get_value(&clock)
-        .map_err(|_| ErrorCode::RandomnessNotResolved)?;
+    // Used for testing in local-net without depending on external services
+    let randomness = match program.env {
+        Env::Prod => {
+            let randomness_data =
+                RandomnessAccountData::parse(ctx.accounts.randomness_account_data.data.borrow())
+                    .unwrap();
+            // call the switchboard on-demand get_value function to get the revealed random value
+            let randomness = randomness_data
+                .get_value(&clock)
+                .map_err(|_| ErrorCode::RandomnessNotResolved)?;
+            randomness
+        }
+        Env::Dev => [0u8; 32],
+    };
+
     msg!("Randomness {:?}", randomness);
 
     match request.nft_type {
@@ -830,18 +862,8 @@ pub fn create_mintable_game_asset(
                 .rarity
                 .clone()
                 .ok_or(ErrorCode::RarityAccountRequired)?;
-            // // call the switchboard on-demand parse function to get the randomness data
-            // let randomness_data =
-            //     RandomnessAccountData::parse(ctx.accounts.randomness_account_data.data.borrow())
-            //         .unwrap();
-            // // call the switchboard on-demand get_value function to get the revealed random value
-            // let randomness = randomness_data
-            //     .get_value(&clock)
-            //     .unwrap_or_else(|_| [0u8; 32]);
-            // msg!("Randomness {:?}", randomness);
 
             let public_key_bytes = signer.key().to_bytes();
-
             let combined_allowance = &mystery_box.booster_mint_allowance
                 + &mystery_box.fighter_mint_allowance
                 + &mystery_box.champions_pass_mint_allowance;
@@ -1131,12 +1153,25 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
     );
     require!(!rank.is_consumed, ErrorCode::ConsumedAlready);
 
-    let randomness_data =
-        RandomnessAccountData::parse(ctx.accounts.randomness_account_data.data.borrow()).unwrap();
-    require!(
-        randomness_data.seed_slot == clock.slot - 1,
-        ErrorCode::RandomnessAlreadyRevealed
-    );
+    // Used for testing in local-net without depending on external services
+    match program.env {
+        Env::Prod => {
+            let randomness_data =
+                RandomnessAccountData::parse(ctx.accounts.randomness_account_data.data.borrow())
+                    .unwrap();
+            require!(
+                randomness_data.seed_slot == clock.slot - 1,
+                ErrorCode::RandomnessAlreadyRevealed
+            );
+            // Set the randomness account
+            mystery_box.randomness_account =
+                ctx.accounts.randomness_account_data.to_account_info().key();
+        }
+        Env::Dev => {
+            mystery_box.randomness_account = ctx.accounts.signer.to_account_info().key();
+        }
+    }
+
     require!(rank.total_points.is_some(), ErrorCode::RankPointsIsNone);
 
     if let Some(player_rank) = rank.rank {
@@ -1171,9 +1206,6 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
                 }
             }
 
-            // Set the randomness account
-            mystery_box.randomness_account =
-                ctx.accounts.randomness_account_data.to_account_info().key();
             mystery_box.booster_mint_allowance = reward.booster_amount as u64;
             mystery_box.fighter_mint_allowance = reward.fighter_amount as u64;
             mystery_box.champions_pass_mint_allowance = reward.champions_pass_amount as u64;

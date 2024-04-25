@@ -33,6 +33,7 @@ pub mod battleboosters {
         nft_fighter_pack_price: u64,
         booster_price: u64,
         fighter_pack_amount: u8,
+        env: Env,
     ) -> Result<()> {
         processor::initialize(
             ctx,
@@ -42,6 +43,7 @@ pub mod battleboosters {
             nft_fighter_pack_price,
             booster_price,
             fighter_pack_amount,
+            env,
         )
     }
 

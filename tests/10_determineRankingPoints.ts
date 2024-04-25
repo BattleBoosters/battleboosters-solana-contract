@@ -262,7 +262,7 @@ describe('Determine ranking points', () => {
                     fighterAssetLink: fighter_mintable_game_asset_link_pda,
                     pointsBoosterAsset: null,
                     shieldBoosterAsset: null,
-                    fighter: fighter_pda,
+                    fighterBase: fighter_pda,
                 })
                 .signers([])
                 .rpc();

@@ -9,7 +9,7 @@ pub struct InitializeProgram<'info> {
     #[account(init, payer = creator,
     seeds = [MY_APP_PREFIX, PROGRAM_STATE],
     bump,
-    space = 8 + 8 + 8 + 32 + 8 + 8 + 1 + 1 + 1 + 1)]
+    space = 8 + 8 + 8 + 32 + 8 + 8 + 1 + 1 + 1 + 1 + 1)]
     pub program: Box<Account<'info, ProgramData>>,
     /// CHECK: This is a PDA used as the bank
     #[account(mut, seeds = [MY_APP_PREFIX, BANK], bump = bank_bump)]
@@ -40,4 +40,11 @@ pub struct ProgramData {
     pub authority_bump: u8,
     /// Bank bump
     pub bank_bump: u8,
+    pub env: Env,
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]
+pub enum Env {
+    Dev,
+    Prod,
 }
