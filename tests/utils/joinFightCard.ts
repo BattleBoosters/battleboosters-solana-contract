@@ -55,8 +55,6 @@ const joinFightCard = async function (
     fight_card_nonce,
     fighter_mintable_asset_nonce,
     fighter_mintable_asset_link_nonce,
-    energy_mintable_asset_nonce = null,
-    energy_mintable_asset_link_nonce = null,
     shield_mintable_asset_nonce = null,
     shield_mintable_asset_link_nonce = null,
     points_mintable_asset_nonce = null,
@@ -130,15 +128,7 @@ const joinFightCard = async function (
         fighter_mintable_asset_nonce,
         fighter_mintable_asset_link_nonce
     );
-    const [
-        energy_mintable_game_asset_pda,
-        energy_mintable_game_asset_link_pda,
-    ] = findProgramAddressSync(
-        provider,
-        program,
-        energy_mintable_asset_nonce,
-        energy_mintable_asset_link_nonce
-    );
+
     const [
         shield_mintable_game_asset_pda,
         shield_mintable_game_asset_link_pda,
@@ -202,8 +192,6 @@ const joinFightCard = async function (
         player_account_pda,
         fighter_mintable_game_asset_pda,
         fighter_mintable_game_asset_link_pda,
-        energy_mintable_game_asset_pda,
-        energy_mintable_game_asset_link_pda,
     };
 };
 

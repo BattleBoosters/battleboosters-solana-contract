@@ -63,8 +63,8 @@ const createMintableGameAsset = async function (
             [
                 Buffer.from('BattleBoosters'),
                 Buffer.from('mysteryBox'),
-                signer_,
                 new BN(mystery_box_nonce_nonce).toBuffer('le', 8),
+                signer_,
             ],
             program.programId
         );
@@ -84,15 +84,16 @@ const createMintableGameAsset = async function (
             randomnessAccountData: randomness_pda,
             systemProgram: anchor.web3.SystemProgram.programId,
         })
-        .instruction();
+        .signers([])
+        .rpc();
 
-    const transaction = new Transaction();
-
-    if (revealIx) {
-        transaction.add(revealIx);
-    }
-    transaction.add(tx);
-    await provider.sendAndConfirm(transaction, signers);
+    // const transaction = new Transaction();
+    //
+    // if (revealIx) {
+    //     transaction.add(revealIx);
+    // }
+    // transaction.add(tx);
+    //await provider.sendAndConfirm(transaction, signers);
 
     // console.log(tx)
     // await sleep(2000);

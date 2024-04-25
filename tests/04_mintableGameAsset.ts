@@ -1,7 +1,7 @@
 import * as anchor from '@coral-xyz/anchor';
 import { BN, Program, web3 } from '@coral-xyz/anchor';
 import { Battleboosters } from '../target/types/battleboosters';
-import { assert } from 'chai';
+import { assert, expect } from 'chai';
 import airdropSol from './utils/airdropSol';
 import {
     TOKEN_PROGRAM_ID,
@@ -32,8 +32,9 @@ import InitializePlayerAccount from './utils/initializePlayerAccount';
 import * as buffer from 'buffer';
 import account_init from './utils/initAccounts';
 import createMintableGameAsset from './utils/createMintableGameAsset';
+import purchaseMysteryBox from './utils/purchaseMysteryBox';
 
-describe.skip('Mintable Game Asset', () => {
+describe('Mintable Game Asset', () => {
     const provider = anchor.AnchorProvider.env();
 
     anchor.setProvider(provider);
@@ -51,6 +52,7 @@ describe.skip('Mintable Game Asset', () => {
         mint_authority_account,
         authority_bump,
     } = account_init(program);
+    const newRecipient = anchor.web3.Keypair.generate();
 
     before(async () => {
         try {
@@ -59,33 +61,26 @@ describe.skip('Mintable Game Asset', () => {
                 provider.wallet.publicKey,
                 program
             );
-            const [player_account_pda, player_account_bump] =
-                anchor.web3.PublicKey.findProgramAddressSync(
-                    [
-                        Buffer.from('BattleBoosters'),
-                        Buffer.from('player'),
-                        provider.wallet.publicKey.toBuffer(),
-                    ],
-                    program.programId
-                );
 
-            const player_account_pda_data =
-                await program.account.playerData.fetch(player_account_pda);
-            console.log('player_account_pda_data.orderNonce');
-            console.log(player_account_pda_data.orderNonce);
-            const [mystery_box_pda, mystery_box_bump] =
-                anchor.web3.PublicKey.findProgramAddressSync(
-                    [
-                        Buffer.from('BattleBoosters'),
-                        Buffer.from('mysteryBox'),
-                        provider.wallet.publicKey.toBuffer(),
-                        new BN(player_account_pda_data.orderNonce).toBuffer(
-                            'le',
-                            8
-                        ),
-                    ],
-                    program.programId
-                );
+            // Initialize the player account first
+            await InitializePlayerAccount(
+                provider,
+                newRecipient.publicKey,
+                //provider.wallet.publicKey,
+                program
+            );
+            await airdrop_sol(provider, newRecipient.publicKey, 1);
+            await purchaseMysteryBox(
+                program,
+                provider,
+                program_pda,
+                rarity_pda,
+                bank_pda,
+                new BN(100),
+                provider.wallet,
+                3,
+                1
+            );
 
             // const tx = await program.methods
             //     .adminAirdropCollectorPack(new BN(3), new BN(2), new BN(0))
@@ -148,7 +143,7 @@ describe.skip('Mintable Game Asset', () => {
                 mystery_box_pda_data.boosterMintAllowance.eq(new BN(3))
             );
             assert.isTrue(
-                mystery_box_pda_data.fighterMintAllowance.eq(new BN(1))
+                mystery_box_pda_data.fighterMintAllowance.eq(new BN(4))
             );
             //const pre_mint_pda_data = await program.account.mintableGameAssetData.fetch(mintable_game_asset_pda);
             const mintable_game_asset_pda_data =
@@ -158,23 +153,23 @@ describe.skip('Mintable Game Asset', () => {
             const attribute = [
                 {
                     traitType: 'Fighter Type',
-                    value: 'Wrestling',
+                    value: 'Taekwondo',
                 },
                 {
                     traitType: 'Rarity',
-                    value: 'Epic',
-                },
-                {
-                    traitType: 'Energy',
-                    value: '269',
+                    value: 'Uncommon',
                 },
                 {
                     traitType: 'Power',
-                    value: '256',
+                    value: '194',
+                },
+                {
+                    traitType: 'Maximum Lifespan',
+                    value: '192',
                 },
                 {
                     traitType: 'Lifespan',
-                    value: '288',
+                    value: '192',
                 },
             ];
             assert.isFalse(mintable_game_asset_pda_data.isLocked);
@@ -185,11 +180,11 @@ describe.skip('Mintable Game Asset', () => {
                 'test'
             );
             assert.equal(
-                mintable_game_asset_pda_data.metadata.image,
-                `https://battleboosters.com/metadata/${mintable_game_asset_pda}`
+                mintable_game_asset_pda_data.metadata.externalUrl,
+                `https://battleboosters.com/api/metadata/${mintable_game_asset_pda}`
             );
             assert.isNull(mintable_game_asset_pda_data.metadata.animationUrl);
-            assert.isNull(mintable_game_asset_pda_data.metadata.externalUrl);
+            assert.isNull(mintable_game_asset_pda_data.metadata.image);
             assert.deepEqual(
                 mintable_game_asset_pda_data.metadata.attributes,
                 attribute
@@ -231,110 +226,13 @@ describe.skip('Mintable Game Asset', () => {
     });
 
     it('Open a second fighter from mystery box randomly', async () => {
-        let {
-            mystery_box_pda,
-            mintable_game_asset_pda,
-            player_game_asset_link_pda,
-            player_account_pda,
-        } = await createMintableGameAsset(
-            program,
-            provider,
-            program_pda,
-            {
-                nftType: { fighter: {} },
-            },
-            rarity_pda,
-            null,
-            '',
-            0,
-            provider.wallet.publicKey,
-            null
-        );
-        const mystery_box_pda_data = await program.account.mysteryBoxData.fetch(
-            mystery_box_pda
-        );
-        assert.isTrue(mystery_box_pda_data.boosterMintAllowance.eq(new BN(3)));
-
-        assert.isTrue(mystery_box_pda_data.fighterMintAllowance.eq(new BN(0)));
-
-        const mintable_game_asset_pda_data =
-            await program.account.mintableGameAssetData.fetch(
-                mintable_game_asset_pda
-            );
-        const attribute = [
-            {
-                traitType: 'Fighter Type',
-                value: 'MuayThai',
-            },
-            {
-                traitType: 'Rarity',
-                value: 'Uncommon',
-            },
-            {
-                traitType: 'Energy',
-                value: '171',
-            },
-            {
-                traitType: 'Power',
-                value: '181',
-            },
-            {
-                traitType: 'Lifespan',
-                value: '195',
-            },
-        ];
-        assert.isFalse(mintable_game_asset_pda_data.isLocked);
-        assert.isFalse(mintable_game_asset_pda_data.isMinted);
-        assert.equal(mintable_game_asset_pda_data.metadata.name, 'Fighter');
-        assert.equal(mintable_game_asset_pda_data.metadata.description, 'test');
-        assert.isNull(mintable_game_asset_pda_data.metadata.image);
-        assert.isNull(mintable_game_asset_pda_data.metadata.animationUrl);
-        assert.equal(
-            mintable_game_asset_pda_data.metadata.externalUrl,
-            `https://battleboosters.com/api/metadata/${mintable_game_asset_pda}`
-        );
-        console.log(mintable_game_asset_pda_data.metadata.attributes);
-        // assert.deepEqual(
-        //     mintable_game_asset_pda_data.metadata.attributes,
-        //     attribute
-        // );
-
-        const player_game_asset_link_pda_data =
-            await program.account.mintableGameAssetLinkData.fetch(
-                player_game_asset_link_pda
-            );
-        assert.isFalse(player_game_asset_link_pda_data.isFree);
-        assert.equal(
-            player_game_asset_link_pda_data.mintableGameAssetNonceTracker.eq(
-                new BN(1)
-            ),
-            true
-        );
-        assert.deepEqual(
-            player_game_asset_link_pda_data.mintableGameAssetPubkey,
-            mintable_game_asset_pda
-        );
-
-        const program_pda_data_after = await program.account.programData.fetch(
-            program_pda
-        );
-        assert.equal(
-            program_pda_data_after.mintableGameAssetNonce.eq(new BN(2)),
-            true
-        );
-
-        const player_pda_data = await program.account.playerData.fetch(
-            player_account_pda
-        );
-        assert.equal(
-            player_pda_data.playerGameAssetLinkNonce.eq(new BN(2)),
-            true
-        );
-    });
-
-    it('Fail minting allowance too low trying to mint fighter from mystery box', async () => {
         try {
-            await createMintableGameAsset(
+            let {
+                mystery_box_pda,
+                mintable_game_asset_pda,
+                player_game_asset_link_pda,
+                player_account_pda,
+            } = await createMintableGameAsset(
                 program,
                 provider,
                 program_pda,
@@ -348,12 +246,93 @@ describe.skip('Mintable Game Asset', () => {
                 provider.wallet.publicKey,
                 null
             );
-        } catch (e) {
-            //console.log(e);
-            assert.include(
-                e.message,
-                'Not enough allowance to generate mintable game asset'
+            const mystery_box_pda_data =
+                await program.account.mysteryBoxData.fetch(mystery_box_pda);
+            assert.isTrue(
+                mystery_box_pda_data.boosterMintAllowance.eq(new BN(3))
             );
+
+            assert.isTrue(
+                mystery_box_pda_data.fighterMintAllowance.eq(new BN(3))
+            );
+
+            const mintable_game_asset_pda_data =
+                await program.account.mintableGameAssetData.fetch(
+                    mintable_game_asset_pda
+                );
+            const attribute = [
+                {
+                    traitType: 'Fighter Type',
+                    value: 'Wrestling',
+                },
+                {
+                    traitType: 'Rarity',
+                    value: 'Common',
+                },
+                {
+                    traitType: 'Power',
+                    value: '102',
+                },
+                {
+                    traitType: 'Maximum Lifespan',
+                    value: '111',
+                },
+                {
+                    traitType: 'Lifespan',
+                    value: '111',
+                },
+            ];
+            assert.isFalse(mintable_game_asset_pda_data.isLocked);
+            assert.isFalse(mintable_game_asset_pda_data.isMinted);
+            assert.equal(mintable_game_asset_pda_data.metadata.name, 'Fighter');
+            assert.equal(
+                mintable_game_asset_pda_data.metadata.description,
+                'test'
+            );
+            assert.isNull(mintable_game_asset_pda_data.metadata.image);
+            assert.isNull(mintable_game_asset_pda_data.metadata.animationUrl);
+            assert.equal(
+                mintable_game_asset_pda_data.metadata.externalUrl,
+                `https://battleboosters.com/api/metadata/${mintable_game_asset_pda}`
+            );
+
+            assert.deepEqual(
+                mintable_game_asset_pda_data.metadata.attributes,
+                attribute
+            );
+
+            const player_game_asset_link_pda_data =
+                await program.account.mintableGameAssetLinkData.fetch(
+                    player_game_asset_link_pda
+                );
+            assert.isFalse(player_game_asset_link_pda_data.isFree);
+            assert.equal(
+                player_game_asset_link_pda_data.mintableGameAssetNonceTracker.eq(
+                    new BN(1)
+                ),
+                true
+            );
+            assert.deepEqual(
+                player_game_asset_link_pda_data.mintableGameAssetPubkey,
+                mintable_game_asset_pda
+            );
+
+            const program_pda_data_after =
+                await program.account.programData.fetch(program_pda);
+            assert.equal(
+                program_pda_data_after.mintableGameAssetNonce.eq(new BN(2)),
+                true
+            );
+
+            const player_pda_data = await program.account.playerData.fetch(
+                player_account_pda
+            );
+            assert.equal(
+                player_pda_data.playerGameAssetLinkNonce.eq(new BN(2)),
+                true
+            );
+        } catch (e) {
+            console.log(e);
         }
     });
 
@@ -385,7 +364,7 @@ describe.skip('Mintable Game Asset', () => {
             );
 
             assert.isTrue(
-                mystery_box_pda_data.fighterMintAllowance.eq(new BN(0))
+                mystery_box_pda_data.fighterMintAllowance.eq(new BN(3))
             );
 
             const mintable_game_asset_pda_data =
@@ -393,9 +372,9 @@ describe.skip('Mintable Game Asset', () => {
                     mintable_game_asset_pda
                 );
             const attribute = [
-                { traitType: 'Booster Type', value: 'Energy' },
-                { traitType: 'Rarity', value: 'Uncommon' },
-                { traitType: 'Value', value: '175' },
+                { traitType: 'Booster Type', value: 'Points' },
+                { traitType: 'Rarity', value: 'Epic' },
+                { traitType: 'Value', value: '274' },
             ];
             assert.isFalse(mintable_game_asset_pda_data.isLocked);
             assert.isFalse(mintable_game_asset_pda_data.isMinted);
@@ -405,11 +384,11 @@ describe.skip('Mintable Game Asset', () => {
                 'test'
             );
             assert.equal(
-                mintable_game_asset_pda_data.metadata.image,
-                `https://battleboosters.com/metadata/${mintable_game_asset_pda}`
+                mintable_game_asset_pda_data.metadata.externalUrl,
+                `https://battleboosters.com/api/metadata/${mintable_game_asset_pda}`
             );
             assert.isNull(mintable_game_asset_pda_data.metadata.animationUrl);
-            assert.isNull(mintable_game_asset_pda_data.metadata.externalUrl);
+            assert.isNull(mintable_game_asset_pda_data.metadata.image);
             assert.deepEqual(
                 mintable_game_asset_pda_data.metadata.attributes,
                 attribute
@@ -450,7 +429,35 @@ describe.skip('Mintable Game Asset', () => {
         }
     });
 
+    it('Fail minting allowance too low trying to mint fighter from mystery box', async () => {
+        let transactionFailed = false;
+        try {
+            for (let i = 0; i < 4; i++) {
+                await createMintableGameAsset(
+                    program,
+                    provider,
+                    program_pda,
+                    { nftType: { fighter: {} } },
+                    rarity_pda,
+                    null,
+                    '',
+                    0,
+                    provider.wallet.publicKey,
+                    null
+                );
+            }
+        } catch (e) {
+            transactionFailed = true;
+            assert.include(
+                e.message,
+                'Not enough allowance to generate mintable game asset.'
+            );
+        }
+        assert.isTrue(transactionFailed);
+    });
+
     it('Fail trying to reuse a nonce which is not free', async () => {
+        let transactionFailed = false;
         try {
             await createMintableGameAsset(
                 program,
@@ -467,14 +474,17 @@ describe.skip('Mintable Game Asset', () => {
                 null
             );
         } catch (e) {
+            transactionFailed = true;
             assert.include(
                 e.message,
                 'This player game asset pda is not free.'
             );
         }
+        assert.isTrue(transactionFailed);
     });
 
     it('Fail trying to create a nonce greater than the player game asset link nonce', async () => {
+        let transactionFailed = false;
         try {
             await createMintableGameAsset(
                 program,
@@ -491,11 +501,13 @@ describe.skip('Mintable Game Asset', () => {
                 null
             );
         } catch (e) {
+            transactionFailed = true;
             assert.include(
                 e.message,
                 "The nonce must not exceed the last known nonce in the player's state."
             );
         }
+        assert.isTrue(transactionFailed);
     });
     /*
         TODO Test:

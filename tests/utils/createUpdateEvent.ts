@@ -87,26 +87,21 @@ const updateEvent = async function (
             program.programId
         );
 
-    try {
-        const tx = await program.methods
-            .updateEvent(
-                new BN(time_start),
-                new BN(time_end),
-                tournament_type,
-                rank_reward
-            )
-            .accounts({
-                creator: admin_account.publicKey,
-                program: program_pda,
-                event: event_account_one,
-                systemProgram: anchor.web3.SystemProgram.programId,
-            })
-            .signers([admin_account])
-            .rpc();
-    } catch (e) {
-        console.log(e);
-        assert.include(e.message, 'Unauthorized access attempt');
-    }
+    const tx = await program.methods
+        .updateEvent(
+            new BN(time_start),
+            new BN(time_end),
+            tournament_type,
+            rank_reward
+        )
+        .accounts({
+            creator: admin_account.publicKey,
+            program: program_pda,
+            event: event_account_one,
+            systemProgram: anchor.web3.SystemProgram.programId,
+        })
+        .signers([admin_account])
+        .rpc();
 
     const eventAccount = await program.account.eventData.fetch(
         event_account_one
