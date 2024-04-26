@@ -313,7 +313,7 @@ describe('Join fight card', () => {
         }
     });
 
-    it('Should join the next fight card with a booster of energy', async () => {
+    it('Should join the next fight card with a shield booster', async () => {
         try {
             let {
                 event_account,
@@ -323,6 +323,7 @@ describe('Join fight card', () => {
                 player_account_pda,
                 fighter_mintable_game_asset_pda,
                 fighter_mintable_game_asset_link_pda,
+                points_mintable_game_asset_pda
             } = await joinFightCard(
                 provider,
                 program,

@@ -98,7 +98,7 @@ const joinFightCard = async function (
                 Buffer.from('BattleBoosters'),
                 Buffer.from('fightCard'),
                 event_account.toBuffer(),
-                new BN(fight_card_nonce).toBuffer(),
+                fight_card_account.toBuffer(),
                 provider.wallet.publicKey.toBuffer(),
                 //admin_account.publicKey.toBuffer()
             ],
@@ -192,6 +192,7 @@ const joinFightCard = async function (
         player_account_pda,
         fighter_mintable_game_asset_pda,
         fighter_mintable_game_asset_link_pda,
+        points_mintable_game_asset_pda
     };
 };
 

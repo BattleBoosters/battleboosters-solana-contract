@@ -25,8 +25,8 @@ describe('Create event', () => {
     } = account_init(program);
 
     it('Should add a new event', async () => {
-        const time_start = 1713045216;
-        const time_end = 1711045216;
+        const time_start = new Date().getTime() + 100;
+        const time_end = new Date().getTime() + 1000;
         const { program_data_before, eventAccount, program_data_after } =
             await createEvent(
                 provider,
@@ -73,8 +73,8 @@ describe('Create event', () => {
     });
 
     it('Should add a second new event', async () => {
-        const time_start = 1713045216;
-        const time_end = 1711045216;
+        const time_start = new Date().getTime() + 1000;
+        const time_end = new Date().getTime() + 10000;
         const { program_data_before, eventAccount, program_data_after } =
             await createEvent(
                 provider,
@@ -149,8 +149,9 @@ describe('Create event', () => {
 
     it('Should update an event', async () => {
         const event_id = 0;
-        const new_time_start = 1713045316;
-        const new_time_end = 1711045516;
+        const new_time_start = new Date().getTime() + 100;
+        const new_time_end = new Date().getTime() + 1000;
+
         const { eventAccount } = await updateEvent(
             provider,
             program,
