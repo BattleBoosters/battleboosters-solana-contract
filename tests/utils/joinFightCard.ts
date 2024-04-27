@@ -192,7 +192,8 @@ const joinFightCard = async function (
         player_account_pda,
         fighter_mintable_game_asset_pda,
         fighter_mintable_game_asset_link_pda,
-        points_mintable_game_asset_pda
+        points_mintable_game_asset_pda,
+        shield_mintable_game_asset_pda,
     };
 };
 

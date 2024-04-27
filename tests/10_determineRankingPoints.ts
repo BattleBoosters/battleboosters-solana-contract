@@ -183,7 +183,7 @@ describe('Determine ranking points', () => {
                     Buffer.from('BattleBoosters'),
                     Buffer.from('fightCard'),
                     event_account.toBuffer(),
-                    new BN(0).toBuffer(),
+                    fight_card_account.toBuffer(),
                     provider.wallet.publicKey.toBuffer(),
                     //admin_account.publicKey.toBuffer()
                 ],
@@ -230,8 +230,8 @@ describe('Determine ranking points', () => {
         const [fighter_pda] = anchor.web3.PublicKey.findProgramAddressSync(
             [
                 Buffer.from('BattleBoosters'),
-                Buffer.from('fighter'),
-                Buffer.from([6]),
+                Buffer.from('fighterBase'),
+                Buffer.from([2]),
             ],
             program.programId
         );
@@ -250,7 +250,7 @@ describe('Determine ranking points', () => {
 
         try {
             let tx = await program.methods
-                .determineRankingPoints({ brazilianJiuJitsu: {} })
+                .determineRankingPoints({ taekwondo: {} })
                 .accounts({
                     signer: provider.wallet.publicKey,
                     event: event_account,

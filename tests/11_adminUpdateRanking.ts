@@ -6,7 +6,7 @@ import { updateFightCard } from './utils/createUpdateFightCard';
 import { updateEvent } from './utils/createUpdateEvent';
 import { sleep } from '@switchboard-xyz/common';
 
-describe.skip('Admin update player ranking', () => {
+describe('Admin update player ranking', () => {
     const provider = anchor.AnchorProvider.env();
 
     anchor.setProvider(provider);

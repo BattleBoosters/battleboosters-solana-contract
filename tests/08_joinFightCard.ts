@@ -231,8 +231,9 @@ describe('Join fight card', () => {
             player_account_pda_data.orderNonce.eq(new BN(1)),
             true
         );
+        // 6 because we created in mintableNftGameAsset 6 metadata assets
         assert.deepEqual(
-            player_account_pda_data.playerGameAssetLinkNonce.eq(new BN(3)),
+            player_account_pda_data.playerGameAssetLinkNonce.eq(new BN(6)),
             true
         );
 
@@ -248,6 +249,7 @@ describe('Join fight card', () => {
     });
 
     it('Should fail reusing fighter game asset', async () => {
+        let transactionFailed = false;
         try {
             await joinFightCard(
                 provider,
@@ -263,11 +265,15 @@ describe('Join fight card', () => {
                 0
             );
         } catch (e) {
+            transactionFailed = true;
             assert.include(e.message, 'This mintable game asset is locked');
         }
+
+        assert.isTrue(transactionFailed);
     });
 
     it('Should fail claiming wrong ownership game asset', async () => {
+        let transactionFailed = false;
         try {
             await joinFightCard(
                 provider,
@@ -283,14 +289,17 @@ describe('Join fight card', () => {
                 2
             );
         } catch (e) {
+            transactionFailed = true;
             assert.include(
                 e.message,
                 'The mintable game asset link is not properly linked to the specified mintable game asset PDA'
             );
         }
+        assert.isTrue(transactionFailed);
     });
 
     it('Should fail claiming wrong ownership game asset', async () => {
+        let transactionFailed = false;
         try {
             await joinFightCard(
                 provider,
@@ -306,11 +315,13 @@ describe('Join fight card', () => {
                 2
             );
         } catch (e) {
+            transactionFailed = true;
             assert.include(
                 e.message,
                 'The mintable game asset link is not properly linked to the specified mintable game asset PDA'
             );
         }
+        assert.isTrue(transactionFailed);
     });
 
     it('Should join the next fight card with a shield booster', async () => {
@@ -323,7 +334,8 @@ describe('Join fight card', () => {
                 player_account_pda,
                 fighter_mintable_game_asset_pda,
                 fighter_mintable_game_asset_link_pda,
-                points_mintable_game_asset_pda
+                points_mintable_game_asset_pda,
+                shield_mintable_game_asset_pda,
             } = await joinFightCard(
                 provider,
                 program,
@@ -336,6 +348,8 @@ describe('Join fight card', () => {
                 1,
                 1,
                 1,
+                null,
+                null,
                 2,
                 2
             );
@@ -375,13 +389,16 @@ describe('Join fight card', () => {
                 fight_card_link_account_data.fighterNonceTracker.eq(new BN(1)),
                 true
             );
+
             assert.deepEqual(
                 fight_card_link_account_data.pointsBoosterUsed,
-                null
+                points_mintable_game_asset_pda
             );
             assert.equal(
-                fight_card_link_account_data.pointsBoosterNonceTracker,
-                null
+                fight_card_link_account_data.pointsBoosterNonceTracker.eq(
+                    new BN(2)
+                ),
+                true
             );
             assert.deepEqual(
                 fight_card_link_account_data.shieldBoosterUsed,

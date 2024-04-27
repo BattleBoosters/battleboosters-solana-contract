@@ -7,7 +7,7 @@ import { updateEvent } from './utils/createUpdateEvent';
 import { sleep } from '@switchboard-xyz/common';
 import { assert } from 'chai';
 
-describe.skip('Collect Rewards', () => {
+describe('Collect Rewards', () => {
     const provider = anchor.AnchorProvider.env();
 
     anchor.setProvider(provider);
