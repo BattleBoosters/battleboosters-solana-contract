@@ -16,7 +16,7 @@ pub const METADATA_OFF_CHAIN_URI: &str = "https://battleboosters.com/api/metadat
 // pub const NFT_NAME: &str = "Fighter";
 
 /// Switchboard
-pub const STALENESS_THRESHOLD: i64 = 300;
+pub const STALENESS_THRESHOLD: i64 = 5300;
 pub const SOL_USD_FEED_MAINNET: &str = "GvDMxPzN1sCj7L26YDK2HnMRXEQmQ2aemov8YBtPS7vR";
 
 // /// Seller BasePoint fees

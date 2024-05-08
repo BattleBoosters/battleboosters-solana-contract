@@ -54,7 +54,6 @@ pub struct FighterBaseData {
 #[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]
 pub struct Metrics {
     pub points: u32,
-    pub energy: u32,
     pub damage: u32,
 }
 #[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]
@@ -70,7 +69,7 @@ pub struct FightMetrics {
     pub sig_clinch_leg_strikes_attempted: Metrics,
     pub sig_clinch_leg_strikes_landed: Metrics,
     // Striking skills
-    pub knockdowns: Metrics,
+    pub knock_downs: Metrics,
     pub sig_distance_head_strikes_attempted: Metrics,
     pub sig_distance_head_strikes_landed: Metrics,
     pub sig_distance_body_strikes_attempted: Metrics,
@@ -88,7 +87,7 @@ pub struct FightMetrics {
     pub sig_ground_leg_strikes_attempted: Metrics,
     pub sig_ground_leg_strikes_landed: Metrics,
     pub advance_to_half_guard: Metrics,
-    pub advance_to_slide: Metrics,
+    pub advance_to_side: Metrics,
     pub advance_to_mount: Metrics,
     pub advance_to_back: Metrics,
 }

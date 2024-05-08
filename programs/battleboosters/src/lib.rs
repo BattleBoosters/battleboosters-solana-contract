@@ -16,7 +16,7 @@ use crate::state::{
 use crate::types::*;
 use errors::ErrorCode;
 
-declare_id!("7L9GjKBzhodpa8LL4CExnUfsBDeZ5sWnj7gJkEqUNJfa");
+declare_id!("C2nq61bse2rwToDzSHepTGfrB2FBMXwQ4us4PxwU8dFe");
 
 #[program]
 pub mod battleboosters {
@@ -45,6 +45,10 @@ pub mod battleboosters {
             fighter_pack_amount,
             env,
         )
+    }
+
+    pub fn update_program(ctx: Context<UpdateProgram>) -> Result<()> {
+        processor::update_program(ctx)
     }
 
     pub fn initialize_rarity(

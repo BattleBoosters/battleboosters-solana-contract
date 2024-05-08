@@ -113,8 +113,8 @@ describe('Create event', () => {
 
     it('Should fail adding a new event, unauthorized signer', async () => {
         try {
-            const time_start = 1713045216;
-            const time_end = 1711045216;
+            const time_start = 1813045216;
+            const time_end = 1811045216;
             await createEvent(
                 provider,
                 program,

@@ -14,7 +14,7 @@ use crate::state::join_fight_card::JoinFightCard;
 use crate::state::mintable_game_asset::Attribute;
 use crate::state::mintable_game_asset::*;
 use crate::state::player::InitializePlayer;
-use crate::state::program::{Env, InitializeProgram};
+use crate::state::program::{Env, InitializeProgram, UpdateProgram};
 use crate::state::rank::UpdateRank;
 use crate::state::rarity::{
     InitializeRarity, RarityBooster, RarityFighter, TierProbabilities, TierType,
@@ -63,6 +63,13 @@ pub fn initialize(
     program.is_initialized = true;
 
     msg!("Program Initialized");
+
+    Ok(())
+}
+
+pub fn update_program(ctx: Context<UpdateProgram>) -> Result<()> {
+    let program = &mut ctx.accounts.program;
+    program.env = Env::Dev;
 
     Ok(())
 }
@@ -137,7 +144,7 @@ pub fn initialize_event_link(ctx: Context<InitializeEventLink>) -> Result<()> {
     rank.total_points = None;
     rank.rank = None;
     rank.is_consumed = false;
-
+    rank.nonce = event.rank_nonce;
     // Update event nonce safely
     event.rank_nonce = event.rank_nonce.checked_add(1).unwrap();
 
@@ -538,6 +545,7 @@ pub fn create_new_fight_card(ctx: Context<CreateFightCard>, params: FightCardDat
     let fight_card = &mut ctx.accounts.fight_card;
     let event = &mut ctx.accounts.event;
     set_fight_card_properties(fight_card, &params, Some(event.fight_card_nonce));
+    fight_card.event_nonce_tracker = event.nonce;
 
     event.fight_card_nonce = event.fight_card_nonce.checked_add(1_u8).unwrap();
 
@@ -708,6 +716,7 @@ pub fn create_mintable_game_asset(
     let player_account = &mut ctx.accounts.player_account;
     let signer = &ctx.accounts.signer;
 
+
     require!(
         mintable_game_asset_link_nonce <= player_account.player_game_asset_link_nonce,
         ErrorCode::WrongPlayerGameAssetLinkNonce
@@ -725,15 +734,24 @@ pub fn create_mintable_game_asset(
     let randomness = match program.env {
         Env::Prod => {
             let randomness_data =
-                RandomnessAccountData::parse(ctx.accounts.randomness_account_data.data.borrow())
-                    .unwrap();
+                RandomnessAccountData::parse(ctx.accounts.randomness_account_data.data.borrow()).unwrap();
             // call the switchboard on-demand get_value function to get the revealed random value
             let randomness = randomness_data
                 .get_value(&clock)
                 .map_err(|_| ErrorCode::RandomnessNotResolved)?;
             randomness
         }
-        Env::Dev => [0u8; 32],
+        Env::Dev =>{
+            // // Get the current slot
+            // let current_slot = sysvar::slot();
+            // // Get the SlotHashes sysvar
+            // let slot_hashes = sysvar::slot_hashes();
+            // // Get the blockhash for the current slot
+            // let blockhash = slot_hashes.get(current_slot).unwrap();
+            // // Convert the blockhash reference to a [u8; 32] array
+            // let blockhash_array = blockhash.as_ref().to_bytes();
+            [0u8; 32]
+        }
     };
 
     msg!("Randomness {:?}", randomness);

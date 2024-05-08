@@ -1,7 +1,7 @@
 use super::event::EventData;
 use super::program::ProgramData;
 use crate::constants::*;
-use crate::types::FighterColorSide;
+use crate::types::{FightCardResult, FighterColorSide};
 use anchor_lang::prelude::*;
 
 #[derive(Accounts)]
@@ -115,7 +115,7 @@ pub struct FightCardLinkData {
 pub struct SharedStrength {
     pub takedowns_attempted: u16,
     pub takedowns_landed: u16,
-    pub takedowns_slam: u16,
+    pub takedowns_slams: u16,
     pub sig_clinch_head_strikes_attempted: u16,
     pub sig_clinch_head_strikes_landed: u16,
     pub sig_clinch_body_strikes_attempted: u16,
@@ -152,16 +152,7 @@ pub struct GrapplingStrength {
     pub advance_to_back: u16,
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]
-pub enum FightCardResult {
-    KoTko,
-    Decision,
-    Submission,
-    Disqualification,
-    NoContest,
-    Draw,
-    InternalCancellation,
-}
+
 
 /*
    TODO: Delete fight card

@@ -72,7 +72,7 @@ pub fn process_game_asset_for_action(
                 // We free the PDA for re-usability
                 mintable_asset_link.is_free = true;
             }
-            // In both case even if burn is true we lock the asset
+            // In ()both case even if burn is true we lock the asset
             // because it is being used into the fight card
             // Lock the asset
             mintable_asset.is_locked = true
@@ -153,7 +153,6 @@ pub fn set_fight_card_properties(
     fight_card_nonce: Option<u8>,
 ) {
     fight_card.event_pubkey = params.event_pubkey;
-    fight_card.event_nonce_tracker = params.event_nonce_tracker.clone();
     fight_card.title_fight = params.title_fight.clone();
     if let Some(nonce) = fight_card_nonce {
         fight_card.nonce = nonce;
@@ -264,7 +263,7 @@ fn collect_fields<'a>(
         ),
         (
             &fight_metrics.takedowns_slam,
-            &shared_strength.takedowns_slam,
+            &shared_strength.takedowns_slams,
         ),
         (
             &fight_metrics.sig_clinch_head_strikes_attempted,
@@ -316,7 +315,7 @@ fn collect_fields<'a>(
         ),
         // Striker strength
         (
-            &fight_metrics.knockdowns,
+            &fight_metrics.knock_downs,
             &shared_strength.striking_strength.knockdowns,
         ),
         (
@@ -373,7 +372,7 @@ fn collect_fields<'a>(
             &shared_strength.grappling_strength.advance_to_half_guard,
         ),
         (
-            &fight_metrics.advance_to_slide,
+            &fight_metrics.advance_to_side,
             &shared_strength.grappling_strength.advance_to_slide,
         ),
         (

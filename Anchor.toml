@@ -5,13 +5,13 @@ seeds = false
 skip-lint = false
 
 [programs.localnet]
-battleboosters = "7L9GjKBzhodpa8LL4CExnUfsBDeZ5sWnj7gJkEqUNJfa"
+battleboosters = "C2nq61bse2rwToDzSHepTGfrB2FBMXwQ4us4PxwU8dFe"
 
 [programs.devnet]
-battleboosters = "7L9GjKBzhodpa8LL4CExnUfsBDeZ5sWnj7gJkEqUNJfa"
+battleboosters = "C2nq61bse2rwToDzSHepTGfrB2FBMXwQ4us4PxwU8dFe"
 
 [programs.testnet]
-battleboosters = "7L9GjKBzhodpa8LL4CExnUfsBDeZ5sWnj7gJkEqUNJfa"
+battleboosters = "C2nq61bse2rwToDzSHepTGfrB2FBMXwQ4us4PxwU8dFe"
 
 [[test.genesis]]
 address = "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"

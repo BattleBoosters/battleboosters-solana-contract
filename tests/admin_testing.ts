@@ -46,31 +46,31 @@ describe.skip('Creator', () => {
                 {
                     startRank: new BN(1),
                     endRank: new BN(1),
-                    prizeAmount: new BN(100),
+                    prizeAmount: new BN(30),
                     fighterAmount: 1,
-                    boosterAmount: 5,
+                    boosterAmount: 2,
                     championsPassAmount: 1,
                 },
                 {
                     startRank: new BN(2),
                     endRank: new BN(2),
-                    prizeAmount: new BN(50),
+                    prizeAmount: new BN(20),
                     fighterAmount: 1,
-                    boosterAmount: 5,
+                    boosterAmount: 2,
                     championsPassAmount: 1,
                 },
                 {
                     startRank: new BN(3),
                     endRank: new BN(3),
-                    prizeAmount: new BN(20),
+                    prizeAmount: new BN(10),
                     fighterAmount: 1,
-                    boosterAmount: 3,
+                    boosterAmount: 1,
                     championsPassAmount: 1,
                 },
                 {
                     startRank: new BN(4),
                     endRank: new BN(4),
-                    prizeAmount: new BN(10),
+                    prizeAmount: new BN(5),
                     fighterAmount: 1,
                     boosterAmount: 1,
                     championsPassAmount: 1,
@@ -101,6 +101,75 @@ describe.skip('Creator', () => {
                 },
             ]
         );
+
+
+        await createEvent(
+            provider,
+            program,
+            admin_account,
+            program_pda,
+            new_time_start,
+            new_time_end,
+            { prelims: {} },
+            [
+                {
+                    startRank: new BN(1),
+                    endRank: new BN(1),
+                    prizeAmount: new BN(10),
+                    fighterAmount: 1,
+                    boosterAmount: 2,
+                    championsPassAmount: 1,
+                },
+                {
+                    startRank: new BN(2),
+                    endRank: new BN(2),
+                    prizeAmount: new BN(5),
+                    fighterAmount: 1,
+                    boosterAmount: 2,
+                    championsPassAmount: 1,
+                },
+                {
+                    startRank: new BN(3),
+                    endRank: new BN(3),
+                    prizeAmount: new BN(1),
+                    fighterAmount: 1,
+                    boosterAmount: 1,
+                    championsPassAmount: 1,
+                },
+                {
+                    startRank: new BN(4),
+                    endRank: new BN(4),
+                    prizeAmount: new BN(0),
+                    fighterAmount: 0,
+                    boosterAmount: 1,
+                    championsPassAmount: 1,
+                },
+                {
+                    startRank: new BN(5),
+                    endRank: new BN(10),
+                    prizeAmount: new BN(1),
+                    fighterAmount: 0,
+                    boosterAmount: 1,
+                    championsPassAmount: 1,
+                },
+                {
+                    startRank: new BN(11),
+                    endRank: new BN(20),
+                    prizeAmount: new BN(0),
+                    fighterAmount: 0,
+                    boosterAmount: 1,
+                    championsPassAmount: 0,
+                },
+                {
+                    startRank: new BN(21),
+                    endRank: null,
+                    prizeAmount: new BN(0),
+                    fighterAmount: 0,
+                    boosterAmount: 1,
+                    championsPassAmount: 0,
+                },
+            ]
+        );
     });
 
     it.skip('should add a fightCard', async () => {
@@ -109,8 +178,106 @@ describe.skip('Creator', () => {
             program,
             admin_account,
             program_pda,
-            2,
-            true
+            0,
+            false
+        );
+        await createFightCard(
+            provider,
+            program,
+            admin_account,
+            program_pda,
+            0,
+            false
+        );
+        await createFightCard(
+            provider,
+            program,
+            admin_account,
+            program_pda,
+            0,
+            false
+        );
+        await createFightCard(
+            provider,
+            program,
+            admin_account,
+            program_pda,
+            0,
+            false
+        );
+        await createFightCard(
+            provider,
+            program,
+            admin_account,
+            program_pda,
+            0,
+            false
+        );
+        await createFightCard(
+            provider,
+            program,
+            admin_account,
+            program_pda,
+            0,
+            false
+        );
+
+
+        await createFightCard(
+            provider,
+            program,
+            admin_account,
+            program_pda,
+            1,
+            false
+        );
+        await createFightCard(
+            provider,
+            program,
+            admin_account,
+            program_pda,
+            1,
+            false
+        );
+        await createFightCard(
+            provider,
+            program,
+            admin_account,
+            program_pda,
+            1,
+            false
+        );
+        await createFightCard(
+            provider,
+            program,
+            admin_account,
+            program_pda,
+            1,
+            false
+        );
+        await createFightCard(
+            provider,
+            program,
+            admin_account,
+            program_pda,
+            1,
+            false
+        );
+        await createFightCard(
+            provider,
+            program,
+            admin_account,
+            program_pda,
+            1,
+            false
+        );
+        await createFightCard(
+            provider,
+            program,
+            admin_account,
+            program_pda,
+            1,
+            false
         );
     });
 
@@ -495,7 +662,7 @@ describe.skip('Creator', () => {
     });
 
     it('Should update an event', async () => {
-        const event_id = 2;
+        const event_id = 0;
         const new_time_start = 1713535498;
         const new_time_end = 1713623964;
         const { eventAccount } = await updateEvent(
@@ -596,7 +763,7 @@ describe.skip('Creator', () => {
 
         try {
             let tx = await program.methods
-                .adminUpdateRank(new BN(1))
+                .adminUpdateRank(new BN(21))
                 .accounts({
                     signer: admin_account.publicKey,
                     event: event_account,
@@ -621,4 +788,15 @@ describe.skip('Creator', () => {
             console.log(e);
         }
     });
+
+    it.skip("should update program to env prod", async () => {
+        let tx = await program.methods
+            .updateProgram()
+            .accounts({
+                creator: admin_account.publicKey,
+                program: program_pda,
+            })
+            .signers([admin_account])
+            .rpc();
+    })
 });

@@ -20,6 +20,19 @@ pub struct InitializeProgram<'info> {
     pub system_program: Program<'info, System>,
 }
 
+#[derive(Accounts)]
+pub struct UpdateProgram<'info> {
+    #[account(mut)]
+    pub creator: Signer<'info>,
+    #[account(
+    mut,
+    seeds = [MY_APP_PREFIX, PROGRAM_STATE],
+    bump
+    )]
+    pub program: Box<Account<'info, ProgramData>>,
+    pub system_program: Program<'info, System>,
+}
+
 #[account]
 pub struct ProgramData {
     /// Represent the current amount of created event
