@@ -102,7 +102,6 @@ describe.skip('Creator', () => {
             ]
         );
 
-
         await createEvent(
             provider,
             program,
@@ -221,7 +220,6 @@ describe.skip('Creator', () => {
             0,
             false
         );
-
 
         await createFightCard(
             provider,
@@ -789,7 +787,7 @@ describe.skip('Creator', () => {
         }
     });
 
-    it.skip("should update program to env prod", async () => {
+    it.skip('should update program to env prod', async () => {
         let tx = await program.methods
             .updateProgram()
             .accounts({
@@ -798,5 +796,5 @@ describe.skip('Creator', () => {
             })
             .signers([admin_account])
             .rpc();
-    })
+    });
 });

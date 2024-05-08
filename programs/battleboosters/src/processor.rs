@@ -716,7 +716,6 @@ pub fn create_mintable_game_asset(
     let player_account = &mut ctx.accounts.player_account;
     let signer = &ctx.accounts.signer;
 
-
     require!(
         mintable_game_asset_link_nonce <= player_account.player_game_asset_link_nonce,
         ErrorCode::WrongPlayerGameAssetLinkNonce
@@ -734,14 +733,15 @@ pub fn create_mintable_game_asset(
     let randomness = match program.env {
         Env::Prod => {
             let randomness_data =
-                RandomnessAccountData::parse(ctx.accounts.randomness_account_data.data.borrow()).unwrap();
+                RandomnessAccountData::parse(ctx.accounts.randomness_account_data.data.borrow())
+                    .unwrap();
             // call the switchboard on-demand get_value function to get the revealed random value
             let randomness = randomness_data
                 .get_value(&clock)
                 .map_err(|_| ErrorCode::RandomnessNotResolved)?;
             randomness
         }
-        Env::Dev =>{
+        Env::Dev => {
             // // Get the current slot
             // let current_slot = sysvar::slot();
             // // Get the SlotHashes sysvar

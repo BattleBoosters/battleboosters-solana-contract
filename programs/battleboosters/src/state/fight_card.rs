@@ -152,8 +152,6 @@ pub struct GrapplingStrength {
     pub advance_to_back: u16,
 }
 
-
-
 /*
    TODO: Delete fight card
 */

@@ -10,63 +10,63 @@ import airdropSol from './utils/airdropSol';
 import { SystemProgram } from '@solana/web3.js';
 import { sleep } from '@switchboard-xyz/common';
 function createMetrics(
-    takedownsAttemptedPoints ,
+    takedownsAttemptedPoints,
     takedownsAttemptedDamage,
     takedownsLandedPoints,
-    takedownsLandedDamage ,
-    takedownsSlamPoints ,
-    takedownsSlamDamage ,
-    sigClinchHeadStrikesAttemptedPoints ,
-    sigClinchHeadStrikesAttemptedDamage ,
-    sigClinchHeadStrikesLandedPoints ,
-    sigClinchHeadStrikesLandedDamage ,
-    sigClinchBodyStrikesAttemptedPoints ,
-    sigClinchBodyStrikesAttemptedDamage ,
-    sigClinchBodyStrikesLandedPoints ,
-    sigClinchBodyStrikesLandedDamage  ,
+    takedownsLandedDamage,
+    takedownsSlamPoints,
+    takedownsSlamDamage,
+    sigClinchHeadStrikesAttemptedPoints,
+    sigClinchHeadStrikesAttemptedDamage,
+    sigClinchHeadStrikesLandedPoints,
+    sigClinchHeadStrikesLandedDamage,
+    sigClinchBodyStrikesAttemptedPoints,
+    sigClinchBodyStrikesAttemptedDamage,
+    sigClinchBodyStrikesLandedPoints,
+    sigClinchBodyStrikesLandedDamage,
     sigClinchLegStrikesAttemptedPoints,
-    sigClinchLegStrikesAttemptedDamage ,
-    sigClinchLegStrikesLandedPoints ,
-    sigClinchLegStrikesLandedDamage ,
-    knockdownsPoints ,
-    knockdownsDamage ,
-    sigDistanceHeadStrikesAttemptedPoints ,
+    sigClinchLegStrikesAttemptedDamage,
+    sigClinchLegStrikesLandedPoints,
+    sigClinchLegStrikesLandedDamage,
+    knockdownsPoints,
+    knockdownsDamage,
+    sigDistanceHeadStrikesAttemptedPoints,
     sigDistanceHeadStrikesAttemptedDamage,
-    sigDistanceHeadStrikesLandedPoints ,
-    sigDistanceHeadStrikesLandedDamage ,
-    sigDistanceBodyStrikesAttemptedPoints ,
-    sigDistanceBodyStrikesAttemptedDamage ,
-    sigDistanceBodyStrikesLandedPoints ,
-    sigDistanceBodyStrikesLandedDamage ,
-    sigDistanceLegStrikesAttemptedPoints ,
-    sigDistanceLegStrikesAttemptedDamage ,
-    sigDistanceLegStrikesLandedPoints ,
-    sigDistanceLegStrikesLandedDamage ,
-    reversalsPoints ,
-    reversalsDamage ,
+    sigDistanceHeadStrikesLandedPoints,
+    sigDistanceHeadStrikesLandedDamage,
+    sigDistanceBodyStrikesAttemptedPoints,
+    sigDistanceBodyStrikesAttemptedDamage,
+    sigDistanceBodyStrikesLandedPoints,
+    sigDistanceBodyStrikesLandedDamage,
+    sigDistanceLegStrikesAttemptedPoints,
+    sigDistanceLegStrikesAttemptedDamage,
+    sigDistanceLegStrikesLandedPoints,
+    sigDistanceLegStrikesLandedDamage,
+    reversalsPoints,
+    reversalsDamage,
     submissionsPoints,
-    submissionsDamage ,
-    secondsInControlPoints ,
-    secondsInControlDamage ,
+    submissionsDamage,
+    secondsInControlPoints,
+    secondsInControlDamage,
     sigGroundHeadStrikesAttemptedPoints,
-    sigGroundHeadStrikesAttemptedDamage ,
-    sigGroundHeadStrikesLandedPoints ,
-    sigGroundHeadStrikesLandedDamage ,
-    sigGroundBodyStrikesAttemptedPoints ,
-    sigGroundBodyStrikesAttemptedDamage ,
-    sigGroundBodyStrikesLandedPoints ,
-    sigGroundBodyStrikesLandedDamage ,
-    sigGroundLegStrikesAttemptedPoints ,
-    sigGroundLegStrikesAttemptedDamage ,
-    sigGroundLegStrikesLandedPoints ,
-    sigGroundLegStrikesLandedDamage ,
-    advanceToHalfGuardPoints ,
-    advanceToHalfGuardDamage ,
-    advanceToSidePoints ,
-    advanceToSideDamage ,
-    advanceToMountPoints ,
-    advanceToMountDamage ,
-    advanceToBackPoints ,
+    sigGroundHeadStrikesAttemptedDamage,
+    sigGroundHeadStrikesLandedPoints,
+    sigGroundHeadStrikesLandedDamage,
+    sigGroundBodyStrikesAttemptedPoints,
+    sigGroundBodyStrikesAttemptedDamage,
+    sigGroundBodyStrikesLandedPoints,
+    sigGroundBodyStrikesLandedDamage,
+    sigGroundLegStrikesAttemptedPoints,
+    sigGroundLegStrikesAttemptedDamage,
+    sigGroundLegStrikesLandedPoints,
+    sigGroundLegStrikesLandedDamage,
+    advanceToHalfGuardPoints,
+    advanceToHalfGuardDamage,
+    advanceToSidePoints,
+    advanceToSideDamage,
+    advanceToMountPoints,
+    advanceToMountDamage,
+    advanceToBackPoints,
     advanceToBackDamage
 ) {
     let metrics = {
@@ -74,8 +74,14 @@ function createMetrics(
             points: takedownsAttemptedPoints,
             damage: takedownsAttemptedDamage,
         },
-        takedownsLanded: { points: takedownsLandedPoints, damage: takedownsLandedDamage },
-        takedownsSlam: { points: takedownsSlamPoints, damage: takedownsSlamDamage },
+        takedownsLanded: {
+            points: takedownsLandedPoints,
+            damage: takedownsLandedDamage,
+        },
+        takedownsSlam: {
+            points: takedownsSlamPoints,
+            damage: takedownsSlamDamage,
+        },
         sigClinchHeadStrikesAttempted: {
             points: sigClinchHeadStrikesAttemptedPoints,
             damage: sigClinchHeadStrikesAttemptedDamage,
@@ -127,7 +133,10 @@ function createMetrics(
         },
         reversals: { points: reversalsPoints, damage: reversalsDamage },
         submissions: { points: submissionsPoints, damage: submissionsDamage },
-        secondsInControl: { points: secondsInControlPoints, damage: secondsInControlDamage },
+        secondsInControl: {
+            points: secondsInControlPoints,
+            damage: secondsInControlDamage,
+        },
         sigGroundHeadStrikesAttempted: {
             points: sigGroundHeadStrikesAttemptedPoints,
             damage: sigGroundHeadStrikesAttemptedDamage,
@@ -194,17 +203,17 @@ describe('fighter', () => {
 
     it('Create a fighter', async () => {
         try {
-
             let fighterPDAs = [];
             for (let i = 0; i < 8; i++) {
-                const [fighterPDA] = anchor.web3.PublicKey.findProgramAddressSync(
-                    [
-                        Buffer.from('BattleBoosters'),
-                        Buffer.from('fighterBase'),
-                        Buffer.from([i]), // Using the loop counter to create unique PDAs
-                    ],
-                    program.programId
-                );
+                const [fighterPDA] =
+                    anchor.web3.PublicKey.findProgramAddressSync(
+                        [
+                            Buffer.from('BattleBoosters'),
+                            Buffer.from('fighterBase'),
+                            Buffer.from([i]), // Using the loop counter to create unique PDAs
+                        ],
+                        program.programId
+                    );
                 fighterPDAs.push(fighterPDA);
             }
 
@@ -332,8 +341,7 @@ describe('fighter', () => {
                 1 // advanceToBackDamage
             );
 
-
-// Taekwondo
+            // Taekwondo
             let metrics_taekwondo = createMetrics(
                 2, // takedownsAttemptedPoints
                 0, // takedownsAttemptedDamage
@@ -385,7 +393,7 @@ describe('fighter', () => {
                 0, // sigGroundLegStrikesAttemptedDamage
                 1, // sigGroundLegStrikesLandedPoints
                 1, // sigGroundLegStrikesLandedDamage
-            1, // advanceToHalfGuardPoints
+                1, // advanceToHalfGuardPoints
                 1, // advanceToHalfGuardDamage
                 1, // advanceToSlidePoints
                 1, // advanceToSlideDamage
@@ -393,7 +401,7 @@ describe('fighter', () => {
                 1, // advanceToMountDamage
                 1, // advanceToBackPoints
                 1 // advanceToBackDamage
-        );
+            );
 
             // Karate
             let metrics_karate = createMetrics(
@@ -457,7 +465,6 @@ describe('fighter', () => {
                 1 // advanceToBackDamage
             );
 
-
             // Judo
             let metrics_judo = createMetrics(
                 4, // takedownsAttemptedPoints
@@ -520,8 +527,6 @@ describe('fighter', () => {
                 2 // advanceToBackDamage
             );
 
-
-
             // Wrestling
             let metrics_wrestling = createMetrics(
                 5, // takedownsAttemptedPoints
@@ -571,7 +576,7 @@ describe('fighter', () => {
                 1, // sigGroundBodyStrikesLandedPoints
                 1, // sigGroundBodyStrikesLandedDamage
                 1, // sigGroundLegStrikesAttemptedPoints
-            0, // sigGroundLegStrikesAttemptedDamage
+                0, // sigGroundLegStrikesAttemptedDamage
                 1, // sigGroundLegStrikesLandedPoints
                 1, // sigGroundLegStrikesLandedDamage
                 1, // advanceToHalfGuardPoints
@@ -582,7 +587,7 @@ describe('fighter', () => {
                 1, // advanceToMountDamage
                 2, // advanceToBackPoints
                 2 // advanceToBackDamage
-        );
+            );
 
             // BJJ
             let metrics_bjj = createMetrics(
@@ -645,8 +650,6 @@ describe('fighter', () => {
                 3, // advanceToBackPoints
                 3 // advanceToBackDamage
             );
-
-
 
             // Sambo
             let metrics_sambo = createMetrics(
@@ -711,10 +714,7 @@ describe('fighter', () => {
             );
 
             await program.methods
-                .createFighter(
-                    { boxing: {} },
-                    metrics_boxing
-                )
+                .createFighter({ boxing: {} }, metrics_boxing)
                 .accounts({
                     creator: admin_account.publicKey,
                     program: program_pda,
@@ -724,12 +724,8 @@ describe('fighter', () => {
                 .signers([admin_account])
                 .rpc();
 
-
             await program.methods
-                .createFighter(
-                    { muayThai: {} },
-                    metrics_muaythai
-                )
+                .createFighter({ muayThai: {} }, metrics_muaythai)
                 .accounts({
                     creator: admin_account.publicKey,
                     program: program_pda,
@@ -740,9 +736,7 @@ describe('fighter', () => {
                 .rpc();
 
             await program.methods
-                .createFighter(
-                    { taekwondo: {} },
-                    metrics_taekwondo)
+                .createFighter({ taekwondo: {} }, metrics_taekwondo)
                 .accounts({
                     creator: admin_account.publicKey,
                     program: program_pda,
@@ -753,9 +747,7 @@ describe('fighter', () => {
                 .rpc();
 
             await program.methods
-                .createFighter(
-                    { karate: {} },
-                    metrics_karate)
+                .createFighter({ karate: {} }, metrics_karate)
                 .accounts({
                     creator: admin_account.publicKey,
                     program: program_pda,
@@ -766,9 +758,7 @@ describe('fighter', () => {
                 .rpc();
 
             await program.methods
-                .createFighter(
-                    { judo: {} },
-                    metrics_judo)
+                .createFighter({ judo: {} }, metrics_judo)
                 .accounts({
                     creator: admin_account.publicKey,
                     program: program_pda,
@@ -778,11 +768,8 @@ describe('fighter', () => {
                 .signers([admin_account])
                 .rpc();
 
-
             await program.methods
-                .createFighter(
-                    { wrestling: {} },
-                    metrics_wrestling)
+                .createFighter({ wrestling: {} }, metrics_wrestling)
                 .accounts({
                     creator: admin_account.publicKey,
                     program: program_pda,
@@ -792,11 +779,8 @@ describe('fighter', () => {
                 .signers([admin_account])
                 .rpc();
 
-
             await program.methods
-                .createFighter(
-                    { brazilianJiuJitsu: {} },
-                    metrics_bjj)
+                .createFighter({ brazilianJiuJitsu: {} }, metrics_bjj)
                 .accounts({
                     creator: admin_account.publicKey,
                     program: program_pda,
@@ -807,9 +791,7 @@ describe('fighter', () => {
                 .rpc();
 
             await program.methods
-                .createFighter(
-                    { sambo: {} },
-                    metrics_sambo)
+                .createFighter({ sambo: {} }, metrics_sambo)
                 .accounts({
                     creator: admin_account.publicKey,
                     program: program_pda,
@@ -818,8 +800,6 @@ describe('fighter', () => {
                 })
                 .signers([admin_account])
                 .rpc();
-
-
 
             // let metrics = createMetrics(1)
             // let tx = await program.methods
@@ -835,8 +815,6 @@ describe('fighter', () => {
             //     })
             //     .signers([admin_account])
             //     .rpc();
-
-
         } catch (e) {
             console.log(e);
         }
