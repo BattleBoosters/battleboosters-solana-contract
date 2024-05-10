@@ -1163,6 +1163,7 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
     let mystery_box = &mut ctx.accounts.mystery_box;
     let rarity = &ctx.accounts.rarity;
     let bank = &mut ctx.accounts.bank;
+    let feed = &ctx.accounts.price_feed.load()?;
 
     //verify_equality(&rank.player_account.key(), &player_account.key())?;
     require!(
@@ -1229,7 +1230,26 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
             mystery_box.champions_pass_mint_allowance = reward.champions_pass_amount as u64;
             mystery_box.nonce = player_account.order_nonce;
 
-            let total_lamports = (reward.prize_amount * LAMPORTS_PER_SOL as f64).round() as u64;
+            let val = match program.env {
+                Env::Prod => {
+                    // get result
+                    let val: f64 = feed.get_result()?.try_into()?;
+                    // check whether the feed has been updated in the last 300 seconds
+                    feed.check_staleness(Clock::get()?.unix_timestamp, STALENESS_THRESHOLD)
+                        .map_err(|_| error!(ErrorCode::StaleFeed))?;
+
+                    val
+                }
+                Env::Dev => {
+                    // get result
+                    feed.get_result()?.try_into()?
+                }
+            };
+
+            let sol_per_usd = 1.0 / val;
+            let total_sol = reward.prize_amount * sol_per_usd;
+            let total_lamports = (total_sol * LAMPORTS_PER_SOL as f64).round() as u64;
+
             let bank_balance = bank.lamports();
             msg!("bank balance before: {}", bank.lamports());
             if bank_balance < total_lamports {

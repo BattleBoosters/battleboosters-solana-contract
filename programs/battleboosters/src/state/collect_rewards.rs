@@ -5,7 +5,11 @@ use crate::state::mystery_box::MysteryBoxData;
 use crate::state::player::PlayerData;
 use crate::state::rank::RankData;
 use crate::state::rarity::RarityData;
+use crate::ErrorCode;
 use anchor_lang::prelude::*;
+use std::str::FromStr;
+use switchboard_solana::prelude::*;
+use switchboard_solana::AggregatorAccountData;
 
 #[derive(Accounts)]
 pub struct CollectRewards<'info> {
@@ -54,6 +58,9 @@ pub struct CollectRewards<'info> {
     pub rarity: Account<'info, RarityData>,
     /// CHECK: The account's data is validated manually within the handler.
     pub randomness_account_data: AccountInfo<'info>,
+    /// CHECK: Switchboard network price feed id
+    #[account(address = Pubkey::from_str(SOL_USD_FEED_MAINNET).unwrap() @ ErrorCode::InvalidPriceFeed)]
+    pub price_feed: AccountLoader<'info, AggregatorAccountData>,
 
     pub system_program: Program<'info, System>,
 }
