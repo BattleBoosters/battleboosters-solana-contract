@@ -400,9 +400,6 @@ pub fn purchase_mystery_box(
     // Set the collector pack to default `champion_s_pass_mint_allowance`
     mystery_box.champions_pass_mint_allowance = 0;
 
-    // Set the order nonce to regenerate the PDA
-    mystery_box.nonce = player_account.order_nonce;
-
     if let Some(probability_tier) = rarity.get_probability_by_tier(TierType::Tier3) {
         mystery_box.probability_tier = probability_tier;
     } else {
@@ -1228,7 +1225,6 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
             mystery_box.booster_mint_allowance = reward.booster_amount as u64;
             mystery_box.fighter_mint_allowance = reward.fighter_amount as u64;
             mystery_box.champions_pass_mint_allowance = reward.champions_pass_amount as u64;
-            mystery_box.nonce = player_account.order_nonce;
 
             let val = match program.env {
                 Env::Prod => {

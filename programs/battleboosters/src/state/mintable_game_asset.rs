@@ -22,7 +22,7 @@ pub struct CreateMintableGameAsset<'info> {
     pub player_account: Box<Account<'info, PlayerData>>,
     #[account(
     mut,
-    seeds = [MY_APP_PREFIX, MYSTERY_BOX, mystery_box.nonce.to_le_bytes().as_ref(), signer.key().as_ref()],
+    seeds = [MY_APP_PREFIX, MYSTERY_BOX, signer.key().as_ref()],
     bump,
     )]
     pub mystery_box: Box<Account<'info, MysteryBoxData>>,

@@ -28,7 +28,7 @@ pub struct TransactionEscrow<'info> {
     #[account(
     init,
     payer = signer,
-    seeds = [MY_APP_PREFIX, MYSTERY_BOX, player_account.order_nonce.to_le_bytes().as_ref(), recipient.key().as_ref()],
+    seeds = [MY_APP_PREFIX, MYSTERY_BOX, recipient.key().as_ref()],
     bump,
     space = 128 + 32 + 8
     )]
