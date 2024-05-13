@@ -19,6 +19,7 @@ use crate::state::rank::UpdateRank;
 use crate::state::rarity::{
     InitializeRarity, RarityBooster, RarityFighter, TierProbabilities, TierType,
 };
+use crate::state::refund_mintable_game_asset::RefundMintableGameAsset;
 use crate::state::transaction_escrow::TransactionEscrow;
 use crate::types::{
     BoosterType, CollectionType, FighterColorSide, FighterType, NftType, OpenRequest,
@@ -703,6 +704,16 @@ pub fn update_fight_card(ctx: Context<UpdateFightCard>, params: FightCardData) -
 //     Ok(())
 // }
 
+/*
+   TODO: Refund mintable game asset in case the fight Card have been canceled
+*/
+pub fn refund_mintable_game_asset(
+    ctx: Context<RefundMintableGameAsset>,
+    mintable_game_asset_link_nonce: u64,
+) -> Result<()> {
+    Ok(())
+}
+
 pub fn create_mintable_game_asset(
     ctx: Context<CreateMintableGameAsset>,
     mintable_game_asset_link_nonce: u64, // used on instruction
@@ -1067,6 +1078,9 @@ pub fn create_mintable_game_asset(
     // Save the Public key of the `mintable_game_asset` PDA for direct linkage
     mintable_game_asset_link.mintable_game_asset_pubkey =
         mintable_game_asset.to_account_info().key();
+    // The mintable asset is not free
+    mintable_game_asset_link.is_free = false;
+
     // Save the nonce for seeds easier re-generation
     mintable_game_asset.nonce = program.mintable_game_asset_nonce;
     // Assigns the player_game_asset_link as the owner of the mintable asset,
