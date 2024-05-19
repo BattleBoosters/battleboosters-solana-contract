@@ -20,7 +20,7 @@ use crate::state::rank::UpdateRank;
 use crate::state::rarity::{
     InitializeRarity, RarityBooster, RarityFighter, TierProbabilities, TierType,
 };
-use crate::state::refund_mintable_game_asset::RefundMintableGameAsset;
+//use crate::state::refund_mintable_game_asset::RefundMintableGameAsset;
 use crate::state::transaction_escrow::TransactionEscrow;
 use crate::types::{
     BoosterType, CollectionType, FighterColorSide, FighterType, NftType, OpenRequest,
@@ -726,15 +726,15 @@ pub fn update_fight_card(ctx: Context<UpdateFightCard>, params: FightCardData) -
 //     Ok(())
 // }
 
-/*
-   TODO: Refund mintable game asset in case the fight Card have been canceled
-*/
-pub fn refund_mintable_game_asset(
-    _ctx: Context<RefundMintableGameAsset>,
-    _mintable_game_asset_link_nonce: u64,
-) -> Result<()> {
-    Ok(())
-}
+// /*
+//    TODO: Refund mintable game asset in case the fight Card have been canceled
+// */
+// pub fn refund_mintable_game_asset(
+//     _ctx: Context<RefundMintableGameAsset>,
+//     _mintable_game_asset_link_nonce: u64,
+// ) -> Result<()> {
+//     Ok(())
+// }
 
 pub fn create_mintable_game_asset(
     ctx: Context<CreateMintableGameAsset>,
