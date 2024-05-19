@@ -10,6 +10,7 @@ use crate::state::event::{CreateEvent, InitializeEventLink, RankReward, UpdateEv
 use crate::state::fight_card::{CreateFightCard, FightCardData, UpdateFightCard};
 use crate::state::fighter_base::{CreateFighterBase, FightMetrics};
 use crate::state::join_fight_card::JoinFightCard;
+use crate::state::mystery_box::UpdateMysteryBox;
 // use crate::state::mint_nft_from_game_asset::MintNftFromGameAsset;
 use crate::state::mintable_game_asset::Attribute;
 use crate::state::mintable_game_asset::*;
@@ -271,16 +272,49 @@ pub fn update_fighter(
     Ok(())
 }
 
+/*
+   TODO: Update mystery box randomness account
+*/
+pub fn update_randomness_mystery_box(
+    ctx: Context<UpdateMysteryBox>,
+    _mystery_box_nonce: u64, // Used in instruction
+) -> Result<()> {
+    let clock = Clock::get()?;
+    let mystery_box = &mut ctx.accounts.mystery_box;
+    let program = &ctx.accounts.program;
+
+    // Used for testing in local-net without depending on external services
+    match program.env {
+        Env::Prod => {
+            let randomness_data =
+                RandomnessAccountData::parse(ctx.accounts.randomness_account_data.data.borrow())
+                    .unwrap();
+            require!(
+                randomness_data.seed_slot == clock.slot - 1,
+                ErrorCode::RandomnessAlreadyRevealed
+            );
+            // Set the randomness account
+            mystery_box.randomness_account =
+                Some(ctx.accounts.randomness_account_data.to_account_info().key());
+        }
+        Env::Dev => {
+            mystery_box.randomness_account = None;
+        }
+    }
+
+    Ok(())
+}
+
 pub fn purchase_mystery_box(
     ctx: Context<TransactionEscrow>,
     requests: Vec<PurchaseRequest>,
 ) -> Result<()> {
-    let clock = Clock::get()?;
     let program = &ctx.accounts.program;
     let feed = &ctx.accounts.price_feed.load()?;
     let mystery_box = &mut ctx.accounts.mystery_box;
     let player_account = &mut ctx.accounts.player_account;
     let bank = &mut ctx.accounts.bank;
+    let recipient = &ctx.accounts.recipient;
     // let bank_escrow = &mut ctx.accounts.bank_escrow;
     let signer_key = &ctx.accounts.signer.to_account_info().key();
     let rarity = &ctx.accounts.rarity;
@@ -379,25 +413,8 @@ pub fn purchase_mystery_box(
     // )?;
     msg!("bank balance now: {}", bank.lamports());
 
-    // Used for testing in local-net without depending on external services
-    match program.env {
-        Env::Prod => {
-            let randomness_data =
-                RandomnessAccountData::parse(ctx.accounts.randomness_account_data.data.borrow())
-                    .unwrap();
-            require!(
-                randomness_data.seed_slot == clock.slot - 1,
-                ErrorCode::RandomnessAlreadyRevealed
-            );
-            // Set the randomness account
-            mystery_box.randomness_account =
-                ctx.accounts.randomness_account_data.to_account_info().key();
-        }
-        Env::Dev => {
-            mystery_box.randomness_account = ctx.accounts.signer.to_account_info().key();
-        }
-    }
-
+    // Set the randomness account to default
+    mystery_box.randomness_account = None;
     // Set the collector pack to default `champion_s_pass_mint_allowance`
     mystery_box.champions_pass_mint_allowance = 0;
 
@@ -413,6 +430,11 @@ pub fn purchase_mystery_box(
     // Increase order
     player_account.order_nonce += 1;
 
+    msg!("Recipient account: {}", recipient.to_account_info().key());
+    msg!(
+        "Purchased mystery box account: {}",
+        mystery_box.to_account_info().key()
+    );
     Ok(())
 }
 // pub fn consume_randomness(
@@ -708,8 +730,8 @@ pub fn update_fight_card(ctx: Context<UpdateFightCard>, params: FightCardData) -
    TODO: Refund mintable game asset in case the fight Card have been canceled
 */
 pub fn refund_mintable_game_asset(
-    ctx: Context<RefundMintableGameAsset>,
-    mintable_game_asset_link_nonce: u64,
+    _ctx: Context<RefundMintableGameAsset>,
+    _mintable_game_asset_link_nonce: u64,
 ) -> Result<()> {
     Ok(())
 }
@@ -727,6 +749,14 @@ pub fn create_mintable_game_asset(
     let player_account = &mut ctx.accounts.player_account;
     let signer = &ctx.accounts.signer;
 
+    require!(
+        mystery_box.randomness_account.is_some(),
+        ErrorCode::RandomnessIsNone
+    );
+    require!(
+        mystery_box.randomness_account.unwrap().key() == ctx.accounts.randomness_account_data.key(),
+        ErrorCode::RandomnessNotMatchingProvided
+    );
     require!(
         mintable_game_asset_link_nonce <= player_account.player_game_asset_link_nonce,
         ErrorCode::WrongPlayerGameAssetLinkNonce
@@ -1089,6 +1119,11 @@ pub fn create_mintable_game_asset(
     // Updates the global state to track the current amount of created `mintable_game_asset` instances.
     program.mintable_game_asset_nonce += 1;
 
+    msg!(
+        "Used mystery box account: {}",
+        mystery_box.to_account_info().key()
+    );
+
     Ok(())
 }
 
@@ -1185,26 +1220,6 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
         ErrorCode::EventStillRunning
     );
     require!(!rank.is_consumed, ErrorCode::ConsumedAlready);
-
-    // Used for testing in local-net without depending on external services
-    match program.env {
-        Env::Prod => {
-            let randomness_data =
-                RandomnessAccountData::parse(ctx.accounts.randomness_account_data.data.borrow())
-                    .unwrap();
-            require!(
-                randomness_data.seed_slot == clock.slot - 1,
-                ErrorCode::RandomnessAlreadyRevealed
-            );
-            // Set the randomness account
-            mystery_box.randomness_account =
-                ctx.accounts.randomness_account_data.to_account_info().key();
-        }
-        Env::Dev => {
-            mystery_box.randomness_account = ctx.accounts.signer.to_account_info().key();
-        }
-    }
-
     require!(rank.total_points.is_some(), ErrorCode::RankPointsIsNone);
 
     if let Some(player_rank) = rank.rank {
@@ -1238,7 +1253,7 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
                     }
                 }
             }
-
+            mystery_box.randomness_account = None;
             mystery_box.booster_mint_allowance = reward.booster_amount as u64;
             mystery_box.fighter_mint_allowance = reward.fighter_amount as u64;
             mystery_box.champions_pass_mint_allowance = reward.champions_pass_amount as u64;

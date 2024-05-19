@@ -35,13 +35,13 @@ pub struct CollectRewards<'info> {
     seeds = [MY_APP_PREFIX, RANK, event.key().as_ref(), rank.nonce.to_le_bytes().as_ref()],
     bump
     )]
-    pub rank: Account<'info, RankData>,
+    pub rank: Box<Account<'info, RankData>>,
     #[account(
     mut,
     seeds = [MY_APP_PREFIX, PLAYER, rank.player_account.key().as_ref()],
     bump,
     )]
-    pub player_account: Account<'info, PlayerData>,
+    pub player_account: Box<Account<'info, PlayerData>>,
     #[account(
     init,
     payer = signer,
@@ -49,15 +49,13 @@ pub struct CollectRewards<'info> {
     bump,
     space = 128
     )]
-    pub mystery_box: Account<'info, MysteryBoxData>,
+    pub mystery_box: Box<Account<'info, MysteryBoxData>>,
     #[account(
     mut,
     seeds = [MY_APP_PREFIX, RARITY],
     bump,
     )]
-    pub rarity: Account<'info, RarityData>,
-    /// CHECK: The account's data is validated manually within the handler.
-    pub randomness_account_data: AccountInfo<'info>,
+    pub rarity: Box<Account<'info, RarityData>>,
     /// CHECK: Switchboard network price feed id
     #[account(address = Pubkey::from_str(SOL_USD_FEED_MAINNET).unwrap() @ ErrorCode::InvalidPriceFeed)]
     pub price_feed: AccountLoader<'info, AggregatorAccountData>,

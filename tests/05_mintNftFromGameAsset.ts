@@ -29,7 +29,6 @@ import {
     SwitchboardProgram,
 } from '@switchboard-xyz/solana.js';
 import InitializePlayerAccount from './utils/initializePlayerAccount';
-import { RandomnessService } from '@switchboard-xyz/solana-randomness-service';
 import * as buffer from 'buffer';
 import account_init from './utils/initAccounts';
 import createNftCollection from './utils/createNftCollection';

@@ -113,4 +113,7 @@ pub enum ErrorCode {
     // 35
     #[msg("Randomness is not yet resolved")]
     RandomnessNotResolved,
+    // 36
+    #[msg("Wrong randomness account provided")]
+    RandomnessNotMatchingProvided,
 }

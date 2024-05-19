@@ -1,5 +1,6 @@
 use crate::constants::*;
 use crate::state::player::PlayerData;
+use crate::state::program::ProgramData;
 use crate::state::rarity::TierProbabilities;
 use anchor_lang::prelude::*;
 
@@ -25,12 +26,31 @@ pub struct InitializeMysteryBox<'info> {
     pub system_program: Program<'info, System>,
 }
 
+#[derive(Accounts)]
+#[instruction(mystery_box_nonce: u64)]
+pub struct UpdateMysteryBox<'info> {
+    #[account(mut)]
+    pub creator: Signer<'info>,
+    #[account(mut)]
+    pub program: Box<Account<'info, ProgramData>>,
+    #[account(
+    mut,
+    seeds = [MY_APP_PREFIX, MYSTERY_BOX, mystery_box_nonce.to_le_bytes().as_ref(), creator.key().as_ref()],
+    bump
+    )]
+    pub mystery_box: Box<Account<'info, MysteryBoxData>>,
+    /// CHECK: The account's data is validated manually within the handler.
+    pub randomness_account_data: AccountInfo<'info>,
+
+    pub system_program: Program<'info, System>,
+}
+
 #[account]
 pub struct MysteryBoxData {
     pub fighter_mint_allowance: u64,
     pub booster_mint_allowance: u64,
     pub champions_pass_mint_allowance: u64,
-    pub randomness_account: Pubkey, // Reference to the Switchboard randomness account
+    pub randomness_account: Option<Pubkey>, // Reference to the Switchboard randomness account
     pub probability_tier: TierProbabilities,
     /// Nonce of the `mystery_box`
     pub nonce: u64,

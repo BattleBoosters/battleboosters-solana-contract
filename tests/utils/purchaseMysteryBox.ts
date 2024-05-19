@@ -119,11 +119,8 @@ const createMintableGameAsset = async function (
             mysteryBox: mystery_box_pda,
             bank: bank_pda,
             priceFeed: priceFeedAccount,
-            randomnessAccountData: provider.wallet.publicKey,
             rarity: rarity_pda,
             systemProgram: anchor.web3.SystemProgram.programId,
-            tokenProgram: TOKEN_PROGRAM_ID,
-            associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
         })
         .signers([])
         .rpc();

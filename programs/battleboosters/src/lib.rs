@@ -9,8 +9,8 @@ mod utils;
 
 use crate::state::{
     collect_rewards::*, create_spl_nft::*, determine_ranking_points::*, event::*, fight_card::*,
-    fighter_base::*, join_fight_card::*, mintable_game_asset::*, player::*, program::*, rank::*,
-    rarity::*, refund_mintable_game_asset::*, transaction_escrow::*,
+    fighter_base::*, join_fight_card::*, mintable_game_asset::*, mystery_box::*, player::*,
+    program::*, rank::*, rarity::*, refund_mintable_game_asset::*, transaction_escrow::*,
 };
 
 use crate::types::*;
@@ -23,6 +23,7 @@ pub mod battleboosters {
     use super::*;
     use crate::state::collect_rewards::CollectRewards;
     use crate::state::determine_ranking_points::DetermineRankingPoints;
+    use crate::state::mystery_box::UpdateMysteryBox;
     use crate::state::rank::UpdateRank;
 
     pub fn initialize(
@@ -104,6 +105,13 @@ pub mod battleboosters {
         fight_metrics: FightMetrics,
     ) -> Result<()> {
         processor::update_fighter(ctx, fighter_type, fight_metrics)
+    }
+
+    pub fn update_randomness_mystery_box(
+        ctx: Context<UpdateMysteryBox>,
+        mystery_box_nonce: u64,
+    ) -> Result<()> {
+        processor::update_randomness_mystery_box(ctx, mystery_box_nonce)
     }
 
     pub fn purchase_mystery_box(

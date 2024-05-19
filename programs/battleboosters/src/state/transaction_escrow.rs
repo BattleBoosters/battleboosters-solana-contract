@@ -5,8 +5,8 @@ use crate::constants::*;
 use crate::state::rarity::RarityData;
 use crate::ErrorCode;
 use anchor_lang::prelude::*;
-use anchor_spl::associated_token::AssociatedToken;
-use anchor_spl::token::Token;
+// use anchor_spl::associated_token::AssociatedToken;
+// use anchor_spl::token::Token;
 use std::str::FromStr;
 use switchboard_solana::prelude::*;
 
@@ -18,13 +18,13 @@ pub struct TransactionEscrow<'info> {
     #[account(mut)]
     pub recipient: AccountInfo<'info>,
     #[account(mut, seeds = [MY_APP_PREFIX, PROGRAM_STATE], bump)]
-    pub program: Account<'info, ProgramData>,
+    pub program: Box<Account<'info, ProgramData>>,
     #[account(
     mut,
     seeds = [MY_APP_PREFIX, PLAYER, recipient.key().as_ref()],
     bump,
     )]
-    pub player_account: Account<'info, PlayerData>,
+    pub player_account: Box<Account<'info, PlayerData>>,
     #[account(
     init,
     payer = signer,
@@ -32,7 +32,7 @@ pub struct TransactionEscrow<'info> {
     bump,
     space = 128 + 32 + 8
     )]
-    pub mystery_box: Account<'info, MysteryBoxData>,
+    pub mystery_box: Box<Account<'info, MysteryBoxData>>,
     /// CHECK: This is a PDA used as the bank
     #[account(mut, seeds = [MY_APP_PREFIX, BANK], bump)]
     pub bank: AccountInfo<'info>,
@@ -41,24 +41,25 @@ pub struct TransactionEscrow<'info> {
     #[account(address = Pubkey::from_str(SOL_USD_FEED_MAINNET).unwrap() @ ErrorCode::InvalidPriceFeed)]
     pub price_feed: AccountLoader<'info, AggregatorAccountData>,
 
-    /// CHECK: The account's data is validated manually within the handler.
-    pub randomness_account_data: AccountInfo<'info>,
-
-    /// The Solana System program. Used to allocate space on-chain for the randomness_request account.
-    pub system_program: Program<'info, System>,
-
-    /// The Solana Token program. Used to transfer funds to the randomness escrow.
-    pub token_program: Program<'info, Token>,
-
-    /// The Solana Associated Token program. Used to create the TokenAccount for the randomness escrow.
-    pub associated_token_program: Program<'info, AssociatedToken>,
     /// Rarity PDA
     #[account(
     mut,
     seeds = [MY_APP_PREFIX, RARITY],
     bump,
     )]
-    pub rarity: Account<'info, RarityData>,
+    pub rarity: Box<Account<'info, RarityData>>,
+
+    // /// CHECK: The account's data is validated manually within the handler.
+    // pub randomness_account_data: AccountInfo<'info>,
+    //
+    /// The Solana System program. Used to allocate space on-chain for the randomness_request account.
+    pub system_program: Program<'info, System>,
+    //
+    // /// The Solana Token program. Used to transfer funds to the randomness escrow.
+    // pub token_program: Program<'info, Token>,
+    //
+    // /// The Solana Associated Token program. Used to create the TokenAccount for the randomness escrow.
+    // pub associated_token_program: Program<'info, AssociatedToken>,
 }
 
 // #[derive(Accounts)]
