@@ -44,7 +44,7 @@ import purchaseMysteryBox from './utils/purchaseMysteryBox';
 /*
     TODO: Test try to pass nft different type
  */
-describe('Purchase', () => {
+describe.only('Purchase', () => {
     // const sb_programId = SB_ON_DEMAND_PID;
     const provider = anchor.AnchorProvider.env();
     anchor.setProvider(provider);

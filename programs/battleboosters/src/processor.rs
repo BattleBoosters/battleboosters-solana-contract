@@ -278,6 +278,7 @@ pub fn update_fighter(
 pub fn update_randomness_mystery_box(
     ctx: Context<UpdateMysteryBox>,
     _mystery_box_nonce: u64, // Used in instruction
+    _player_pubkey: Pubkey,  // Used in instruction
 ) -> Result<()> {
     let clock = Clock::get()?;
     let mystery_box = &mut ctx.accounts.mystery_box;
@@ -738,7 +739,8 @@ pub fn update_fight_card(ctx: Context<UpdateFightCard>, params: FightCardData) -
 
 pub fn create_mintable_game_asset(
     ctx: Context<CreateMintableGameAsset>,
-    mintable_game_asset_link_nonce: u64, // used on instruction
+    mintable_game_asset_link_nonce: u64, // used in instruction
+    player_pubkey: Pubkey,               // used in instruction
     request: OpenRequest,
 ) -> Result<()> {
     let clock: Clock = Clock::get()?;
@@ -747,7 +749,6 @@ pub fn create_mintable_game_asset(
     let mintable_game_asset_link = &mut ctx.accounts.mintable_game_asset_link;
     let mintable_game_asset = &mut ctx.accounts.mintable_game_asset;
     let player_account = &mut ctx.accounts.player_account;
-    let signer = &ctx.accounts.signer;
 
     require!(
         mystery_box.randomness_account.is_some(),
@@ -814,7 +815,7 @@ pub fn create_mintable_game_asset(
             //     .randomness
             //     .clone()
             //     .ok_or(ErrorCode::RandomnessUnavailable)?;
-            let public_key_bytes = signer.key().to_bytes();
+            let public_key_bytes = player_pubkey.to_bytes();
 
             let combined_allowance = &mystery_box.booster_mint_allowance
                 + &mystery_box.fighter_mint_allowance
@@ -922,7 +923,7 @@ pub fn create_mintable_game_asset(
                 .clone()
                 .ok_or(ErrorCode::RarityAccountRequired)?;
 
-            let public_key_bytes = signer.key().to_bytes();
+            let public_key_bytes = player_pubkey.to_bytes();
             let combined_allowance = &mystery_box.booster_mint_allowance
                 + &mystery_box.fighter_mint_allowance
                 + &mystery_box.champions_pass_mint_allowance;

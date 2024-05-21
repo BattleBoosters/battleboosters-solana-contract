@@ -54,7 +54,6 @@ pub struct TransactionEscrow<'info> {
     //
     /// The Solana System program. Used to allocate space on-chain for the randomness_request account.
     pub system_program: Program<'info, System>,
-    //
     // /// The Solana Token program. Used to transfer funds to the randomness escrow.
     // pub token_program: Program<'info, Token>,
     //

@@ -94,9 +94,7 @@ pub enum ErrorCode {
     #[msg("The requested operation has already been consumed")]
     ConsumedAlready,
     // 30
-    #[msg(
-        "Randomness is required to collect your reward. Please request randomness and try again."
-    )]
+    #[msg("Randomness is required. Please request randomness and try again.")]
     RandomnessIsNone,
     // 31
     #[msg("Failed to parse value")]

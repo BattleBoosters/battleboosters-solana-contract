@@ -27,7 +27,7 @@ pub struct InitializeMysteryBox<'info> {
 }
 
 #[derive(Accounts)]
-#[instruction(mystery_box_nonce: u64)]
+#[instruction(mystery_box_nonce: u64, player_pubkey: Pubkey)]
 pub struct UpdateMysteryBox<'info> {
     #[account(mut)]
     pub creator: Signer<'info>,
@@ -35,7 +35,7 @@ pub struct UpdateMysteryBox<'info> {
     pub program: Box<Account<'info, ProgramData>>,
     #[account(
     mut,
-    seeds = [MY_APP_PREFIX, MYSTERY_BOX, mystery_box_nonce.to_le_bytes().as_ref(), creator.key().as_ref()],
+    seeds = [MY_APP_PREFIX, MYSTERY_BOX, mystery_box_nonce.to_le_bytes().as_ref(), player_pubkey.as_ref()],
     bump
     )]
     pub mystery_box: Box<Account<'info, MysteryBoxData>>,

@@ -8,7 +8,7 @@ use anchor_lang::{account, AnchorDeserialize, AnchorSerialize};
 use solana_program::pubkey::Pubkey;
 
 #[derive(Accounts)]
-#[instruction(mintable_game_asset_link_nonce: u64)]
+#[instruction(mintable_game_asset_link_nonce: u64, player_pubkey: Pubkey)]
 pub struct CreateMintableGameAsset<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -16,13 +16,13 @@ pub struct CreateMintableGameAsset<'info> {
     pub program: Box<Account<'info, ProgramData>>,
     #[account(
     mut,
-    seeds = [MY_APP_PREFIX, PLAYER, signer.key().as_ref()],
+    seeds = [MY_APP_PREFIX, PLAYER, player_pubkey.as_ref()],
     bump,
     )]
     pub player_account: Box<Account<'info, PlayerData>>,
     #[account(
     mut,
-    seeds = [MY_APP_PREFIX, MYSTERY_BOX, mystery_box.nonce.to_le_bytes().as_ref(), signer.key().as_ref()],
+    seeds = [MY_APP_PREFIX, MYSTERY_BOX, mystery_box.nonce.to_le_bytes().as_ref(), player_pubkey.as_ref()],
     bump,
     )]
     pub mystery_box: Box<Account<'info, MysteryBoxData>>,
@@ -44,7 +44,7 @@ pub struct CreateMintableGameAsset<'info> {
     #[account(
     init_if_needed,
     payer = signer,
-    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, mintable_game_asset_link_nonce.to_le_bytes().as_ref(), signer.key().as_ref()],
+    seeds = [MY_APP_PREFIX, MINTABLE_GAME_ASSET, mintable_game_asset_link_nonce.to_le_bytes().as_ref(), player_pubkey.as_ref()],
     space = 8 + 32 + 8 + 1 + 8 + 8,
     bump,
     )]

@@ -110,8 +110,9 @@ pub mod battleboosters {
     pub fn update_randomness_mystery_box(
         ctx: Context<UpdateMysteryBox>,
         mystery_box_nonce: u64,
+        player_pubkey: Pubkey,
     ) -> Result<()> {
-        processor::update_randomness_mystery_box(ctx, mystery_box_nonce)
+        processor::update_randomness_mystery_box(ctx, mystery_box_nonce, player_pubkey)
     }
 
     pub fn purchase_mystery_box(
@@ -140,10 +141,16 @@ pub mod battleboosters {
 
     pub fn create_mintable_game_asset(
         ctx: Context<CreateMintableGameAsset>,
-        mintable_game_asset_link_nonce: u64, // used on instruction
+        mintable_game_asset_link_nonce: u64, // used in instruction
+        player_pubkey: Pubkey,
         request: OpenRequest,
     ) -> Result<()> {
-        processor::create_mintable_game_asset(ctx, mintable_game_asset_link_nonce, request)
+        processor::create_mintable_game_asset(
+            ctx,
+            mintable_game_asset_link_nonce,
+            player_pubkey,
+            request,
+        )
     }
 
     pub fn create_new_event(

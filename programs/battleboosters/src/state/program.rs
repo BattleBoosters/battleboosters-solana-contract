@@ -33,6 +33,7 @@ pub struct UpdateProgram<'info> {
     pub system_program: Program<'info, System>,
 }
 
+/* TODO: change fighter pack by fighter for convenience remove the pack stuffs*/
 #[account]
 pub struct ProgramData {
     /// Represent the current amount of created event
