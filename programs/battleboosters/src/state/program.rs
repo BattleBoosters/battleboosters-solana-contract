@@ -34,12 +34,18 @@ pub struct UpdateProgram<'info> {
 }
 
 /* TODO: change fighter pack by fighter for convenience remove the pack stuffs*/
+/*
+      TODO: Add circulating game asset supply, it could be interesting to add an on chain tracker how much assets
+       are in circulation and how much are removed from circulation
+*/
 #[account]
 pub struct ProgramData {
     /// Represent the current amount of created event
     pub event_nonce: u64,
-    /// Represent the current amount of mintable game asset pack
+    /// Represent the current amount of mintable game asset
     pub mintable_game_asset_nonce: u64,
+    /// Represent the current amount in circulation of game assets
+    // pub circulating_mintable_game_asset_counter: u64,
     /// The authority which are allowed to administrate the contract
     pub admin_pubkey: Pubkey,
     /// The price in USD of each NFT fighter pack
