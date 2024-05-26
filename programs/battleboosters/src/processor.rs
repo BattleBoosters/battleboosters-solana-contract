@@ -910,7 +910,6 @@ pub fn create_mintable_game_asset(
                 .booster_mint_allowance
                 .checked_sub(1)
                 .unwrap_or(0);
-            msg!("GOOD");
         }
         NftType::Fighter => {
             require!(
@@ -1059,8 +1058,6 @@ pub fn create_mintable_game_asset(
                 // Handle case where no matching rarity was found
                 return Err(ErrorCode::NoMatchingRarityFound.into());
             }
-
-            msg!("GOOD");
         }
         NftType::ChampionsPass => {
             require!(
@@ -1199,6 +1196,13 @@ pub fn join_fight_card(
     fight_card_link.fighter_color_side = fighter_color_side;
     fight_card_link.is_consumed = false;
     fight_card_link.is_initialized = true;
+
+    msg!("Join event: {}", event.to_account_info().key());
+    msg!("Join fight card: {}", fight_card.to_account_info().key());
+    msg!(
+        "With fight card link: {}",
+        fight_card_link.to_account_info().key()
+    );
 
     Ok(())
 }
@@ -1373,7 +1377,6 @@ pub fn determine_ranking_points(
             ErrorCode::Unauthorized
         );
     }
-    msg!("Pointstest");
 
     let mut points_multiplier = 1_u32;
     // Get the points metadata
@@ -1461,8 +1464,7 @@ pub fn determine_ranking_points(
             return Err(ErrorCode::FailedToParseValue.into());
         }
     };
-    msg!("damage: {:?}", damage_value);
-    msg!("points: {:?}", points_value);
+
     let new_points_value = if points_multiplier != 0 {
         ((points_multiplier as f32 / 100.0) * points_value as f32).round() as u32
     } else {
@@ -1474,5 +1476,17 @@ pub fn determine_ranking_points(
 
     fighter_mintable_game_asset.is_locked = false;
     fight_card_link.is_consumed = true;
+
+    msg!("Determine ranking points: {}", points_value);
+    msg!("Determine damage value: {}", damage_value);
+    msg!(
+        "Determine ranking points with fighter game asset: {}",
+        fighter_mintable_game_asset.to_account_info().key()
+    );
+    msg!(
+        "Determine ranking points with fighter game asset link: {}",
+        fighter_mintable_game_asset_link.to_account_info().key()
+    );
+
     Ok(())
 }
