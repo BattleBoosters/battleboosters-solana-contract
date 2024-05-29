@@ -124,6 +124,12 @@ pub fn initialize_event_link(ctx: Context<InitializeEventLink>) -> Result<()> {
             champions_pass_asset.owner = None;
             champions_pass_asset.is_burned = true;
             champions_pass_link.is_free = true;
+
+            msg!(
+                "Event link to champion's pass: {}",
+                champions_pass_link.to_account_info().key()
+            );
+
             (
                 Some(champions_pass_link.mintable_game_asset_pubkey),
                 Some(champions_pass_link.mintable_game_asset_nonce_tracker),
@@ -140,6 +146,7 @@ pub fn initialize_event_link(ctx: Context<InitializeEventLink>) -> Result<()> {
     // For recreating the rank pda with nonce
     event_link.rank_nonce = event.rank_nonce;
     event_link.is_initialized = true;
+    msg!("Event link created: {}", event_link.to_account_info().key());
 
     // Configure rank
     rank.player_account = ctx.accounts.creator.to_account_info().key();
@@ -147,8 +154,11 @@ pub fn initialize_event_link(ctx: Context<InitializeEventLink>) -> Result<()> {
     rank.rank = None;
     rank.is_consumed = false;
     rank.nonce = event.rank_nonce;
+    msg!("Rank created: {}", rank.to_account_info().key());
+
     // Update event nonce safely
     event.rank_nonce = event.rank_nonce.checked_add(1).unwrap();
+    msg!("Event nonce updated: {}", event.rank_nonce);
 
     Ok(())
 }
@@ -161,7 +171,9 @@ pub fn initialize_player(
         !player_account.is_initialized,
         ErrorCode::AlreadyInitialized
     );
-
+    /*
+       TODO: Probably would be good to add a creator data of the player account to ref the creator
+    */
     player_account.order_nonce = 0;
     player_account.player_game_asset_link_nonce = 0;
     player_account.is_initialized = true;
@@ -1218,8 +1230,9 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
     let rarity = &ctx.accounts.rarity;
     let bank = &mut ctx.accounts.bank;
     let feed = &ctx.accounts.price_feed.load()?;
+    let signer = &ctx.accounts.signer;
 
-    //verify_equality(&rank.player_account.key(), &player_account.key())?;
+    verify_equality(&rank.player_account.key(), &signer.to_account_info().key())?;
     require!(
         event.end_date < current_blockchain_timestamp,
         ErrorCode::EventStillRunning
@@ -1297,7 +1310,7 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
 
             let transfer_instruction = system_instruction::transfer(
                 &bank.key(),
-                &player_account.key(),
+                &signer.key(),
                 total_lamports, // Amount in lamports to transfer
             );
 
@@ -1308,13 +1321,36 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
                 &transfer_instruction,
                 &[
                     bank.to_account_info(),
-                    player_account.to_account_info(),
+                    signer.to_account_info(),
                     ctx.accounts.system_program.to_account_info(),
                 ],
                 &[&bank_seeds],
             )?;
 
             msg!("bank balance now: {}", bank.lamports());
+            msg!("Collect prize SOL: {}", total_sol);
+            msg!("Collect prize booster amount: {}", reward.booster_amount);
+            msg!("Collect prize fighter amount: {}", reward.fighter_amount);
+            msg!(
+                "Collect prize champion's pass amount: {}",
+                reward.champions_pass_amount
+            );
+            msg!(
+                "Collect mystery box: {}",
+                mystery_box.to_account_info().key()
+            );
+            msg!(
+                "Collect for player account: {}",
+                player_account.to_account_info().key()
+            );
+            msg!(
+                "Collect for player account creator: {}",
+                signer.to_account_info().key()
+            );
+            msg!(
+                "Collect for event account: {}",
+                event.to_account_info().key()
+            );
             // Increase order_nonce
             player_account.order_nonce += 1;
         }
