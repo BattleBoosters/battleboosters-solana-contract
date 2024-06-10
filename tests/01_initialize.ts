@@ -75,8 +75,8 @@ describe.only('Initialize', () => {
                     authority_bump,
                     bank_bump,
                     admin_account.publicKey,
-                    new BN(1),
-                    new BN(1),
+                    100,
+                    0.25,
                     5,
                     { dev: {} }
                 )
@@ -102,8 +102,8 @@ describe.only('Initialize', () => {
                 programAccount.adminPubkey,
                 admin_account.publicKey
             );
-            assert.equal(programAccount.fighterPackPrice.eq(new BN(1)), true);
-            assert.equal(programAccount.boosterPrice.eq(new BN(1)), true);
+            assert.equal(programAccount.fighterPackPrice, 100);
+            assert.equal(programAccount.boosterPrice, 0.25);
             assert.equal(programAccount.fighterPackAmount, 5);
         }
     });

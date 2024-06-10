@@ -16,7 +16,7 @@ use crate::state::{
 use crate::types::*;
 use errors::ErrorCode;
 
-declare_id!("C2nq61bse2rwToDzSHepTGfrB2FBMXwQ4us4PxwU8dFe");
+declare_id!("GkdczB1EpA4wbdb1h9fbnhQr7ctd6XtzwkCP1tJxzfor");
 
 #[program]
 pub mod battleboosters {
@@ -31,8 +31,8 @@ pub mod battleboosters {
         authority_bump: u8,
         bank_bump: u8,
         admin_pubkey: Pubkey,
-        nft_fighter_pack_price: u64,
-        booster_price: u64,
+        nft_fighter_pack_price: f64,
+        booster_price: f64,
         fighter_pack_amount: u8,
         env: Env,
     ) -> Result<()> {

@@ -45,8 +45,8 @@ pub fn initialize(
     authority_bump: u8,
     bank_bump: u8,
     admin_pubkey: Pubkey,
-    nft_fighter_pack_price: u64,
-    booster_price: u64,
+    nft_fighter_pack_price: f64,
+    booster_price: f64,
     fighter_pack_amount: u8,
     env: Env,
 ) -> Result<()> {
@@ -349,16 +349,19 @@ pub fn purchase_mystery_box(
     };
 
     let sol_per_usd = 1.0 / val;
-    let mut total_usd = 0;
+    let mut total_usd: f64 = 0.0;
+
     for request in &requests {
         match request.nft_type {
             NftType::Booster => {
                 // update the quantity of fighter mint allowance
                 mystery_box.booster_mint_allowance += request.quantity.clone();
-                total_usd += request
-                    .quantity
-                    .checked_mul(program.booster_price.clone())
-                    .unwrap();
+                total_usd += (request.quantity as f64) * program.booster_price;
+
+                // total_usd += request
+                //     .quantity
+                //     .checked_mul(program.booster_price.clone())
+                //     .unwrap();
             }
             NftType::Fighter => {
                 // update the quantity of fighter mint allowance
@@ -367,16 +370,17 @@ pub fn purchase_mystery_box(
                     .checked_mul(program.fighter_pack_amount.clone() as u64)
                     .unwrap();
 
-                total_usd += request
-                    .quantity
-                    .checked_mul(program.fighter_pack_price.clone())
-                    .unwrap();
+                total_usd += (request.quantity as f64) * program.fighter_pack_price;
+                // total_usd += request
+                //     .quantity
+                //     .checked_mul(program.fighter_pack_price.clone())
+                //     .unwrap();
             }
             _ => return Err(error!(ErrorCode::UnsupportedNftType)),
         }
     }
 
-    require!(total_usd > 0, ErrorCode::InsufficientAmount);
+    require!(total_usd > 0.0, ErrorCode::InsufficientAmount);
 
     let total_sol = total_usd as f64 * sol_per_usd;
     let total_lamports = (total_sol * LAMPORTS_PER_SOL as f64).round() as u64;
