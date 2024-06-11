@@ -49,11 +49,11 @@ pub struct ProgramData {
     /// The authority which are allowed to administrate the contract
     pub admin_pubkey: Pubkey,
     /// The price in USD of each NFT fighter pack
-    pub fighter_pack_price: f64,
+    pub fighter_price: u64,
     /// The price in USD of each NFT booster
-    pub booster_price: f64,
-    /// The amount of fighters contained on each NFT fighter pack
-    pub fighter_pack_amount: u8,
+    pub booster_price: u64,
+    // /// The amount of fighters contained on each NFT fighter pack
+    // pub fighter_pack_amount: u8,
     /// This data prevent re-initialization
     pub is_initialized: bool,
     /// Authority bump

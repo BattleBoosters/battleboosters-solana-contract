@@ -38,7 +38,7 @@ pub struct CollectRewards<'info> {
     pub rank: Box<Account<'info, RankData>>,
     #[account(
     mut,
-    seeds = [MY_APP_PREFIX, PLAYER, rank.player_account.key().as_ref()],
+    seeds = [MY_APP_PREFIX, PLAYER, player_account.creator.key().as_ref()],
     bump,
     )]
     pub player_account: Box<Account<'info, PlayerData>>,

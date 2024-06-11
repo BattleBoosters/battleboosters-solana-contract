@@ -13,7 +13,7 @@ pub struct InitializePlayer<'info> {
     payer = creator,
     seeds = [MY_APP_PREFIX, PLAYER, player_pubkey.as_ref()],
     bump,
-    space = 8 + 8 + 8 + 1
+    space = 8 + 32 + 8 + 8 + 1 + 5
     )]
     pub player_account: Account<'info, PlayerData>,
     pub system_program: Program<'info, System>,
@@ -33,6 +33,7 @@ pub struct InitializePlayer<'info> {
 
 #[account]
 pub struct PlayerData {
+    pub creator: Pubkey,
     /// Represent the nonce of the current amount orders the player have created
     pub order_nonce: u64,
     /// Represent the nonce of the current player game asset link the player have created

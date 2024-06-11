@@ -31,9 +31,9 @@ pub mod battleboosters {
         authority_bump: u8,
         bank_bump: u8,
         admin_pubkey: Pubkey,
-        nft_fighter_pack_price: f64,
-        booster_price: f64,
-        fighter_pack_amount: u8,
+        nft_fighter_price: u64,
+        booster_price: u64,
+        //fighter_pack_amount: u8,
         env: Env,
     ) -> Result<()> {
         processor::initialize(
@@ -41,9 +41,9 @@ pub mod battleboosters {
             authority_bump,
             bank_bump,
             admin_pubkey,
-            nft_fighter_pack_price,
+            nft_fighter_price,
             booster_price,
-            fighter_pack_amount,
+            //fighter_pack_amount,
             env,
         )
     }
