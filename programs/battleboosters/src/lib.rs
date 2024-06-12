@@ -16,7 +16,7 @@ use crate::state::{
 use crate::types::*;
 use errors::ErrorCode;
 
-declare_id!("GkdczB1EpA4wbdb1h9fbnhQr7ctd6XtzwkCP1tJxzfor");
+declare_id!("87NrgFw8UwRoP79qaMpTN7mipE9MAn5LjAZytxNiFh5g");
 
 #[program]
 pub mod battleboosters {

@@ -8,10 +8,10 @@ skip-lint = false
 battleboosters = "C2nq61bse2rwToDzSHepTGfrB2FBMXwQ4us4PxwU8dFe"
 
 [programs.devnet]
-battleboosters = "GkdczB1EpA4wbdb1h9fbnhQr7ctd6XtzwkCP1tJxzfor"
+battleboosters = "87NrgFw8UwRoP79qaMpTN7mipE9MAn5LjAZytxNiFh5g"
 
 [programs.testnet]
-battleboosters = "GkdczB1EpA4wbdb1h9fbnhQr7ctd6XtzwkCP1tJxzfor"
+battleboosters = "87NrgFw8UwRoP79qaMpTN7mipE9MAn5LjAZytxNiFh5g"
 
 [[test.genesis]]
 address = "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"

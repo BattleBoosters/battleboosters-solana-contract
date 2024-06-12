@@ -1,4 +1,7 @@
-use crate::constants::{BANK, METADATA_OFF_CHAIN_URI, MINT_AUTHORITY, MY_APP_PREFIX, PRICE_DECIMALS, STALENESS_THRESHOLD};
+use crate::constants::{
+    BANK, METADATA_OFF_CHAIN_URI, MINT_AUTHORITY, MY_APP_PREFIX, PRICE_DECIMALS,
+    STALENESS_THRESHOLD,
+};
 use crate::errors::ErrorCode;
 use crate::events::*;
 use crate::state::collect_rewards::CollectRewards;
@@ -169,7 +172,7 @@ pub fn initialize_player(
         !player_account.is_initialized,
         ErrorCode::AlreadyInitialized
     );
-   
+
     player_account.creator = player_pubkey;
     player_account.order_nonce = 0;
     player_account.player_game_asset_link_nonce = 0;
