@@ -4,7 +4,7 @@ use anchor_lang::prelude::*;
 
 use crate::state::event::{EventData, EventLinkData};
 use crate::state::mintable_game_asset::{MintableGameAssetData, MintableGameAssetLinkData};
-use switchboard_solana::prelude::*;
+
 
 #[derive(Accounts)]
 pub struct JoinFightCard<'info> {

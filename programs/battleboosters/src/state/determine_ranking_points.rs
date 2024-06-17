@@ -10,7 +10,7 @@ use crate::state::player::PlayerData;
 use crate::state::rank::RankData;
 use crate::types::FighterType;
 use anchor_lang::prelude::*;
-use switchboard_solana::prelude::*;
+
 
 #[derive(Accounts)]
 #[instruction(fighter_type: FighterType)]

@@ -39,7 +39,7 @@ use mpl_token_metadata::types::{PrintSupply, TokenStandard};
 use solana_program::native_token::LAMPORTS_PER_SOL;
 use solana_program::program::{invoke, invoke_signed};
 use solana_program::system_instruction;
-use switchboard_on_demand::accounts::RandomnessAccountData;
+// use switchboard_on_demand::accounts::RandomnessAccountData;
 
 pub fn initialize(
     ctx: Context<InitializeProgram>,
@@ -299,16 +299,16 @@ pub fn update_randomness_mystery_box(
     // Used for testing in local-net without depending on external services
     match program.env {
         Env::Prod => {
-            let randomness_data =
-                RandomnessAccountData::parse(ctx.accounts.randomness_account_data.data.borrow())
-                    .unwrap();
-            require!(
-                randomness_data.seed_slot == clock.slot - 1,
-                ErrorCode::RandomnessAlreadyRevealed
-            );
-            // Set the randomness account
-            mystery_box.randomness_account =
-                Some(ctx.accounts.randomness_account_data.to_account_info().key());
+            // let randomness_data =
+            //     RandomnessAccountData::parse(ctx.accounts.randomness_account_data.data.borrow())
+            //         .unwrap();
+            // require!(
+            //     randomness_data.seed_slot == clock.slot - 1,
+            //     ErrorCode::RandomnessAlreadyRevealed
+            // );
+            // // Set the randomness account
+            // mystery_box.randomness_account =
+            //     Some(ctx.accounts.randomness_account_data.to_account_info().key());
         }
         Env::Dev => {
             mystery_box.randomness_account = None;
@@ -323,7 +323,7 @@ pub fn purchase_mystery_box(
     requests: Vec<PurchaseRequest>,
 ) -> Result<()> {
     let program = &ctx.accounts.program;
-    let feed = &ctx.accounts.price_feed.load()?;
+    //let feed = &ctx.accounts.price_feed.load()?;
     let mystery_box = &mut ctx.accounts.mystery_box;
     let player_account = &mut ctx.accounts.player_account;
     let bank = &mut ctx.accounts.bank;
@@ -334,17 +334,19 @@ pub fn purchase_mystery_box(
 
     let val = match program.env {
         Env::Prod => {
-            // get result
-            let val: f64 = feed.get_result()?.try_into()?;
-            // check whether the feed has been updated in the last 300 seconds
-            feed.check_staleness(Clock::get()?.unix_timestamp, STALENESS_THRESHOLD)
-                .map_err(|_| error!(ErrorCode::StaleFeed))?;
-
-            val
+            // // get result
+            // let val: f64 = feed.get_result()?.try_into()?;
+            // // check whether the feed has been updated in the last 300 seconds
+            // feed.check_staleness(Clock::get()?.unix_timestamp, STALENESS_THRESHOLD)
+            //     .map_err(|_| error!(ErrorCode::StaleFeed))?;
+            // 
+            // val
+            1.6
         }
         Env::Dev => {
             // get result
-            feed.get_result()?.try_into()?
+            // feed.get_result()?.try_into()?
+            1.6
         }
     };
 
@@ -793,14 +795,15 @@ pub fn create_mintable_game_asset(
     // Used for testing in local-net without depending on external services
     let randomness = match program.env {
         Env::Prod => {
-            let randomness_data =
-                RandomnessAccountData::parse(ctx.accounts.randomness_account_data.data.borrow())
-                    .unwrap();
-            // call the switchboard on-demand get_value function to get the revealed random value
-            let randomness = randomness_data
-                .get_value(&clock)
-                .map_err(|_| ErrorCode::RandomnessNotResolved)?;
-            randomness
+            // let randomness_data =
+            //     RandomnessAccountData::parse(ctx.accounts.randomness_account_data.data.borrow())
+            //         .unwrap();
+            // // call the switchboard on-demand get_value function to get the revealed random value
+            // let randomness = randomness_data
+            //     .get_value(&clock)
+            //     .map_err(|_| ErrorCode::RandomnessNotResolved)?;
+            // randomness
+            [0u8; 32]
         }
         Env::Dev => {
             // // Get the current slot
@@ -1236,7 +1239,7 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
     let mystery_box = &mut ctx.accounts.mystery_box;
     let rarity = &ctx.accounts.rarity;
     let bank = &mut ctx.accounts.bank;
-    let feed = &ctx.accounts.price_feed.load()?;
+    //let feed = &ctx.accounts.price_feed.load()?;
     let signer = &ctx.accounts.signer;
 
     verify_equality(&rank.player_account.key(), &signer.to_account_info().key())?;
@@ -1287,16 +1290,18 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
             let val = match program.env {
                 Env::Prod => {
                     // get result
-                    let val: f64 = feed.get_result()?.try_into()?;
-                    // check whether the feed has been updated in the last 300 seconds
-                    feed.check_staleness(Clock::get()?.unix_timestamp, STALENESS_THRESHOLD)
-                        .map_err(|_| error!(ErrorCode::StaleFeed))?;
-
-                    val
+                    // let val: f64 = feed.get_result()?.try_into()?;
+                    // // check whether the feed has been updated in the last 300 seconds
+                    // feed.check_staleness(Clock::get()?.unix_timestamp, STALENESS_THRESHOLD)
+                    //     .map_err(|_| error!(ErrorCode::StaleFeed))?;
+                    // 
+                    // val
+                    1.0
                 }
                 Env::Dev => {
                     // get result
-                    feed.get_result()?.try_into()?
+                    //feed.get_result()?.try_into()?
+                    1.0
                 }
             };
 
@@ -1472,43 +1477,30 @@ pub fn determine_ranking_points(
         .find(|x| x.trait_type == "Lifespan")
     {
         if let Ok(life_span_value) = lifespan_attribute.value.parse::<u32>() {
-            /*
-               TODO: Fix this should fail is shield_multiplier is 0
-            */
-            let life_span_value_plus_shield =
-                ((shield_multiplier as f32 / 100.0) * life_span_value as f32).round() as u32;
-            msg!(
-                "lifespan: {}, lifespan plus shield: {}",
-                life_span_value,
-                life_span_value_plus_shield
-            );
-            // Calculate the new lifespan, ensuring it doesn't underflow
-            let life_span_after_damage = life_span_value_plus_shield
-                .checked_sub(damage_value)
-                .unwrap_or(0);
+            // Properly calculate lifespan value with shield multiplier
+            let shield_effect = (shield_multiplier as f32 / 100.0) * life_span_value as f32;
+            let life_span_value_plus_shield = life_span_value + shield_effect.round() as u32;
 
-            let new_lifespan_value = if life_span_after_damage >= life_span_value {
-                life_span_value
-            } else {
-                life_span_after_damage
-            };
+            msg!("Lifespan: {}, Lifespan with shield: {}", life_span_value, life_span_value_plus_shield);
 
-            // Assign the new value back to the attribute
-            lifespan_attribute.value = new_lifespan_value.to_string();
+            let life_span_after_damage = life_span_value_plus_shield.checked_sub(damage_value).unwrap_or(0);
 
-            if new_lifespan_value == 0 {
-                // Burn the metadata of the game asset
+            msg!("Lifespan after damage: {}", life_span_after_damage);
+            
+            lifespan_attribute.value = life_span_after_damage.to_string();
+
+            if life_span_after_damage == 0 {
                 fighter_mintable_game_asset.is_burned = true;
                 fighter_mintable_game_asset.owner = None;
-                // Free the space of the game asset link
                 fighter_mintable_game_asset_link.is_free = true;
             }
         } else {
             return Err(ErrorCode::FailedToParseValue.into());
         }
     };
-
-    let new_points_value = if points_multiplier != 0 {
+    
+    
+    let new_points_value = if points_multiplier > 0 {
         ((points_multiplier as f32 / 100.0) * points_value as f32).round() as u32
     } else {
         points_value

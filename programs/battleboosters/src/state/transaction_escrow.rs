@@ -5,10 +5,10 @@ use crate::constants::*;
 use crate::state::rarity::RarityData;
 use crate::ErrorCode;
 use anchor_lang::prelude::*;
-// use anchor_spl::associated_token::AssociatedToken;
-// use anchor_spl::token::Token;
+use anchor_spl::associated_token::AssociatedToken;
+use anchor_spl::token::Token;
 use std::str::FromStr;
-use switchboard_solana::prelude::*;
+// use switchboard_solana::prelude::{AggregatorAccountData, AccountLoader};
 
 #[derive(Accounts)]
 pub struct TransactionEscrow<'info> {
@@ -37,9 +37,9 @@ pub struct TransactionEscrow<'info> {
     #[account(mut, seeds = [MY_APP_PREFIX, BANK], bump)]
     pub bank: AccountInfo<'info>,
 
-    /// CHECK: Switchboard network price feed id
-    #[account(address = Pubkey::from_str(SOL_USD_FEED_MAINNET).unwrap() @ ErrorCode::InvalidPriceFeed)]
-    pub price_feed: AccountLoader<'info, AggregatorAccountData>,
+    // /// CHECK: Switchboard network price feed id
+    // #[account(address = Pubkey::from_str(SOL_USD_FEED_MAINNET).unwrap() @ ErrorCode::InvalidPriceFeed)]
+    // pub price_feed: AccountLoader<'info, AggregatorAccountData>,
 
     /// Rarity PDA
     #[account(

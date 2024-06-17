@@ -8,8 +8,8 @@ use crate::state::rarity::RarityData;
 use crate::ErrorCode;
 use anchor_lang::prelude::*;
 use std::str::FromStr;
-use switchboard_solana::prelude::*;
-use switchboard_solana::AggregatorAccountData;
+// use switchboard_solana::prelude::*;
+// use switchboard_solana::prelude::AggregatorAccountData;
 
 #[derive(Accounts)]
 pub struct CollectRewards<'info> {
@@ -57,8 +57,8 @@ pub struct CollectRewards<'info> {
     )]
     pub rarity: Box<Account<'info, RarityData>>,
     /// CHECK: Switchboard network price feed id
-    #[account(address = Pubkey::from_str(SOL_USD_FEED_MAINNET).unwrap() @ ErrorCode::InvalidPriceFeed)]
-    pub price_feed: AccountLoader<'info, AggregatorAccountData>,
+    // #[account(address = Pubkey::from_str(SOL_USD_FEED_MAINNET).unwrap() @ ErrorCode::InvalidPriceFeed)]
+    // pub price_feed: AccountLoader<'info, AggregatorAccountData>,
 
     pub system_program: Program<'info, System>,
 }
