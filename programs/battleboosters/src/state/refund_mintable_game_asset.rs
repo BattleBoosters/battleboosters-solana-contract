@@ -1,4 +1,6 @@
 use crate::constants::*;
+use crate::state::event::EventData;
+use crate::state::fight_card::{FightCardData, FightCardLinkData};
 use crate::state::mystery_box::MysteryBoxData;
 use crate::state::player::PlayerData;
 use crate::state::program::ProgramData;
@@ -6,8 +8,6 @@ use crate::state::rarity::RarityData;
 use anchor_lang::prelude::*;
 use anchor_lang::{account, AnchorDeserialize, AnchorSerialize};
 use solana_program::pubkey::Pubkey;
-use crate::state::event::EventData;
-use crate::state::fight_card::{FightCardData, FightCardLinkData};
 
 use crate::state::mintable_game_asset::{MintableGameAssetData, MintableGameAssetLinkData};
 
@@ -74,7 +74,7 @@ pub struct RefundMintableGameAsset<'info> {
     bump
     )]
     pub points_booster_asset: Option<Box<Account<'info, MintableGameAssetData>>>,
-    
+
     #[account(
     init_if_needed,
     payer = signer,
@@ -99,8 +99,6 @@ pub struct RefundMintableGameAsset<'info> {
     bump,
     )]
     pub shield_booster_link: Option<Box<Account<'info, MintableGameAssetLinkData>>>,
-    
-   
-    
+
     pub system_program: Program<'info, System>,
 }

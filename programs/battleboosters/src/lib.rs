@@ -10,7 +10,7 @@ mod utils;
 use crate::state::{
     collect_rewards::*, create_spl_nft::*, determine_ranking_points::*, event::*, fight_card::*,
     fighter_base::*, join_fight_card::*, mintable_game_asset::*, mystery_box::*, player::*,
-    program::*, rank::*, rarity::*, transaction_escrow::*, refund_mintable_game_asset::*
+    program::*, rank::*, rarity::*, refund_mintable_game_asset::*, transaction_escrow::*,
 };
 
 use crate::types::*;
@@ -139,9 +139,13 @@ pub mod battleboosters {
         shield_game_asset_link_nonce: u64,
         player_pubkey: Pubkey,
     ) -> Result<()> {
-        processor::refund_mintable_game_asset(ctx, fighter_game_asset_link_nonce,
-                                              points_game_asset_link_nonce,
-                                              shield_game_asset_link_nonce, player_pubkey)
+        processor::refund_mintable_game_asset(
+            ctx,
+            fighter_game_asset_link_nonce,
+            points_game_asset_link_nonce,
+            shield_game_asset_link_nonce,
+            player_pubkey,
+        )
     }
 
     pub fn create_mintable_game_asset(

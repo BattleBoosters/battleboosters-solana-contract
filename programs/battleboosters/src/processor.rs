@@ -23,7 +23,10 @@ use crate::state::rarity::{
 };
 use crate::state::refund_mintable_game_asset::RefundMintableGameAsset;
 use crate::state::transaction_escrow::TransactionEscrow;
-use crate::types::{BoosterType, CollectionType, FightCardResult, FighterColorSide, FighterType, NftType, OpenRequest, PurchaseRequest, TournamentType};
+use crate::types::{
+    BoosterType, CollectionType, FightCardResult, FighterColorSide, FighterType, NftType,
+    OpenRequest, PurchaseRequest, TournamentType,
+};
 use crate::utils::{
     asset_metadata_value, create_nft_metadata, create_rng_seed, find_rarity, find_scaled_rarity,
     metrics_calculation, process_and_verify_game_asset_type, process_game_asset_for_action,
@@ -752,7 +755,7 @@ pub fn refund_mintable_game_asset(
     fighter_game_asset_link_nonce: u64,
     points_game_asset_link_nonce: u64,
     shield_game_asset_link_nonce: u64,
-    _player_pubkey: Pubkey
+    _player_pubkey: Pubkey,
 ) -> Result<()> {
     let player_account = &mut ctx.accounts.player_account;
     let fight_card = &ctx.accounts.fight_card;
@@ -763,17 +766,23 @@ pub fn refund_mintable_game_asset(
     let points_booster_link = &mut ctx.accounts.points_booster_link;
     let shield_booster_asset = &mut ctx.accounts.shield_booster_asset;
     let shield_booster_link = &mut ctx.accounts.shield_booster_link;
-    
+
     // Check if the fightCard have been resolved first and make sure it is a no contest before continuing
     if let Some(result) = &fight_card.result {
-        require!(result == &FightCardResult::NoContest, ErrorCode::EventStillRunning);
+        require!(
+            result == &FightCardResult::NoContest,
+            ErrorCode::EventStillRunning
+        );
     } else {
         return Err(ErrorCode::EventStillRunning.into());
     }
     // Ensure the fight card link is not consumed yet
-    require!(fight_card_link.is_consumed == false, ErrorCode::ConsumedAlready);
+    require!(
+        fight_card_link.is_consumed == false,
+        ErrorCode::ConsumedAlready
+    );
     fight_card_link.is_consumed = true;
-    
+
     require!(
         mintable_game_asset_link_nonce <= player_account.player_game_asset_link_nonce,
         ErrorCode::WrongPlayerGameAssetLinkNonce
@@ -787,32 +796,40 @@ pub fn refund_mintable_game_asset(
         // increase the player game asset link nonce for the next game asset generation
         player_account.player_game_asset_link_nonce += 1;
     }
-     
-    if let Some(fighter_used_pubkey ) = fight_card_link.fighter_used {
-        require!(fighter_used_pubkey == fighter_asset.to_account_info().key(), ErrorCode::Unauthorized);
+
+    if let Some(fighter_used_pubkey) = fight_card_link.fighter_used {
+        require!(
+            fighter_used_pubkey == fighter_asset.to_account_info().key(),
+            ErrorCode::Unauthorized
+        );
         //require!(fighter_asset.owner.is_none(), ErrorCode::MintableAssetHasOwner);
         // Unlock the game asset to allow use again
         fighter_asset.is_locked = false;
         //fighter_asset.owner = Some(fighter_link.to_account_info().key());
     }
 
-    if let Some(fighter_link_used_pubkey ) = fight_card_link.fighter_link_used {
-        require!(fighter_link_used_pubkey == fighter_link.to_account_info().key(), ErrorCode::Unauthorized);
+    if let Some(fighter_link_used_pubkey) = fight_card_link.fighter_link_used {
+        require!(
+            fighter_link_used_pubkey == fighter_link.to_account_info().key(),
+            ErrorCode::Unauthorized
+        );
         require!(fighter_link.is_free == false, ErrorCode::Unauthorized);
-        require!(fighter_link.mintable_game_asset_nonce_tracker ==  fighter_asset.nonce, ErrorCode::Unauthorized);
-        require!(fighter_link.mintable_game_asset_pubkey == fighter_asset.to_account_info().key(), ErrorCode::Unauthorized);
+        require!(
+            fighter_link.mintable_game_asset_nonce_tracker == fighter_asset.nonce,
+            ErrorCode::Unauthorized
+        );
+        require!(
+            fighter_link.mintable_game_asset_pubkey == fighter_asset.to_account_info().key(),
+            ErrorCode::Unauthorized
+        );
         //require!(fighter_link.is_free, ErrorCode::NotFreePDA);
         // fighter_link.mintable_game_asset_nonce_tracker = fighter_asset.nonce;
         // fighter_link.mintable_game_asset_pubkey = fighter_asset.to_account_info().key();
         // fighter_link.is_free = false;
     }
-    
-    if let Some(e) =  fight_card_link.points_booster_used {
-        
-    }
-    
-    
-    
+
+    if let Some(e) = fight_card_link.points_booster_used {}
+
     Ok(())
 }
 

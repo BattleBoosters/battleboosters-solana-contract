@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
-use std::fmt;
 use clap::Parser;
+use std::fmt;
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, Debug, PartialEq)]
 pub enum CollectionType {
