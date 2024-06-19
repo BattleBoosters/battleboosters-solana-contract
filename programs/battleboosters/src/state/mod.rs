@@ -14,3 +14,4 @@ pub mod rank;
 pub mod rarity;
 //pub mod refund_mintable_game_asset;
 pub mod transaction_escrow;
+pub mod refund_mintable_game_asset;

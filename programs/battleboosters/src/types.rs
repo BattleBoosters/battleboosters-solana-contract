@@ -1,5 +1,6 @@
 use anchor_lang::prelude::*;
 use std::fmt;
+use clap::Parser;
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, Debug, PartialEq)]
 pub enum CollectionType {
@@ -179,7 +180,7 @@ pub enum TournamentType {
     EarlyPrelims,
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]
+#[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone, PartialEq)]
 pub enum FightCardResult {
     KoTko,
     Decision,

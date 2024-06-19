@@ -21,12 +21,9 @@ use crate::state::rank::UpdateRank;
 use crate::state::rarity::{
     InitializeRarity, RarityBooster, RarityFighter, TierProbabilities, TierType,
 };
-//use crate::state::refund_mintable_game_asset::RefundMintableGameAsset;
+use crate::state::refund_mintable_game_asset::RefundMintableGameAsset;
 use crate::state::transaction_escrow::TransactionEscrow;
-use crate::types::{
-    BoosterType, CollectionType, FighterColorSide, FighterType, NftType, OpenRequest,
-    PurchaseRequest, TournamentType,
-};
+use crate::types::{BoosterType, CollectionType, FightCardResult, FighterColorSide, FighterType, NftType, OpenRequest, PurchaseRequest, TournamentType};
 use crate::utils::{
     asset_metadata_value, create_nft_metadata, create_rng_seed, find_rarity, find_scaled_rarity,
     metrics_calculation, process_and_verify_game_asset_type, process_game_asset_for_action,
@@ -72,6 +69,7 @@ pub fn initialize(
 
 pub fn update_program(ctx: Context<UpdateProgram>) -> Result<()> {
     let program = &mut ctx.accounts.program;
+    verify_equality(&ctx.accounts.creator.key(), &program.admin_pubkey)?;
     program.env = Env::Dev;
 
     Ok(())
@@ -311,7 +309,7 @@ pub fn update_randomness_mystery_box(
                 Some(ctx.accounts.randomness_account_data.to_account_info().key());
         }
         Env::Dev => {
-            mystery_box.randomness_account = None;
+            mystery_box.randomness_account = Some(ctx.accounts.creator.to_account_info().key());
         }
     }
 
@@ -749,12 +747,74 @@ pub fn update_fight_card(ctx: Context<UpdateFightCard>, params: FightCardData) -
 // /*
 //    TODO: Refund mintable game asset in case the fight Card have been canceled
 // */
-// pub fn refund_mintable_game_asset(
-//     _ctx: Context<RefundMintableGameAsset>,
-//     _mintable_game_asset_link_nonce: u64,
-// ) -> Result<()> {
-//     Ok(())
-// }
+pub fn refund_mintable_game_asset(
+    ctx: Context<RefundMintableGameAsset>,
+    fighter_game_asset_link_nonce: u64,
+    points_game_asset_link_nonce: u64,
+    shield_game_asset_link_nonce: u64,
+    _player_pubkey: Pubkey
+) -> Result<()> {
+    let player_account = &mut ctx.accounts.player_account;
+    let fight_card = &ctx.accounts.fight_card;
+    let fight_card_link = &ctx.accounts.fight_card_link;
+    let fighter_asset = &mut ctx.accounts.fighter_asset;
+    let fighter_link = &mut ctx.accounts.fighter_link;
+    let points_booster_asset = &mut ctx.accounts.points_booster_asset;
+    let points_booster_link = &mut ctx.accounts.points_booster_link;
+    let shield_booster_asset = &mut ctx.accounts.shield_booster_asset;
+    let shield_booster_link = &mut ctx.accounts.shield_booster_link;
+    
+    // Check if the fightCard have been resolved first and make sure it is a no contest before continuing
+    if let Some(result) = &fight_card.result {
+        require!(result == &FightCardResult::NoContest, ErrorCode::EventStillRunning);
+    } else {
+        return Err(ErrorCode::EventStillRunning.into());
+    }
+    // Ensure the fight card link is not consumed yet
+    require!(fight_card_link.is_consumed == false, ErrorCode::ConsumedAlready);
+    fight_card_link.is_consumed = true;
+    
+    require!(
+        mintable_game_asset_link_nonce <= player_account.player_game_asset_link_nonce,
+        ErrorCode::WrongPlayerGameAssetLinkNonce
+    );
+
+    if mintable_game_asset_link_nonce < player_account.player_game_asset_link_nonce {
+        require!(mintable_game_asset_link.is_free, ErrorCode::NotFreePDA);
+    } else {
+        // Save the nonce for seeds easier re-generation
+        mintable_game_asset_link.nonce = player_account.player_game_asset_link_nonce;
+        // increase the player game asset link nonce for the next game asset generation
+        player_account.player_game_asset_link_nonce += 1;
+    }
+     
+    if let Some(fighter_used_pubkey ) = fight_card_link.fighter_used {
+        require!(fighter_used_pubkey == fighter_asset.to_account_info().key(), ErrorCode::Unauthorized);
+        //require!(fighter_asset.owner.is_none(), ErrorCode::MintableAssetHasOwner);
+        // Unlock the game asset to allow use again
+        fighter_asset.is_locked = false;
+        //fighter_asset.owner = Some(fighter_link.to_account_info().key());
+    }
+
+    if let Some(fighter_link_used_pubkey ) = fight_card_link.fighter_link_used {
+        require!(fighter_link_used_pubkey == fighter_link.to_account_info().key(), ErrorCode::Unauthorized);
+        require!(fighter_link.is_free == false, ErrorCode::Unauthorized);
+        require!(fighter_link.mintable_game_asset_nonce_tracker ==  fighter_asset.nonce, ErrorCode::Unauthorized);
+        require!(fighter_link.mintable_game_asset_pubkey == fighter_asset.to_account_info().key(), ErrorCode::Unauthorized);
+        //require!(fighter_link.is_free, ErrorCode::NotFreePDA);
+        // fighter_link.mintable_game_asset_nonce_tracker = fighter_asset.nonce;
+        // fighter_link.mintable_game_asset_pubkey = fighter_asset.to_account_info().key();
+        // fighter_link.is_free = false;
+    }
+    
+    if let Some(e) =  fight_card_link.points_booster_used {
+        
+    }
+    
+    
+    
+    Ok(())
+}
 
 pub fn create_mintable_game_asset(
     ctx: Context<CreateMintableGameAsset>,
