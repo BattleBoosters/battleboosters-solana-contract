@@ -5,7 +5,6 @@ use anchor_lang::prelude::*;
 use crate::state::event::{EventData, EventLinkData};
 use crate::state::mintable_game_asset::{MintableGameAssetData, MintableGameAssetLinkData};
 
-
 #[derive(Accounts)]
 pub struct JoinFightCard<'info> {
     #[account(mut)]

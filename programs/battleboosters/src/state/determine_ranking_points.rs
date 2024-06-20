@@ -11,7 +11,6 @@ use crate::state::rank::RankData;
 use crate::types::FighterType;
 use anchor_lang::prelude::*;
 
-
 #[derive(Accounts)]
 #[instruction(fighter_type: FighterType)]
 pub struct DetermineRankingPoints<'info> {

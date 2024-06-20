@@ -341,19 +341,16 @@ pub fn purchase_mystery_box(
             // // check whether the feed has been updated in the last 300 seconds
             // feed.check_staleness(Clock::get()?.unix_timestamp, STALENESS_THRESHOLD)
             //     .map_err(|_| error!(ErrorCode::StaleFeed))?;
-            let feed = PullFeedAccountData::parse(feed_account)
-                .map_err(|e| {
-                    msg!("Parse Error: {:?}", e);
-                    ProgramError::Custom(1)}
-                )?;
-            let price = feed.get_value(&Clock::get()?, 30, 1, true)
-                .map_err(|e| {
-                    msg!("Get Value Error: {:?}", e);
-                    ProgramError::Custom(2)
-                })?;
-            
-            price.to_f64().ok_or(ErrorCode::InvalidOperation)?
+            let feed = PullFeedAccountData::parse(feed_account).map_err(|e| {
+                msg!("Parse Error: {:?}", e);
+                ProgramError::Custom(1)
+            })?;
+            let price = feed.get_value(&Clock::get()?, 30, 1, true).map_err(|e| {
+                msg!("Get Value Error: {:?}", e);
+                ProgramError::Custom(2)
+            })?;
 
+            price.to_f64().ok_or(ErrorCode::InvalidOperation)?
         }
         Env::Dev => {
             // get result
@@ -396,8 +393,6 @@ pub fn purchase_mystery_box(
     }
 
     require!(total_usd > 0, ErrorCode::InsufficientAmount);
-
-  
 
     let total_sol = (total_usd as f64 / PRICE_DECIMALS as f64) * sol_per_usd;
     let total_lamports = (total_sol * LAMPORTS_PER_SOL as f64).round() as u64;
@@ -1308,19 +1303,17 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
                     // // check whether the feed has been updated in the last 300 seconds
                     // feed.check_staleness(Clock::get()?.unix_timestamp, STALENESS_THRESHOLD)
                     //     .map_err(|_| error!(ErrorCode::StaleFeed))?;
-                    // 
+                    //
                     // val
-                    
-                    let feed = PullFeedAccountData::parse(feed_account)
-                        .map_err(|e| {
-                            msg!("Parse Error: {:?}", e);
-                            ProgramError::Custom(1)}
-                        )?;
-                    let price = feed.get_value(&Clock::get()?, 30, 1, true)
-                        .map_err(|e| {
-                            msg!("Get Value Error: {:?}", e);
-                            ProgramError::Custom(2)
-                        })?;
+
+                    let feed = PullFeedAccountData::parse(feed_account).map_err(|e| {
+                        msg!("Parse Error: {:?}", e);
+                        ProgramError::Custom(1)
+                    })?;
+                    let price = feed.get_value(&Clock::get()?, 30, 1, true).map_err(|e| {
+                        msg!("Get Value Error: {:?}", e);
+                        ProgramError::Custom(2)
+                    })?;
 
                     price.to_f64().ok_or(ErrorCode::InvalidOperation)?
                 }
@@ -1507,12 +1500,18 @@ pub fn determine_ranking_points(
             let shield_effect = (shield_multiplier as f32 / 100.0) * life_span_value as f32;
             let life_span_value_plus_shield = life_span_value + shield_effect.round() as u32;
 
-            msg!("Lifespan: {}, Lifespan with shield: {}", life_span_value, life_span_value_plus_shield);
+            msg!(
+                "Lifespan: {}, Lifespan with shield: {}",
+                life_span_value,
+                life_span_value_plus_shield
+            );
 
-            let life_span_after_damage = life_span_value_plus_shield.checked_sub(damage_value).unwrap_or(0);
+            let life_span_after_damage = life_span_value_plus_shield
+                .checked_sub(damage_value)
+                .unwrap_or(0);
 
             msg!("Lifespan after damage: {}", life_span_after_damage);
-            
+
             lifespan_attribute.value = life_span_after_damage.to_string();
 
             if life_span_after_damage == 0 {
@@ -1524,8 +1523,7 @@ pub fn determine_ranking_points(
             return Err(ErrorCode::FailedToParseValue.into());
         }
     };
-    
-    
+
     let new_points_value = if points_multiplier > 0 {
         ((points_multiplier as f32 / 100.0) * points_value as f32).round() as u32
     } else {
