@@ -431,6 +431,29 @@ pub fn asset_metadata_value(asset_metadata: &NftMetadata, trait_type: String) ->
     }
     asset_multiplier
 }
+
+pub fn process_game_asset(
+    game_asset_link_nonce: u64,
+    player_game_asset_link_nonce: &mut u64,
+    is_free: bool,
+    link_nonce: &mut u64,
+) -> Result<()> {
+    require!(
+        game_asset_link_nonce <= *player_game_asset_link_nonce,
+        ErrorCode::WrongPlayerGameAssetLinkNonce
+    );
+
+    if game_asset_link_nonce < *player_game_asset_link_nonce {
+        require!(is_free, ErrorCode::NotFreePDA);
+    } else {
+        // Save the nonce for seeds easier re-generation
+        *link_nonce = *player_game_asset_link_nonce;
+        // increase the player game asset link nonce for the next game asset generation
+        *player_game_asset_link_nonce += 1;
+    }
+
+    Ok(())
+}
 // pub fn check_unique_nft_types(purchase_requests: Option<Vec<PurchaseRequest>>) -> bool {
 //     if let Some(requests) = purchase_requests {
 //         let mut booster_found = false;

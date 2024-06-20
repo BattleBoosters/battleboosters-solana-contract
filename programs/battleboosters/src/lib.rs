@@ -134,14 +134,12 @@ pub mod battleboosters {
 
     pub fn refund_mintable_game_asset(
         ctx: Context<RefundMintableGameAsset>,
-        fighter_game_asset_link_nonce: u64,
         points_game_asset_link_nonce: u64,
         shield_game_asset_link_nonce: u64,
         player_pubkey: Pubkey,
     ) -> Result<()> {
         processor::refund_mintable_game_asset(
             ctx,
-            fighter_game_asset_link_nonce,
             points_game_asset_link_nonce,
             shield_game_asset_link_nonce,
             player_pubkey,

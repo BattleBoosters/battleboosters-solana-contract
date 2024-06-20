@@ -29,8 +29,8 @@ use crate::types::{
 };
 use crate::utils::{
     asset_metadata_value, create_nft_metadata, create_rng_seed, find_rarity, find_scaled_rarity,
-    metrics_calculation, process_and_verify_game_asset_type, process_game_asset_for_action,
-    set_fight_card_properties, verify_equality,
+    metrics_calculation, process_and_verify_game_asset_type, process_game_asset,
+    process_game_asset_for_action, set_fight_card_properties, verify_equality,
 };
 
 use anchor_lang::prelude::*;
@@ -752,16 +752,15 @@ pub fn update_fight_card(ctx: Context<UpdateFightCard>, params: FightCardData) -
 // */
 pub fn refund_mintable_game_asset(
     ctx: Context<RefundMintableGameAsset>,
-    fighter_game_asset_link_nonce: u64,
     points_game_asset_link_nonce: u64,
     shield_game_asset_link_nonce: u64,
     _player_pubkey: Pubkey,
 ) -> Result<()> {
     let player_account = &mut ctx.accounts.player_account;
     let fight_card = &ctx.accounts.fight_card;
-    let fight_card_link = &ctx.accounts.fight_card_link;
+    let fight_card_link = &mut ctx.accounts.fight_card_link;
     let fighter_asset = &mut ctx.accounts.fighter_asset;
-    let fighter_link = &mut ctx.accounts.fighter_link;
+    // let fighter_link = &mut ctx.accounts.fighter_link;
     let points_booster_asset = &mut ctx.accounts.points_booster_asset;
     let points_booster_link = &mut ctx.accounts.points_booster_link;
     let shield_booster_asset = &mut ctx.accounts.shield_booster_asset;
@@ -783,52 +782,92 @@ pub fn refund_mintable_game_asset(
     );
     fight_card_link.is_consumed = true;
 
-    require!(
-        mintable_game_asset_link_nonce <= player_account.player_game_asset_link_nonce,
-        ErrorCode::WrongPlayerGameAssetLinkNonce
-    );
-
-    if mintable_game_asset_link_nonce < player_account.player_game_asset_link_nonce {
-        require!(mintable_game_asset_link.is_free, ErrorCode::NotFreePDA);
-    } else {
-        // Save the nonce for seeds easier re-generation
-        mintable_game_asset_link.nonce = player_account.player_game_asset_link_nonce;
-        // increase the player game asset link nonce for the next game asset generation
-        player_account.player_game_asset_link_nonce += 1;
-    }
+    // process_game_asset(
+    //     fighter_game_asset_link_nonce,
+    //     &mut player_account.player_game_asset_link_nonce,
+    //     fighter_link.is_free,
+    //     &mut fighter_link.nonce)?;
 
     if let Some(fighter_used_pubkey) = fight_card_link.fighter_used {
         require!(
             fighter_used_pubkey == fighter_asset.to_account_info().key(),
             ErrorCode::Unauthorized
         );
-        //require!(fighter_asset.owner.is_none(), ErrorCode::MintableAssetHasOwner);
         // Unlock the game asset to allow use again
         fighter_asset.is_locked = false;
-        //fighter_asset.owner = Some(fighter_link.to_account_info().key());
     }
 
-    if let Some(fighter_link_used_pubkey) = fight_card_link.fighter_link_used {
+    // if let Some(fighter_link_used_pubkey) = fight_card_link.fighter_link_used {
+    //     require!(
+    //         fighter_link_used_pubkey == fighter_link.to_account_info().key(),
+    //         ErrorCode::Unauthorized
+    //     );
+    //     require!(fighter_link.is_free == false, ErrorCode::Unauthorized);
+    //     require!(
+    //         fighter_link.mintable_game_asset_nonce_tracker == fighter_asset.nonce,
+    //         ErrorCode::Unauthorized
+    //     );
+    //     require!(
+    //         fighter_link.mintable_game_asset_pubkey == fighter_asset.to_account_info().key(),
+    //         ErrorCode::Unauthorized
+    //     );
+    //     //require!(fighter_link.is_free, ErrorCode::NotFreePDA);
+    //     // fighter_link.mintable_game_asset_nonce_tracker = fighter_asset.nonce;
+    //     // fighter_link.mintable_game_asset_pubkey = fighter_asset.to_account_info().key();
+    //     // fighter_link.is_free = false;
+    // }
+
+    if let Some(points_booster_used_pubkey) = fight_card_link.points_booster_used {
+        let points_booster_asset_unwrapped = points_booster_asset
+            .as_mut()
+            .ok_or(ErrorCode::Unauthorized)?;
+        let points_booster_link_unwrapped = points_booster_link
+            .as_mut()
+            .ok_or(ErrorCode::Unauthorized)?;
+
         require!(
-            fighter_link_used_pubkey == fighter_link.to_account_info().key(),
+            points_booster_used_pubkey == points_booster_asset_unwrapped.to_account_info().key(),
             ErrorCode::Unauthorized
         );
-        require!(fighter_link.is_free == false, ErrorCode::Unauthorized);
-        require!(
-            fighter_link.mintable_game_asset_nonce_tracker == fighter_asset.nonce,
-            ErrorCode::Unauthorized
-        );
-        require!(
-            fighter_link.mintable_game_asset_pubkey == fighter_asset.to_account_info().key(),
-            ErrorCode::Unauthorized
-        );
-        //require!(fighter_link.is_free, ErrorCode::NotFreePDA);
-        // fighter_link.mintable_game_asset_nonce_tracker = fighter_asset.nonce;
-        // fighter_link.mintable_game_asset_pubkey = fighter_asset.to_account_info().key();
-        // fighter_link.is_free = false;
+        points_booster_asset_unwrapped.is_locked = false;
+        points_booster_asset_unwrapped.is_burned = false;
+        points_booster_asset_unwrapped.owner =
+            Some(points_booster_link_unwrapped.to_account_info().key());
+        process_game_asset(
+            points_game_asset_link_nonce,
+            &mut player_account.player_game_asset_link_nonce,
+            points_booster_link_unwrapped.is_free,
+            &mut points_booster_link_unwrapped.nonce,
+        )?;
+        points_booster_link_unwrapped.mintable_game_asset_nonce_tracker =
+            points_booster_asset_unwrapped.nonce;
     }
 
-    if let Some(e) = fight_card_link.points_booster_used {}
+    if let Some(shield_booster_used_pubkey) = fight_card_link.shield_booster_used {
+        let shield_booster_asset_unwrapped = shield_booster_asset
+            .as_mut()
+            .ok_or(ErrorCode::Unauthorized)?;
+        let shield_booster_link_unwrapped = shield_booster_link
+            .as_mut()
+            .ok_or(ErrorCode::Unauthorized)?;
+
+        require!(
+            shield_booster_used_pubkey == shield_booster_asset_unwrapped.to_account_info().key(),
+            ErrorCode::Unauthorized
+        );
+        shield_booster_asset_unwrapped.is_locked = false;
+        shield_booster_asset_unwrapped.is_burned = false;
+        shield_booster_asset_unwrapped.owner =
+            Some(shield_booster_link_unwrapped.to_account_info().key());
+        process_game_asset(
+            shield_game_asset_link_nonce,
+            &mut player_account.player_game_asset_link_nonce,
+            shield_booster_link_unwrapped.is_free,
+            &mut shield_booster_link_unwrapped.nonce,
+        )?;
+        shield_booster_link_unwrapped.mintable_game_asset_nonce_tracker =
+            shield_booster_asset_unwrapped.nonce;
+    }
 
     Ok(())
 }

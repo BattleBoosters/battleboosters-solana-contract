@@ -1,5 +1,4 @@
 use anchor_lang::prelude::*;
-use clap::Parser;
 use std::fmt;
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, Debug, PartialEq)]
