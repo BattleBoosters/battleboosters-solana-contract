@@ -39,7 +39,9 @@ use mpl_token_metadata::types::{PrintSupply, TokenStandard};
 use solana_program::native_token::LAMPORTS_PER_SOL;
 use solana_program::program::{invoke, invoke_signed};
 use solana_program::system_instruction;
-// use switchboard_on_demand::accounts::RandomnessAccountData;
+use switchboard_on_demand::accounts::RandomnessAccountData;
+use switchboard_on_demand::on_demand::accounts::pull_feed::PullFeedAccountData;
+use switchboard_on_demand::prelude::rust_decimal::prelude::ToPrimitive;
 
 pub fn initialize(
     ctx: Context<InitializeProgram>,
@@ -299,16 +301,16 @@ pub fn update_randomness_mystery_box(
     // Used for testing in local-net without depending on external services
     match program.env {
         Env::Prod => {
-            // let randomness_data =
-            //     RandomnessAccountData::parse(ctx.accounts.randomness_account_data.data.borrow())
-            //         .unwrap();
-            // require!(
-            //     randomness_data.seed_slot == clock.slot - 1,
-            //     ErrorCode::RandomnessAlreadyRevealed
-            // );
-            // // Set the randomness account
-            // mystery_box.randomness_account =
-            //     Some(ctx.accounts.randomness_account_data.to_account_info().key());
+            let randomness_data =
+                RandomnessAccountData::parse(ctx.accounts.randomness_account_data.data.borrow())
+                    .unwrap();
+            require!(
+                randomness_data.seed_slot == clock.slot - 1,
+                ErrorCode::RandomnessAlreadyRevealed
+            );
+            // Set the randomness account
+            mystery_box.randomness_account =
+                Some(ctx.accounts.randomness_account_data.to_account_info().key());
         }
         Env::Dev => {
             mystery_box.randomness_account = None;
@@ -323,7 +325,7 @@ pub fn purchase_mystery_box(
     requests: Vec<PurchaseRequest>,
 ) -> Result<()> {
     let program = &ctx.accounts.program;
-    //let feed = &ctx.accounts.price_feed.load()?;
+    let feed_account = ctx.accounts.price_feed.data.borrow();
     let mystery_box = &mut ctx.accounts.mystery_box;
     let player_account = &mut ctx.accounts.player_account;
     let bank = &mut ctx.accounts.bank;
@@ -339,17 +341,28 @@ pub fn purchase_mystery_box(
             // // check whether the feed has been updated in the last 300 seconds
             // feed.check_staleness(Clock::get()?.unix_timestamp, STALENESS_THRESHOLD)
             //     .map_err(|_| error!(ErrorCode::StaleFeed))?;
-            // 
-            // val
-            1.6
+            let feed = PullFeedAccountData::parse(feed_account)
+                .map_err(|e| {
+                    msg!("Parse Error: {:?}", e);
+                    ProgramError::Custom(1)}
+                )?;
+            let price = feed.get_value(&Clock::get()?, 30, 1, true)
+                .map_err(|e| {
+                    msg!("Get Value Error: {:?}", e);
+                    ProgramError::Custom(2)
+                })?;
+            
+            price.to_f64().ok_or(ErrorCode::InvalidOperation)?
+
         }
         Env::Dev => {
             // get result
             // feed.get_result()?.try_into()?
-            1.6
+            1.0
         }
     };
 
+    // let sol_per_usd = Decimal::new(1,0) / val;
     let sol_per_usd = 1.0 / val;
     let mut total_usd = 0;
 
@@ -383,6 +396,8 @@ pub fn purchase_mystery_box(
     }
 
     require!(total_usd > 0, ErrorCode::InsufficientAmount);
+
+  
 
     let total_sol = (total_usd as f64 / PRICE_DECIMALS as f64) * sol_per_usd;
     let total_lamports = (total_sol * LAMPORTS_PER_SOL as f64).round() as u64;
@@ -795,15 +810,14 @@ pub fn create_mintable_game_asset(
     // Used for testing in local-net without depending on external services
     let randomness = match program.env {
         Env::Prod => {
-            // let randomness_data =
-            //     RandomnessAccountData::parse(ctx.accounts.randomness_account_data.data.borrow())
-            //         .unwrap();
-            // // call the switchboard on-demand get_value function to get the revealed random value
-            // let randomness = randomness_data
-            //     .get_value(&clock)
-            //     .map_err(|_| ErrorCode::RandomnessNotResolved)?;
-            // randomness
-            [0u8; 32]
+            let randomness_data =
+                RandomnessAccountData::parse(ctx.accounts.randomness_account_data.data.borrow())
+                    .unwrap();
+            // call the switchboard on-demand get_value function to get the revealed random value
+            let randomness = randomness_data
+                .get_value(&clock)
+                .map_err(|_| ErrorCode::RandomnessNotResolved)?;
+            randomness
         }
         Env::Dev => {
             // // Get the current slot
@@ -1239,7 +1253,7 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
     let mystery_box = &mut ctx.accounts.mystery_box;
     let rarity = &ctx.accounts.rarity;
     let bank = &mut ctx.accounts.bank;
-    //let feed = &ctx.accounts.price_feed.load()?;
+    let feed_account = ctx.accounts.price_feed.data.borrow();
     let signer = &ctx.accounts.signer;
 
     verify_equality(&rank.player_account.key(), &signer.to_account_info().key())?;
@@ -1296,7 +1310,19 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
                     //     .map_err(|_| error!(ErrorCode::StaleFeed))?;
                     // 
                     // val
-                    1.0
+                    
+                    let feed = PullFeedAccountData::parse(feed_account)
+                        .map_err(|e| {
+                            msg!("Parse Error: {:?}", e);
+                            ProgramError::Custom(1)}
+                        )?;
+                    let price = feed.get_value(&Clock::get()?, 30, 1, true)
+                        .map_err(|e| {
+                            msg!("Get Value Error: {:?}", e);
+                            ProgramError::Custom(2)
+                        })?;
+
+                    price.to_f64().ok_or(ErrorCode::InvalidOperation)?
                 }
                 Env::Dev => {
                     // get result
