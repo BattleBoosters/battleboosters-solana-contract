@@ -1,11 +1,11 @@
 [toolchain]
 
 [features]
-seeds = false
+resolution = true
 skip-lint = false
 
 [programs.localnet]
-battleboosters = "C2nq61bse2rwToDzSHepTGfrB2FBMXwQ4us4PxwU8dFe"
+battleboosters = "87NrgFw8UwRoP79qaMpTN7mipE9MAn5LjAZytxNiFh5g"
 
 [programs.devnet]
 battleboosters = "87NrgFw8UwRoP79qaMpTN7mipE9MAn5LjAZytxNiFh5g"
@@ -26,62 +26,62 @@ url = "https://api.devnet.solana.com"
 #[[test.validator.clone]]
 #address = "H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712K4AQJEG"
 ## Mainnet Switchboard SOL/USD program
-[[test.validator.clone]]
-address = "GvDMxPzN1sCj7L26YDK2HnMRXEQmQ2aemov8YBtPS7vR"
-
-#Randomness
-[[test.validator.clone]]
-address = "SBondMDrcV3K4kxZR1HNVT7osZxAHVHgYXL5Ze1oMUv"
-[[test.validator.clone]]
-address = "71fF4B6WKayr7ExFMb8pwG5CkknwwG5ot8ToHabPxd1w"
-[[test.validator.clone]]
-address = "5Qv744yu7DmEbU669GmYRqL9kpQsyYsaVKdR8YiBMTaP"
-[[test.validator.clone]]
-address = "SysvarS1otHashes111111111111111111111111111"
-[[test.validator.clone]]
-address = "9tpH8NwT7UBFSE4KQaB9Kxi7f77supSgV13Do3txcGcf"
-[[test.validator.clone]]
-address = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-[[test.validator.clone]]
-address = "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
-[[test.validator.clone]]
-address = "So11111111111111111111111111111111111111112"
-[[test.validator.clone]]
-address = "7Gs9n5FQMeC9XcEhg281bRZ6VHRrCvqp5Yq1j78HkvNa"
-[[test.validator.clone]]
-address = "BfvoZHYSxgJe4P7jbt9HTqJHip7Lf3xRB1QNszEPrhCx"
-[[test.validator.clone]]
-address = "4ivjMfh7eGaGkx8ptLfKBLXABvukzDERD4LNabH8n666"
-[[test.validator.clone]]
-address = "znfpFSvLzz8zergsdx4QEQtQV5pr6w1sztj3VhjneRL"
+#[[test.validator.clone]]
+#address = "GvDMxPzN1sCj7L26YDK2HnMRXEQmQ2aemov8YBtPS7vR"
+#
+##Randomness
+#[[test.validator.clone]]
+#address = "SBondMDrcV3K4kxZR1HNVT7osZxAHVHgYXL5Ze1oMUv"
+#[[test.validator.clone]]
+#address = "71fF4B6WKayr7ExFMb8pwG5CkknwwG5ot8ToHabPxd1w"
+#[[test.validator.clone]]
+#address = "5Qv744yu7DmEbU669GmYRqL9kpQsyYsaVKdR8YiBMTaP"
+#[[test.validator.clone]]
+#address = "SysvarS1otHashes111111111111111111111111111"
+#[[test.validator.clone]]
+#address = "9tpH8NwT7UBFSE4KQaB9Kxi7f77supSgV13Do3txcGcf"
+#[[test.validator.clone]]
+#address = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+#[[test.validator.clone]]
+#address = "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+#[[test.validator.clone]]
+#address = "So11111111111111111111111111111111111111112"
+#[[test.validator.clone]]
+#address = "7Gs9n5FQMeC9XcEhg281bRZ6VHRrCvqp5Yq1j78HkvNa"
+#[[test.validator.clone]]
+#address = "BfvoZHYSxgJe4P7jbt9HTqJHip7Lf3xRB1QNszEPrhCx"
+#[[test.validator.clone]]
+#address = "4ivjMfh7eGaGkx8ptLfKBLXABvukzDERD4LNabH8n666"
+#[[test.validator.clone]]
+#address = "znfpFSvLzz8zergsdx4QEQtQV5pr6w1sztj3VhjneRL"
 
 #[[test.validator.account]]
 #address = "H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712K4AQJEG"
 #filename = "tests/accounts/pythSolUsdAccount.json"
 
 # Solana Randomness Service
-[[test.validator.clone]]
-address = "RANDMo5gFnqnXJW5Z52KNmd24sAo95KAd5VbiCtq5Rh"
-
-# Sbv3 Program ID
-[[test.validator.clone]]
-address = "sbattyXrzedoNATfc4L31wC9Mhxsi1BmFhTiN8gDshx"
-
-# Sbv3 ProgramStateAccount
-[[test.validator.clone]]
-address = "5MFs7RGTjLi1wtKNBFRtuLipCkkjs4YQwRRU9sjnbQbS"
-
-# Sbv3 IDL
-[[test.validator.clone]]
-address = "5ExuoQR69trmKQfB95fDsUGsUrrChbGq9PFgt8qouncz"
+#[[test.validator.clone]]
+#address = "RANDMo5gFnqnXJW5Z52KNmd24sAo95KAd5VbiCtq5Rh"
+#
+## Sbv3 Program ID
+#[[test.validator.clone]]
+#address = "sbattyXrzedoNATfc4L31wC9Mhxsi1BmFhTiN8gDshx"
+#
+## Sbv3 ProgramStateAccount
+#[[test.validator.clone]]
+#address = "5MFs7RGTjLi1wtKNBFRtuLipCkkjs4YQwRRU9sjnbQbS"
+#
+## Sbv3 IDL
+#[[test.validator.clone]]
+#address = "5ExuoQR69trmKQfB95fDsUGsUrrChbGq9PFgt8qouncz"
 
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "localnet"
-wallet = "/Users/0xantman/.config/solana/id.json"
+cluster = "Localnet"
+wallet = "~/.config/solana/id.json"
 
 
 [scripts]

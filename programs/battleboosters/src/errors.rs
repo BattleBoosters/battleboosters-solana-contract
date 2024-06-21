@@ -114,4 +114,7 @@ pub enum ErrorCode {
     // 36
     #[msg("Wrong randomness account provided")]
     RandomnessNotMatchingProvided,
+    // 37
+    #[msg("Feed is unreachable")]
+    FeedUnreachable,
 }

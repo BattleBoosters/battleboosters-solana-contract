@@ -18,7 +18,13 @@ declare_id!("87NrgFw8UwRoP79qaMpTN7mipE9MAn5LjAZytxNiFh5g");
 #[program]
 pub mod battleboosters {
     use super::*;
-    
+
+    use crate::state::collect_rewards::CollectRewards;
+    use crate::state::determine_ranking_points::DetermineRankingPoints;
+    use crate::state::mystery_box::UpdateMysteryBox;
+    use crate::state::rank::UpdateRank;
+
+
     pub fn initialize(
         ctx: Context<InitializeProgram>,
         authority_bump: u8,

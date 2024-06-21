@@ -9,11 +9,11 @@ crate-type = ["cdylib", "lib"]
 name = "battleboosters"
 
 [features]
+default = []
+cpi = ["no-entrypoint"]
 no-entrypoint = []
 no-idl = []
 no-log-ix-name = []
-cpi = ["no-entrypoint"]
-default = []
 idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
 
 
@@ -25,5 +25,5 @@ mpl-token-metadata = "4.1.2"
 solana-program = "=1.18.17"
 sha2 = "0.10.8"
 switchboard-on-demand =  { version = "0.1.9" }
-bytemuck = "1.15.0"
+
 

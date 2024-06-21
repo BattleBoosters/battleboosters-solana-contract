@@ -32,7 +32,7 @@ import InitializePlayerAccount from './utils/initializePlayerAccount';
 import * as buffer from 'buffer';
 import account_init from './utils/initAccounts';
 
-describe.only('Initialize', () => {
+describe('Initialize', () => {
     const provider = anchor.AnchorProvider.env();
 
     anchor.setProvider(provider);

@@ -1,7 +1,4 @@
-use crate::constants::{
-    BANK, METADATA_OFF_CHAIN_URI, MINT_AUTHORITY, MY_APP_PREFIX, PRICE_DECIMALS,
-    STALENESS_THRESHOLD,
-};
+use crate::constants::{BANK, METADATA_OFF_CHAIN_URI, MINT_AUTHORITY, MY_APP_PREFIX, PRICE_DECIMALS, SOL_USD_FEED_MAINNET, STALENESS_THRESHOLD};
 use crate::errors::ErrorCode;
 use crate::events::*;
 use crate::state::collect_rewards::CollectRewards;
@@ -341,14 +338,12 @@ pub fn purchase_mystery_box(
             // // check whether the feed has been updated in the last 300 seconds
             // feed.check_staleness(Clock::get()?.unix_timestamp, STALENESS_THRESHOLD)
             //     .map_err(|_| error!(ErrorCode::StaleFeed))?;
-            let feed = PullFeedAccountData::parse(feed_account).map_err(|e| {
-                msg!("Parse Error: {:?}", e);
-                ProgramError::Custom(1)
-            })?;
-            let price = feed.get_value(&Clock::get()?, 30, 1, true).map_err(|e| {
-                msg!("Get Value Error: {:?}", e);
-                ProgramError::Custom(2)
-            })?;
+      
+                require!(ctx.accounts.price_feed.key().to_string() == SOL_USD_FEED_MAINNET, ErrorCode::Unauthorized);
+            let feed = PullFeedAccountData::parse(feed_account)
+                .map_err(|_| error!(ErrorCode::FeedUnreachable))?;
+            let price = feed.get_value(&Clock::get()?, STALENESS_THRESHOLD, 1, true)
+                .map_err(|_| error!(ErrorCode::StaleFeed))?;
 
             price.to_f64().ok_or(ErrorCode::InvalidOperation)?
         }
@@ -1306,14 +1301,10 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
                     //
                     // val
 
-                    let feed = PullFeedAccountData::parse(feed_account).map_err(|e| {
-                        msg!("Parse Error: {:?}", e);
-                        ProgramError::Custom(1)
-                    })?;
-                    let price = feed.get_value(&Clock::get()?, 30, 1, true).map_err(|e| {
-                        msg!("Get Value Error: {:?}", e);
-                        ProgramError::Custom(2)
-                    })?;
+                    let feed = PullFeedAccountData::parse(feed_account)
+                        .map_err(|_| error!(ErrorCode::FeedUnreachable))?;
+                    let price = feed.get_value(&Clock::get()?, STALENESS_THRESHOLD, 1, true)
+                        .map_err(|_| error!(ErrorCode::StaleFeed))?;
 
                     price.to_f64().ok_or(ErrorCode::InvalidOperation)?
                 }
