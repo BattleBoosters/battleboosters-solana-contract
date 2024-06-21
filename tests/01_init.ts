@@ -4,20 +4,17 @@ import { Battleboosters } from '../target/types/battleboosters';
 import {assert} from "chai";
 
 import InitializePlayerAccount from '../tests_utils/utils/initializePlayerAccount';
-
 import account_init from '../tests_utils/utils/initAccounts';
 import airdrop_sol from "../tests_utils/utils/airdropSol";
 import {before} from "mocha";
 
-describe.only("init", () => {
+describe("init", () => {
     // Configure the client to use the local cluster.
     //anchor.setProvider(anchor.AnchorProvider.env());
     const provider = anchor.AnchorProvider.env();
-
     anchor.setProvider(provider);
 
     const program = anchor.workspace.Battleboosters as Program<Battleboosters>;
-
     const {
         admin_account,
         unauthorized_account,
@@ -49,7 +46,6 @@ describe.only("init", () => {
             mintAuthority: mint_authority_account,
             systemProgram: anchor.web3.SystemProgram.programId,
         };
-
 
         const tx = await program.methods
             .initialize(
