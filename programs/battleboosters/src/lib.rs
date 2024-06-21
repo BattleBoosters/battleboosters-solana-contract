@@ -18,7 +18,7 @@ declare_id!("87NrgFw8UwRoP79qaMpTN7mipE9MAn5LjAZytxNiFh5g");
 #[program]
 pub mod battleboosters {
     use super::*;
-
+    
     pub fn initialize(
         ctx: Context<InitializeProgram>,
         authority_bump: u8,
