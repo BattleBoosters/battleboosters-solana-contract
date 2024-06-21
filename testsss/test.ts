@@ -6,7 +6,7 @@ describe.only("test", () => {
     // Configure the client to use the local cluster.
     anchor.setProvider(anchor.AnchorProvider.env());
 
-    const program = anchor.workspace.Battleboosters as Program<Battleboosters>;
+    const program = anchor.workspace.Test as Program<Battleboosters>;
 
     it("Is initialized!", async () => {
         // Add your test here.
