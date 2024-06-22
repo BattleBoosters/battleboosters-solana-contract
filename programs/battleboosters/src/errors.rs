@@ -117,4 +117,7 @@ pub enum ErrorCode {
     // 37
     #[msg("Feed is unreachable")]
     FeedUnreachable,
+    // 38
+    #[msg("This mintable game asset has owner")]
+    MintableAssetHasOwner,
 }

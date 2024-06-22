@@ -179,7 +179,7 @@ pub enum TournamentType {
     EarlyPrelims,
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]
+#[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone, PartialEq)]
 pub enum FightCardResult {
     KoTko,
     Decision,
