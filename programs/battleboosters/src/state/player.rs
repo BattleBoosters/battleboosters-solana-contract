@@ -1,6 +1,5 @@
 use crate::constants::*;
 use anchor_lang::prelude::*;
-use switchboard_solana::prelude::*;
 
 // Struct for initializing player
 #[derive(Accounts)]

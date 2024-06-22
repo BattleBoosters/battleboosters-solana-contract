@@ -1,7 +1,7 @@
 import * as anchor from '@coral-xyz/anchor';
 import { MPL_TOKEN_METADATA_PROGRAM_ID } from '@metaplex-foundation/mpl-token-metadata';
 import { Battleboosters } from '../../target/types/battleboosters';
-import { PublicKey } from '@solana/web3.js';
+
 const initAccounts = function (program: anchor.Program<Battleboosters>) {
     const metadata_pubkey = new anchor.web3.PublicKey(
         MPL_TOKEN_METADATA_PROGRAM_ID

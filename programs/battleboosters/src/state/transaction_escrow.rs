@@ -3,12 +3,7 @@ use super::player::PlayerData;
 use super::program::ProgramData;
 use crate::constants::*;
 use crate::state::rarity::RarityData;
-use crate::ErrorCode;
 use anchor_lang::prelude::*;
-// use anchor_spl::associated_token::AssociatedToken;
-// use anchor_spl::token::Token;
-use std::str::FromStr;
-use switchboard_solana::prelude::*;
 
 #[derive(Accounts)]
 pub struct TransactionEscrow<'info> {
@@ -38,8 +33,7 @@ pub struct TransactionEscrow<'info> {
     pub bank: AccountInfo<'info>,
 
     /// CHECK: Switchboard network price feed id
-    #[account(address = Pubkey::from_str(SOL_USD_FEED_MAINNET).unwrap() @ ErrorCode::InvalidPriceFeed)]
-    pub price_feed: AccountLoader<'info, AggregatorAccountData>,
+    pub price_feed: AccountInfo<'info>,
 
     /// Rarity PDA
     #[account(

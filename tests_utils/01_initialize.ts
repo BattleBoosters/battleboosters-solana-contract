@@ -32,11 +32,11 @@ import InitializePlayerAccount from './utils/initializePlayerAccount';
 import * as buffer from 'buffer';
 import account_init from './utils/initAccounts';
 
-describe.only('Initialize', () => {
+describe('Initialize', () => {
+
     const provider = anchor.AnchorProvider.env();
 
     anchor.setProvider(provider);
-
     const program = anchor.workspace.Battleboosters as Program<Battleboosters>;
 
     const {
@@ -70,14 +70,15 @@ describe.only('Initialize', () => {
         try {
             await program.account.programData.fetch(program_pda);
         } catch (e) {
+            const fighter_price = new BN(20_000_000);
+            const booster_price =  new BN(250_000)
             const tx = await program.methods
                 .initialize(
                     authority_bump,
                     bank_bump,
                     admin_account.publicKey,
-                    100,
-                    0.25,
-                    5,
+                    fighter_price,
+                    booster_price,
                     { dev: {} }
                 )
                 .accounts({
@@ -85,7 +86,7 @@ describe.only('Initialize', () => {
                     program: program_pda,
                     bank: bank_pda,
                     mintAuthority: mint_authority_account,
-                    //systemProgram: anchor.web3.SystemProgram.programId,
+                    systemProgram: anchor.web3.SystemProgram.programId,
                 })
                 .signers([admin_account]) // Include new_account as a signer
                 .rpc();
@@ -102,9 +103,8 @@ describe.only('Initialize', () => {
                 programAccount.adminPubkey,
                 admin_account.publicKey
             );
-            assert.equal(programAccount.fighterPackPrice, 100);
-            assert.equal(programAccount.boosterPrice, 0.25);
-            assert.equal(programAccount.fighterPackAmount, 5);
+            assert.equal(programAccount.fighterPrice.eq(fighter_price), true);
+            assert.equal(programAccount.boosterPrice.eq(booster_price), true);
         }
     });
 

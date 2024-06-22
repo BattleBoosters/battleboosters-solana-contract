@@ -115,6 +115,9 @@ pub enum ErrorCode {
     #[msg("Wrong randomness account provided")]
     RandomnessNotMatchingProvided,
     // 37
+    #[msg("Feed is unreachable")]
+    FeedUnreachable,
+    // 38
     #[msg("This mintable game asset has owner")]
     MintableAssetHasOwner,
 }

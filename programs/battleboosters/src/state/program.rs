@@ -33,7 +33,6 @@ pub struct UpdateProgram<'info> {
     pub system_program: Program<'info, System>,
 }
 
-/* TODO: change fighter pack by fighter for convenience remove the pack stuffs*/
 /*
       TODO: Add circulating game asset supply, it could be interesting to add an on chain tracker how much assets
        are in circulation and how much are removed from circulation

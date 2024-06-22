@@ -6,25 +6,24 @@ mod processor;
 mod state;
 mod types;
 mod utils;
-
 use crate::state::{
     collect_rewards::*, create_spl_nft::*, determine_ranking_points::*, event::*, fight_card::*,
     fighter_base::*, join_fight_card::*, mintable_game_asset::*, mystery_box::*, player::*,
     program::*, rank::*, rarity::*, refund_mintable_game_asset::*, transaction_escrow::*,
 };
-
 use crate::types::*;
-use errors::ErrorCode;
 
 declare_id!("87NrgFw8UwRoP79qaMpTN7mipE9MAn5LjAZytxNiFh5g");
 
 #[program]
 pub mod battleboosters {
     use super::*;
+
     use crate::state::collect_rewards::CollectRewards;
     use crate::state::determine_ranking_points::DetermineRankingPoints;
     use crate::state::mystery_box::UpdateMysteryBox;
     use crate::state::rank::UpdateRank;
+
 
     pub fn initialize(
         ctx: Context<InitializeProgram>,

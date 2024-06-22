@@ -17,7 +17,7 @@ pub const METADATA_OFF_CHAIN_URI: &str = "https://battleboosters.com/api/metadat
 pub const PRICE_DECIMALS: u64 = 1_000_000;
 
 /// Switchboard
-pub const STALENESS_THRESHOLD: i64 = 20_000_000_300;
+pub const STALENESS_THRESHOLD: u64 = 30;
 pub const SOL_USD_FEED_MAINNET: &str = "GvDMxPzN1sCj7L26YDK2HnMRXEQmQ2aemov8YBtPS7vR";
 
 // /// Seller BasePoint fees

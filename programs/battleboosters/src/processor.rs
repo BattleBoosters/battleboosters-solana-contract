@@ -1,7 +1,4 @@
-use crate::constants::{
-    BANK, METADATA_OFF_CHAIN_URI, MINT_AUTHORITY, MY_APP_PREFIX, PRICE_DECIMALS,
-    STALENESS_THRESHOLD,
-};
+use crate::constants::{BANK, METADATA_OFF_CHAIN_URI, MINT_AUTHORITY, MY_APP_PREFIX, PRICE_DECIMALS, SOL_USD_FEED_MAINNET, STALENESS_THRESHOLD};
 use crate::errors::ErrorCode;
 use crate::events::*;
 use crate::state::collect_rewards::CollectRewards;
@@ -40,6 +37,8 @@ use solana_program::native_token::LAMPORTS_PER_SOL;
 use solana_program::program::{invoke, invoke_signed};
 use solana_program::system_instruction;
 use switchboard_on_demand::accounts::RandomnessAccountData;
+use switchboard_on_demand::on_demand::accounts::pull_feed::PullFeedAccountData;
+use switchboard_on_demand::prelude::rust_decimal::prelude::ToPrimitive;
 
 pub fn initialize(
     ctx: Context<InitializeProgram>,
@@ -324,7 +323,7 @@ pub fn purchase_mystery_box(
     requests: Vec<PurchaseRequest>,
 ) -> Result<()> {
     let program = &ctx.accounts.program;
-    let feed = &ctx.accounts.price_feed.load()?;
+    let feed_account = ctx.accounts.price_feed.data.borrow();
     let mystery_box = &mut ctx.accounts.mystery_box;
     let player_account = &mut ctx.accounts.player_account;
     let bank = &mut ctx.accounts.bank;
@@ -335,20 +334,28 @@ pub fn purchase_mystery_box(
 
     let val = match program.env {
         Env::Prod => {
-            // get result
-            let val: f64 = feed.get_result()?.try_into()?;
-            // check whether the feed has been updated in the last 300 seconds
-            feed.check_staleness(Clock::get()?.unix_timestamp, STALENESS_THRESHOLD)
+            // // get result
+            // let val: f64 = feed.get_result()?.try_into()?;
+            // // check whether the feed has been updated in the last 300 seconds
+            // feed.check_staleness(Clock::get()?.unix_timestamp, STALENESS_THRESHOLD)
+            //     .map_err(|_| error!(ErrorCode::StaleFeed))?;
+      
+                require!(ctx.accounts.price_feed.key().to_string() == SOL_USD_FEED_MAINNET, ErrorCode::Unauthorized);
+            let feed = PullFeedAccountData::parse(feed_account)
+                .map_err(|_| error!(ErrorCode::FeedUnreachable))?;
+            let price = feed.get_value(&Clock::get()?, STALENESS_THRESHOLD, 1, true)
                 .map_err(|_| error!(ErrorCode::StaleFeed))?;
 
-            val
+            price.to_f64().ok_or(ErrorCode::InvalidOperation)?
         }
         Env::Dev => {
             // get result
-            feed.get_result()?.try_into()?
+            // feed.get_result()?.try_into()?
+            1.0
         }
     };
 
+    // let sol_per_usd = Decimal::new(1,0) / val;
     let sol_per_usd = 1.0 / val;
     let mut total_usd = 0;
 
@@ -1352,7 +1359,7 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
     let mystery_box = &mut ctx.accounts.mystery_box;
     let rarity = &ctx.accounts.rarity;
     let bank = &mut ctx.accounts.bank;
-    let feed = &ctx.accounts.price_feed.load()?;
+    let feed_account = ctx.accounts.price_feed.data.borrow();
     let signer = &ctx.accounts.signer;
 
     verify_equality(&rank.player_account.key(), &signer.to_account_info().key())?;
@@ -1403,16 +1410,24 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
             let val = match program.env {
                 Env::Prod => {
                     // get result
-                    let val: f64 = feed.get_result()?.try_into()?;
-                    // check whether the feed has been updated in the last 300 seconds
-                    feed.check_staleness(Clock::get()?.unix_timestamp, STALENESS_THRESHOLD)
+                    // let val: f64 = feed.get_result()?.try_into()?;
+                    // // check whether the feed has been updated in the last 300 seconds
+                    // feed.check_staleness(Clock::get()?.unix_timestamp, STALENESS_THRESHOLD)
+                    //     .map_err(|_| error!(ErrorCode::StaleFeed))?;
+                    //
+                    // val
+
+                    let feed = PullFeedAccountData::parse(feed_account)
+                        .map_err(|_| error!(ErrorCode::FeedUnreachable))?;
+                    let price = feed.get_value(&Clock::get()?, STALENESS_THRESHOLD, 1, true)
                         .map_err(|_| error!(ErrorCode::StaleFeed))?;
 
-                    val
+                    price.to_f64().ok_or(ErrorCode::InvalidOperation)?
                 }
                 Env::Dev => {
                     // get result
-                    feed.get_result()?.try_into()?
+                    //feed.get_result()?.try_into()?
+                    1.0
                 }
             };
 
@@ -1588,35 +1603,27 @@ pub fn determine_ranking_points(
         .find(|x| x.trait_type == "Lifespan")
     {
         if let Ok(life_span_value) = lifespan_attribute.value.parse::<u32>() {
-            /*
-               TODO: Fix this should fail is shield_multiplier is 0
-            */
-            let life_span_value_plus_shield =
-                ((shield_multiplier as f32 / 100.0) * life_span_value as f32).round() as u32;
+            // Properly calculate lifespan value with shield multiplier
+            let shield_effect = (shield_multiplier as f32 / 100.0) * life_span_value as f32;
+            let life_span_value_plus_shield = life_span_value + shield_effect.round() as u32;
+
             msg!(
-                "lifespan: {}, lifespan plus shield: {}",
+                "Lifespan: {}, Lifespan with shield: {}",
                 life_span_value,
                 life_span_value_plus_shield
             );
-            // Calculate the new lifespan, ensuring it doesn't underflow
+
             let life_span_after_damage = life_span_value_plus_shield
                 .checked_sub(damage_value)
                 .unwrap_or(0);
 
-            let new_lifespan_value = if life_span_after_damage >= life_span_value {
-                life_span_value
-            } else {
-                life_span_after_damage
-            };
+            msg!("Lifespan after damage: {}", life_span_after_damage);
 
-            // Assign the new value back to the attribute
-            lifespan_attribute.value = new_lifespan_value.to_string();
+            lifespan_attribute.value = life_span_after_damage.to_string();
 
-            if new_lifespan_value == 0 {
-                // Burn the metadata of the game asset
+            if life_span_after_damage == 0 {
                 fighter_mintable_game_asset.is_burned = true;
                 fighter_mintable_game_asset.owner = None;
-                // Free the space of the game asset link
                 fighter_mintable_game_asset_link.is_free = true;
             }
         } else {
@@ -1624,7 +1631,7 @@ pub fn determine_ranking_points(
         }
     };
 
-    let new_points_value = if points_multiplier != 0 {
+    let new_points_value = if points_multiplier > 0 {
         ((points_multiplier as f32 / 100.0) * points_value as f32).round() as u32
     } else {
         points_value
