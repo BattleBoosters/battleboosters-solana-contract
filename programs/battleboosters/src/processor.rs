@@ -1,6 +1,6 @@
 use crate::constants::{
     BANK, FEED_HEX, METADATA_OFF_CHAIN_URI, MINT_AUTHORITY, MY_APP_PREFIX, PRICE_DECIMALS,
-    SOL_USD_FEED_MAINNET, STALENESS_THRESHOLD,
+    STALENESS_THRESHOLD,
 };
 use crate::errors::ErrorCode;
 use crate::events::*;
@@ -41,8 +41,6 @@ use solana_program::native_token::LAMPORTS_PER_SOL;
 use solana_program::program::{invoke, invoke_signed};
 use solana_program::system_instruction;
 use switchboard_on_demand::accounts::RandomnessAccountData;
-use switchboard_on_demand::on_demand::accounts::pull_feed::PullFeedAccountData;
-use switchboard_on_demand::prelude::rust_decimal::prelude::ToPrimitive;
 
 pub fn initialize(
     ctx: Context<InitializeProgram>,

@@ -18,7 +18,7 @@ pub const PRICE_DECIMALS: u64 = 1_000_000;
 
 /// Switchboard
 pub const STALENESS_THRESHOLD: u64 = 30;
-pub const SOL_USD_FEED_MAINNET: &str = "GvDMxPzN1sCj7L26YDK2HnMRXEQmQ2aemov8YBtPS7vR";
+pub const _SOL_USD_FEED_MAINNET: &str = "GvDMxPzN1sCj7L26YDK2HnMRXEQmQ2aemov8YBtPS7vR";
 /// PYTH
 pub const FEED_HEX: &str = "0xef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d";
 // /// Seller BasePoint fees
