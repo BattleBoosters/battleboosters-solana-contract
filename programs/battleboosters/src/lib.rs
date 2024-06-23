@@ -24,7 +24,6 @@ pub mod battleboosters {
     use crate::state::mystery_box::UpdateMysteryBox;
     use crate::state::rank::UpdateRank;
 
-
     pub fn initialize(
         ctx: Context<InitializeProgram>,
         authority_bump: u8,

@@ -40,7 +40,6 @@ pub struct TransactionEscrow<'info> {
 
     // /// CHECK: Switchboard network price feed id
     // pub price_feed: AccountInfo<'info>,
-
     /// Rarity PDA
     #[account(
     mut,

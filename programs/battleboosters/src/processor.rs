@@ -1,4 +1,7 @@
-use crate::constants::{BANK, FEED_HEX, METADATA_OFF_CHAIN_URI, MINT_AUTHORITY, MY_APP_PREFIX, PRICE_DECIMALS, SOL_USD_FEED_MAINNET, STALENESS_THRESHOLD};
+use crate::constants::{
+    BANK, FEED_HEX, METADATA_OFF_CHAIN_URI, MINT_AUTHORITY, MY_APP_PREFIX, PRICE_DECIMALS,
+    SOL_USD_FEED_MAINNET, STALENESS_THRESHOLD,
+};
 use crate::errors::ErrorCode;
 use crate::events::*;
 use crate::state::collect_rewards::CollectRewards;
@@ -332,11 +335,12 @@ pub fn purchase_mystery_box(
     // let bank_escrow = &mut ctx.accounts.bank_escrow;
     let signer_key = &ctx.accounts.signer.to_account_info().key();
     let rarity = &ctx.accounts.rarity;
-    
+
     let feed_id: [u8; 32] = get_feed_id_from_hex(FEED_HEX)?;
-    let price = feed_account.get_price_no_older_than(&Clock::get()?, STALENESS_THRESHOLD, &feed_id)?;
+    let price =
+        feed_account.get_price_no_older_than(&Clock::get()?, STALENESS_THRESHOLD, &feed_id)?;
     let val = (price.price as f64) * 10f64.powi(price.exponent);
-   
+
     let sol_per_usd = 1.0 / val;
     let mut total_usd = 0;
 
@@ -1395,7 +1399,11 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
             // let val = price.to_f64().ok_or(ErrorCode::InvalidOperation)?;
 
             let feed_id: [u8; 32] = get_feed_id_from_hex(FEED_HEX)?;
-            let price = feed_account.get_price_no_older_than(&Clock::get()?, STALENESS_THRESHOLD, &feed_id)?;
+            let price = feed_account.get_price_no_older_than(
+                &Clock::get()?,
+                STALENESS_THRESHOLD,
+                &feed_id,
+            )?;
             let val = (price.price as f64) * 10f64.powi(price.exponent);
 
             let sol_per_usd = 1.0 / val;
