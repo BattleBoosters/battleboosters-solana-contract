@@ -1,4 +1,4 @@
-use crate::constants::{BANK, METADATA_OFF_CHAIN_URI, MINT_AUTHORITY, MY_APP_PREFIX, PRICE_DECIMALS, SOL_USD_FEED_MAINNET, STALENESS_THRESHOLD};
+use crate::constants::{BANK, FEED_HEX, METADATA_OFF_CHAIN_URI, MINT_AUTHORITY, MY_APP_PREFIX, PRICE_DECIMALS, SOL_USD_FEED_MAINNET, STALENESS_THRESHOLD};
 use crate::errors::ErrorCode;
 use crate::events::*;
 use crate::state::collect_rewards::CollectRewards;
@@ -33,6 +33,7 @@ use crate::utils::{
 use anchor_lang::prelude::*;
 use mpl_token_metadata::instructions::{CreateV1CpiBuilder, MintV1CpiBuilder};
 use mpl_token_metadata::types::{PrintSupply, TokenStandard};
+use pyth_solana_receiver_sdk::price_update::get_feed_id_from_hex;
 use solana_program::native_token::LAMPORTS_PER_SOL;
 use solana_program::program::{invoke, invoke_signed};
 use solana_program::system_instruction;
@@ -323,7 +324,7 @@ pub fn purchase_mystery_box(
     requests: Vec<PurchaseRequest>,
 ) -> Result<()> {
     let program = &ctx.accounts.program;
-    let feed_account = ctx.accounts.price_feed.data.borrow();
+    let feed_account = &ctx.accounts.price_feed;
     let mystery_box = &mut ctx.accounts.mystery_box;
     let player_account = &mut ctx.accounts.player_account;
     let bank = &mut ctx.accounts.bank;
@@ -331,31 +332,11 @@ pub fn purchase_mystery_box(
     // let bank_escrow = &mut ctx.accounts.bank_escrow;
     let signer_key = &ctx.accounts.signer.to_account_info().key();
     let rarity = &ctx.accounts.rarity;
-
-    let val = match program.env {
-        Env::Prod => {
-            // // get result
-            // let val: f64 = feed.get_result()?.try_into()?;
-            // // check whether the feed has been updated in the last 300 seconds
-            // feed.check_staleness(Clock::get()?.unix_timestamp, STALENESS_THRESHOLD)
-            //     .map_err(|_| error!(ErrorCode::StaleFeed))?;
-      
-                require!(ctx.accounts.price_feed.key().to_string() == SOL_USD_FEED_MAINNET, ErrorCode::Unauthorized);
-            let feed = PullFeedAccountData::parse(feed_account)
-                .map_err(|_| error!(ErrorCode::FeedUnreachable))?;
-            let price = feed.get_value(&Clock::get()?, STALENESS_THRESHOLD, 1, true)
-                .map_err(|_| error!(ErrorCode::StaleFeed))?;
-
-            price.to_f64().ok_or(ErrorCode::InvalidOperation)?
-        }
-        Env::Dev => {
-            // get result
-            // feed.get_result()?.try_into()?
-            1.0
-        }
-    };
-
-    // let sol_per_usd = Decimal::new(1,0) / val;
+    
+    let feed_id: [u8; 32] = get_feed_id_from_hex(FEED_HEX)?;
+    let price = feed_account.get_price_no_older_than(&Clock::get()?, STALENESS_THRESHOLD, &feed_id)?;
+    let val = (price.price as f64) * 10f64.powi(price.exponent);
+   
     let sol_per_usd = 1.0 / val;
     let mut total_usd = 0;
 
@@ -1359,7 +1340,7 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
     let mystery_box = &mut ctx.accounts.mystery_box;
     let rarity = &ctx.accounts.rarity;
     let bank = &mut ctx.accounts.bank;
-    let feed_account = ctx.accounts.price_feed.data.borrow();
+    let feed_account = &ctx.accounts.price_feed;
     let signer = &ctx.accounts.signer;
 
     verify_equality(&rank.player_account.key(), &signer.to_account_info().key())?;
@@ -1407,29 +1388,15 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
             mystery_box.champions_pass_mint_allowance = reward.champions_pass_amount as u64;
             mystery_box.nonce = player_account.order_nonce;
 
-            let val = match program.env {
-                Env::Prod => {
-                    // get result
-                    // let val: f64 = feed.get_result()?.try_into()?;
-                    // // check whether the feed has been updated in the last 300 seconds
-                    // feed.check_staleness(Clock::get()?.unix_timestamp, STALENESS_THRESHOLD)
-                    //     .map_err(|_| error!(ErrorCode::StaleFeed))?;
-                    //
-                    // val
+            // let feed = PullFeedAccountData::parse(feed_account)
+            //     .map_err(|_| error!(ErrorCode::FeedUnreachable))?;
+            // let price = feed.get_value(&Clock::get()?, STALENESS_THRESHOLD, 1, true)
+            //     .map_err(|_| error!(ErrorCode::StaleFeed))?;
+            // let val = price.to_f64().ok_or(ErrorCode::InvalidOperation)?;
 
-                    let feed = PullFeedAccountData::parse(feed_account)
-                        .map_err(|_| error!(ErrorCode::FeedUnreachable))?;
-                    let price = feed.get_value(&Clock::get()?, STALENESS_THRESHOLD, 1, true)
-                        .map_err(|_| error!(ErrorCode::StaleFeed))?;
-
-                    price.to_f64().ok_or(ErrorCode::InvalidOperation)?
-                }
-                Env::Dev => {
-                    // get result
-                    //feed.get_result()?.try_into()?
-                    1.0
-                }
-            };
+            let feed_id: [u8; 32] = get_feed_id_from_hex(FEED_HEX)?;
+            let price = feed_account.get_price_no_older_than(&Clock::get()?, STALENESS_THRESHOLD, &feed_id)?;
+            let val = (price.price as f64) * 10f64.powi(price.exponent);
 
             let sol_per_usd = 1.0 / val;
             let total_sol = reward.prize_amount * sol_per_usd;

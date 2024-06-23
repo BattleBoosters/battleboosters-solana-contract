@@ -6,6 +6,7 @@ use crate::state::player::PlayerData;
 use crate::state::rank::RankData;
 use crate::state::rarity::RarityData;
 use anchor_lang::prelude::*;
+use pyth_solana_receiver_sdk::price_update::PriceUpdateV2;
 
 #[derive(Accounts)]
 pub struct CollectRewards<'info> {
@@ -52,8 +53,9 @@ pub struct CollectRewards<'info> {
     bump,
     )]
     pub rarity: Box<Account<'info, RarityData>>,
-    /// CHECK: Switchboard network price feed id
-    pub price_feed: AccountInfo<'info>,
+    // /// CHECK: Switchboard network price feed id
+    // pub price_feed: AccountInfo<'info>,
+    pub price_feed: Account<'info, PriceUpdateV2>,
 
     pub system_program: Program<'info, System>,
 }

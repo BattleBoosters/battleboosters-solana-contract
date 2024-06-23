@@ -4,6 +4,7 @@ use super::program::ProgramData;
 use crate::constants::*;
 use crate::state::rarity::RarityData;
 use anchor_lang::prelude::*;
+use pyth_solana_receiver_sdk::price_update::PriceUpdateV2;
 
 #[derive(Accounts)]
 pub struct TransactionEscrow<'info> {
@@ -32,8 +33,13 @@ pub struct TransactionEscrow<'info> {
     #[account(mut, seeds = [MY_APP_PREFIX, BANK], bump)]
     pub bank: AccountInfo<'info>,
 
-    /// CHECK: Switchboard network price feed id
-    pub price_feed: AccountInfo<'info>,
+    pub price_feed: Account<'info, PriceUpdateV2>,
+    // /// CHECK: Switchboard network price feed id
+    // #[account(address = Pubkey::from_str(SOL_USD_FEED_MAINNET).unwrap() @ ErrorCode::InvalidPriceFeed)]
+    // pub price_feed: AccountLoader<'info, AggregatorAccountData>,
+
+    // /// CHECK: Switchboard network price feed id
+    // pub price_feed: AccountInfo<'info>,
 
     /// Rarity PDA
     #[account(
