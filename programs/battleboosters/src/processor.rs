@@ -37,7 +37,7 @@ use anchor_lang::prelude::*;
 use mpl_token_metadata::instructions::{CreateV1CpiBuilder, MintV1CpiBuilder};
 use mpl_token_metadata::types::{PrintSupply, TokenStandard};
 use pyth_solana_receiver_sdk::price_update::get_feed_id_from_hex;
-use sha2::{Sha256, Digest};
+use sha2::{Digest, Sha256};
 use solana_program::native_token::LAMPORTS_PER_SOL;
 use solana_program::program::{invoke, invoke_signed};
 use solana_program::system_instruction;
@@ -910,7 +910,6 @@ pub fn create_mintable_game_asset(
             randomness
         }
         Env::Dev => {
-            
             let timestamp_bytes = clock.unix_timestamp.to_le_bytes();
             // Initialize a Sha256 hasher
             let mut hasher = Sha256::new();
