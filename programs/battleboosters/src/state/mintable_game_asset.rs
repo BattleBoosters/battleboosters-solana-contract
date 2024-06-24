@@ -52,7 +52,6 @@ pub struct CreateMintableGameAsset<'info> {
 
     /// CHECK: The account's data is validated manually within the handler.
     pub randomness_account_data: AccountInfo<'info>,
-
     pub system_program: Program<'info, System>,
 }
 

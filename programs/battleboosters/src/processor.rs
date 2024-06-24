@@ -37,6 +37,7 @@ use anchor_lang::prelude::*;
 use mpl_token_metadata::instructions::{CreateV1CpiBuilder, MintV1CpiBuilder};
 use mpl_token_metadata::types::{PrintSupply, TokenStandard};
 use pyth_solana_receiver_sdk::price_update::get_feed_id_from_hex;
+use sha2::{Sha256, Digest};
 use solana_program::native_token::LAMPORTS_PER_SOL;
 use solana_program::program::{invoke, invoke_signed};
 use solana_program::system_instruction;
@@ -909,15 +910,22 @@ pub fn create_mintable_game_asset(
             randomness
         }
         Env::Dev => {
-            // // Get the current slot
-            // let current_slot = sysvar::slot();
-            // // Get the SlotHashes sysvar
-            // let slot_hashes = sysvar::slot_hashes();
-            // // Get the blockhash for the current slot
-            // let blockhash = slot_hashes.get(current_slot).unwrap();
-            // // Convert the blockhash reference to a [u8; 32] array
-            // let blockhash_array = blockhash.as_ref().to_bytes();
-            [0u8; 32]
+            
+            let timestamp_bytes = clock.unix_timestamp.to_le_bytes();
+            // Initialize a Sha256 hasher
+            let mut hasher = Sha256::new();
+
+            // Feed the timestamp bytes into the hasher
+            hasher.update(&timestamp_bytes);
+
+            // Optionally add more entropy here
+            // hasher.update(&additional_entropy);
+
+            // Finalize the hash to get a 32-byte output
+            let hash_result = hasher.finalize();
+            let randomness: [u8; 32] = hash_result.into();
+
+            randomness
         }
     };
 
@@ -980,8 +988,8 @@ pub fn create_mintable_game_asset(
                 }
             }
 
-            msg!(" rarity index {:?}", rarity_index);
-            msg!(" rarity found {:?}", rarity_booster_found);
+            msg!("rarity index {:?}", rarity_index);
+            msg!("rarity found {:?}", rarity_booster_found);
 
             if let Some(rarity_booster) = rarity_booster_found.clone() {
                 let scaled_random_number = match rarity_booster {

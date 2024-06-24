@@ -120,4 +120,7 @@ pub enum ErrorCode {
     // 38
     #[msg("This mintable game asset has owner")]
     MintableAssetHasOwner,
+    // 38
+    #[msg("No recent blockhashes")]
+    NoRecentBlockhashes,
 }
