@@ -39,7 +39,7 @@ pub struct RefundMintableGameAsset<'info> {
     pub fight_card: Box<Account<'info, FightCardData>>,
     #[account(
     mut,
-    seeds = [MY_APP_PREFIX, FIGHT_CARD, event.key().as_ref(), fight_card.key().as_ref(), signer.key().as_ref()],
+    seeds = [MY_APP_PREFIX, FIGHT_CARD, event.key().as_ref(), fight_card.key().as_ref(), player_pubkey.as_ref()],
     bump
     )]
     pub fight_card_link: Box<Account<'info, FightCardLinkData>>,
