@@ -67,7 +67,7 @@ pub mod battleboosters {
             probability_tiers,
         )
     }
-    
+
     pub fn update_rarity(
         ctx: Context<UpdateRarity>,
         fighter: Vec<RarityFighter>,

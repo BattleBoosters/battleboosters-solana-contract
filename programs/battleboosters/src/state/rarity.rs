@@ -1,7 +1,7 @@
 use crate::constants::*;
+use crate::state::program::ProgramData;
 use anchor_lang::prelude::*;
 use std::fmt;
-use crate::state::program::ProgramData;
 
 #[derive(Accounts)]
 pub struct InitializeRarity<'info> {
