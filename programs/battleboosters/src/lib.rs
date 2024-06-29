@@ -70,10 +70,10 @@ pub mod battleboosters {
 
     pub fn update_rarity(
         ctx: Context<UpdateRarity>,
-        fighter: Vec<RarityFighter>,
-        shield_booster: Vec<RarityBooster>,
-        points_booster: Vec<RarityBooster>,
-        probability_tiers: Vec<TierProbabilities>,
+        fighter: Option<Vec<RarityFighter>>,
+        shield_booster: Option<Vec<RarityBooster>>,
+        points_booster: Option<Vec<RarityBooster>>,
+        probability_tiers: Option<Vec<TierProbabilities>>,
     ) -> Result<()> {
         processor::update_rarity(
             ctx,
