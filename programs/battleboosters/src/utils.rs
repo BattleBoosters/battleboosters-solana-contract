@@ -21,9 +21,7 @@ pub fn verify_equality_mintable_asset(expected: &Pubkey, actual: &Pubkey) -> Res
     );
     Ok(())
 }
-/*
-   TODO: Improve error msg's
-*/
+
 pub fn process_game_asset_for_action(
     mintable_game_asset: Option<&mut Box<Account<MintableGameAssetData>>>,
     mintable_game_asset_link: Option<&mut Box<Account<MintableGameAssetLinkData>>>,
