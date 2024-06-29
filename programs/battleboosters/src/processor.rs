@@ -103,20 +103,27 @@ pub fn initialize_rarity(
 
 pub fn update_rarity(
     ctx: Context<UpdateRarity>,
-    fighter: Vec<RarityFighter>,
-    shield_booster: Vec<RarityBooster>,
-    points_booster: Vec<RarityBooster>,
-    probability_tiers: Vec<TierProbabilities>,
+    fighter: Option<Vec<RarityFighter>>,
+    shield_booster: Option<Vec<RarityBooster>>,
+    points_booster: Option<Vec<RarityBooster>>,
+    probability_tiers: Option<Vec<TierProbabilities>>,
 ) -> Result<()> {
     let rarity = &mut ctx.accounts.rarity;
     let program = &mut ctx.accounts.program;
     verify_equality(&ctx.accounts.creator.key(), &program.admin_pubkey)?;
 
-    rarity.fighter = fighter;
-    rarity.shield_booster = shield_booster;
-    rarity.points_booster = points_booster;
-    rarity.probability_tiers = probability_tiers;
-
+    if let Some(fighter_found) = fighter {
+        rarity.fighter = fighter_found;
+    }
+    if let Some(shield_booster_found) = shield_booster {
+        rarity.shield_booster = shield_booster_found;
+    }
+    if let Some(points_booster_found) = points_booster {
+        rarity.points_booster = points_booster_found;
+    }
+    if let Some(probability_tiers_found) = probability_tiers {
+        rarity.probability_tiers = probability_tiers_found;
+    }
     msg!("Rarity Updated");
 
     Ok(())
