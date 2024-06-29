@@ -19,7 +19,7 @@ use crate::state::player::InitializePlayer;
 use crate::state::program::{Env, InitializeProgram, UpdateProgram};
 use crate::state::rank::UpdateRank;
 use crate::state::rarity::{
-    InitializeRarity, RarityBooster, RarityFighter, TierProbabilities, TierType,
+    InitializeRarity, RarityBooster, RarityFighter, TierProbabilities, TierType, UpdateRarity
 };
 use crate::state::refund_mintable_game_asset::RefundMintableGameAsset;
 use crate::state::transaction_escrow::TransactionEscrow;
@@ -100,6 +100,28 @@ pub fn initialize_rarity(
 
     Ok(())
 }
+
+pub fn update_rarity(
+    ctx: Context<UpdateRarity>,
+    fighter: Vec<RarityFighter>,
+    shield_booster: Vec<RarityBooster>,
+    points_booster: Vec<RarityBooster>,
+    probability_tiers: Vec<TierProbabilities>,
+) -> Result<()> {
+    let rarity = &mut ctx.accounts.rarity;
+    let program = &mut ctx.accounts.program;
+    verify_equality(&ctx.accounts.creator.key(), &program.admin_pubkey)?;
+
+    rarity.fighter = fighter;
+    rarity.shield_booster = shield_booster;
+    rarity.points_booster = points_booster;
+    rarity.probability_tiers = probability_tiers;
+    
+    msg!("Rarity Updated");
+
+    Ok(())
+}
+
 pub fn initialize_event_link(ctx: Context<InitializeEventLink>) -> Result<()> {
     let event_link = &mut ctx.accounts.event_link;
     let rank = &mut ctx.accounts.rank;

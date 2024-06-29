@@ -1,6 +1,7 @@
 use crate::constants::*;
 use anchor_lang::prelude::*;
 use std::fmt;
+use crate::state::program::ProgramData;
 
 #[derive(Accounts)]
 pub struct InitializeRarity<'info> {
@@ -16,13 +17,24 @@ pub struct InitializeRarity<'info> {
     pub rarity: Account<'info, RarityData>,
     pub system_program: Program<'info, System>,
 }
-/*
-   TODO: Create update ratity Accounts
-*/
-// #[derive(Accounts)]
-// pub struct UpdateRarity<'info> {
-//     TODO
-// }
+
+#[derive(Accounts)]
+pub struct UpdateRarity<'info> {
+    #[account(mut)]
+    pub creator: Signer<'info>,
+    #[account(
+    mut,
+    seeds = [MY_APP_PREFIX, PROGRAM_STATE],
+    bump
+    )]
+    pub program: Box<Account<'info, ProgramData>>,
+    #[account(
+    seeds = [MY_APP_PREFIX, RARITY],
+    bump,
+    )]
+    pub rarity: Account<'info, RarityData>,
+    pub system_program: Program<'info, System>,
+}
 
 #[account]
 pub struct RarityData {

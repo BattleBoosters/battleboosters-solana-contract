@@ -67,6 +67,22 @@ pub mod battleboosters {
             probability_tiers,
         )
     }
+    
+    pub fn update_rarity(
+        ctx: Context<UpdateRarity>,
+        fighter: Vec<RarityFighter>,
+        shield_booster: Vec<RarityBooster>,
+        points_booster: Vec<RarityBooster>,
+        probability_tiers: Vec<TierProbabilities>,
+    ) -> Result<()> {
+        processor::update_rarity(
+            ctx,
+            fighter,
+            shield_booster,
+            points_booster,
+            probability_tiers,
+        )
+    }
 
     pub fn initialize_player(
         ctx: Context<InitializePlayer>,
